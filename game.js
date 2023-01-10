@@ -82,11 +82,18 @@ class Soldier {
     }
 
     /**
+     * Sets the move number at which the Soldier died.
+     */
+    setDeath(moveNum) {
+        this.deathIndex = moveNum
+    }
+
+    /**
      * Gets the Soldiers position at a given move.
      * Does not check whether the Soldiers status (alive/dead) at a the given position
      */
     getPosition(moveNum) {
-        const foundPositionIndex = Object.keys(this.positions).reverse().find(el => parseInt(el) <= gameIndex)
+        const foundPositionIndex = Object.keys(this.positions).reverse().find(el => parseInt(el) <= moveNum)
         return this.positions[foundPositionIndex]
     }
 
@@ -125,13 +132,13 @@ class Army {
     }
 
     /**
-     * Gets an array of Soldier positions at an given move.
+     * Gets an array of Soldier coordinates at an given move.
      */
-    getPositions(moveNum) {
+    getCoordinates(moveNum) {
         const positions = []
 
         for (const soldier of this.soldiers) {
-            positions.push(soldier.getPosition(moveNum))
+            positions.push(soldier.getPosition(moveNum)[0])
         }
 
         return positions
@@ -146,8 +153,17 @@ class GameState {
         this.currentMoveNum = 1
     }
 
-    isCoordinateEqual(coord1, coord2) {
+    #isCoordinateEqual(coord1, coord2) {
         return arrayEquals(coord1, coord2)
+    }
+
+    #isCoordinateInArray(coord, arr) {
+        for (const coordInArr of arr) {
+            if (this.#isCoordinateEqual(coord, coordInArr)) {
+                return true
+            }
+        }
+        return false
     }
 
     /**
@@ -183,15 +199,15 @@ class GameState {
         const attackedCoordinates = []
         const [coord, direction] = position
 
-        for (let x = coord[0] - 1 + direction[0] * ATTACK_SIZE; x <= coord[0] + 1 + direction[0] * ATTACK_SIZE; x++) {
+        for (let x = coord[0] - 1 + direction[0] * 2; x <= coord[0] + 1 + direction[0] * 2; x++) {
             if (!isNumBetween(x, 0, ARENA_SIZE)) {
                 continue
             }
-            for (let y = coord[1] - 1 + direction[1] * ATTACK_SIZE; y <= coord[1] + 1 + direction[1] * ATTACK_SIZE; y++) {
+            for (let y = coord[1] - 1 + direction[1] * 2; y <= coord[1] + 1 + direction[1] * 2; y++) {
                 if (!isNumBetween(y, 0, ARENA_SIZE)) {
                     continue
                 }
-                for (let z = coord[2] - 1 + direction[2] * ATTACK_SIZE; z <= coord[2] + 1 + direction[2] * ATTACK_SIZE; z++) {
+                for (let z = coord[2] - 1 + direction[2] * 2; z <= coord[2] + 1 + direction[2] * 2; z++) {
                     if (!isNumBetween(z, 0, ARENA_SIZE)) {
                         continue
                     }
@@ -204,12 +220,92 @@ class GameState {
         return attackedCoordinates
     }
 
+    /**
+     * Returns a list of attacked coordinates for an given army at an given move
+     */
+    #getArmyAttackedCoordinates(moveNum, armyNum) {
+        let armyAttackedCoordinates = []
+        for (const soldier of this.armies[armyNum].soldiers) {
+            if (soldier.isAlive(moveNum)) {
+                console.log('Here')
+                // console.log(this.#getArmyAttackedCoordinates(soldier.getPosition(moveNum)))
+                armyAttackedCoordinates = [...armyAttackedCoordinates, ...this.#getAttackedCoordinates(soldier.getPosition(moveNum))]
+                console.log('Here2')
+            }
+        }
 
+        return armyAttackedCoordinates
+    }
 
+    /**
+     * DESIGNED FOR TESTING PURPOSES
+     * Prints the state of the Arena in the command line
+     */
+    printArena(moveNum) {
+        const army1Coordinates = this.armies[0].getCoordinates(moveNum)
+        const army2Coordinates = this.armies[1].getCoordinates(moveNum)
+
+        const army1AttackedCoordinates = this.#getArmyAttackedCoordinates(moveNum, 0)
+        const army2AttackedCoordinates = this.#getArmyAttackedCoordinates(moveNum, 1)
+
+        /**
+         * X - Army 1 Positions
+         * O - Army 2 Positions
+         * + - Attacked Cubes by Army 1
+         * - - Attacked Cubes by Army 2
+         * / - Attacked Cubes by both Army 1 & 2
+         * * - Star Positions
+         */
+
+        for (let z = ARENA_SIZE - 1; z >= 0; z--) {
+            console.log(`------------------------- Z=${z}`)
+            for (let y = ARENA_SIZE - 1; y >= 0; y--) {
+                let printString = '| '
+                for (let x = 0; x < ARENA_SIZE; x++) {
+
+                    const isInArmy1AttackedCubes = this.#isCoordinateInArray([x, y, z], army1AttackedCoordinates)
+                    const isInArmy2AttackedCubes = this.#isCoordinateInArray([x, y, z], army2AttackedCoordinates)
+
+                    if (this.#isCoordinateInArray([x, y, z], this.starCoordinates)) {
+                        printString += '*'
+                    }
+                    else if (this.#isCoordinateInArray([x, y, z], army1Coordinates)) {
+                        printString += 'X'
+                    }
+                    else if (this.#isCoordinateInArray([x, y, z], army2Coordinates)) {
+                        printString += 'O'
+                    }
+
+                    // Check if Cube attacked by both Armies
+                    else if (isInArmy1AttackedCubes && isInArmy2AttackedCubes) {
+                        printString += '/'
+                    }
+                    else if (isInArmy1AttackedCubes) {
+                        printString += '+'
+                    }
+                    else if (isInArmy2AttackedCubes) {
+                        printString += '-'
+                    }
+                    // No spacing on last column
+                    else {
+                        printString += ' '
+                    }
+                    printString += ' '
+                }
+                console.log(printString + '|')
+            }
+        }
+    }
 }
 
-// const testGameState = new GameState()
-// console.log(testGameState.starCoordinates)
+const testGameState = new GameState([
+    [[5, 5, 10], [0, 0, -1]],
+    [[5, 4, 5], [0, 0, -1]]
+], [
+    [[5, 5, 0], [0, 0, 1]],
+    [[5, 4, 0], [0, 0, 1]]
+])
+console.log(testGameState.printArena(0))
 
 const a = [1, 2, 5]
 const b = [10, 100, 1]
