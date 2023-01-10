@@ -223,19 +223,92 @@ class GameState {
     /**
      * Returns a list of attacked coordinates for an given army at an given move
      */
-    #getArmyAttackedCoordinates(moveNum, armyNum) {
+    getArmyAttackedCoordinates(moveNum, armyNum) {
         let armyAttackedCoordinates = []
         for (const soldier of this.armies[armyNum].soldiers) {
             if (soldier.isAlive(moveNum)) {
-                console.log('Here')
-                // console.log(this.#getArmyAttackedCoordinates(soldier.getPosition(moveNum)))
                 armyAttackedCoordinates = [...armyAttackedCoordinates, ...this.#getAttackedCoordinates(soldier.getPosition(moveNum))]
-                console.log('Here2')
             }
         }
 
         return armyAttackedCoordinates
     }
+
+    /**
+     * Returns a list of possible moves for an given soldier for an given army at an given move
+     */
+    getSoldierPossibleActions(moveNum, armyNum, soldierNum) {
+
+        const soldierPossibleActions = []
+
+        const [coord, direction] = this.armies[armyNum].soldiers[soldierNum].getPosition(moveNum)
+
+
+        for (let x = coord[0] - 1; x <= coord[0] + 1; x++) {
+            if (!isNumBetween(x, 0, ARENA_SIZE)) {
+                continue
+            }
+            for (let y = coord[1] - 1; y <= coord[1] + 1; y++) {
+                if (!isNumBetween(y, 0, ARENA_SIZE)) {
+                    continue
+                }
+                for (let z = coord[2] - 1; z <= coord[2] + 1; z++) {
+                    if (!isNumBetween(z, 0, ARENA_SIZE)) {
+                        continue
+                    }
+
+                    // Remove the coordinate that the soldier currently occupies
+                    if ((x == 0) && (y == 0) && (z == 0)) {
+                        continue
+                    }
+
+                    // Filter out coordinates occupied by a Soldier or Star
+                    if (this.#isCoordinateInArray([x,y,z], this.starCoordinates)) {
+                        continue
+                    }
+                    if ((this.#isCoordinateInArray([x,y,z], this.armies[0].getCoordinates(moveNum)))) {
+                        continue
+                    }
+                    if ((this.#isCoordinateInArray([x,y,z], this.armies[1].getCoordinates(moveNum)))) {
+                        continue
+                    }
+
+                    // Facing the +x direction
+                    if (x == coord[0] + 1) {
+                        soldierPossibleActions.push([[x, y, z], [1,0,0]])
+                    }
+
+                    // Facing the -x direction
+                    if (x == coord[0] - 1) {
+                        soldierPossibleActions.push([[x, y, z], [-1,0,0]])
+                    }
+
+                    // Facing the +y direction
+                    if (y == coord[1] + 1) {
+                        soldierPossibleActions.push([[x, y, z], [0,1,0]])
+                    }
+
+                    // Facing the -y direction
+                    if (y == coord[1] - 1) {
+                        soldierPossibleActions.push([[x, y, z], [0,-1,0]])
+                    }
+
+                    // Facing the +z direction
+                    if (z == coord[2] + 1) {
+                        soldierPossibleActions.push([[x, y, z], [0,0,1]])
+                    }
+
+                    // Facing the -z direction
+                    if (z == coord[2] - 1) {
+                        soldierPossibleActions.push([[x, y, z], [0,0,-1]])
+                    }
+                }
+            }
+        }
+
+        return soldierPossibleActions
+    }
+
 
     /**
      * DESIGNED FOR TESTING PURPOSES
@@ -245,8 +318,8 @@ class GameState {
         const army1Coordinates = this.armies[0].getCoordinates(moveNum)
         const army2Coordinates = this.armies[1].getCoordinates(moveNum)
 
-        const army1AttackedCoordinates = this.#getArmyAttackedCoordinates(moveNum, 0)
-        const army2AttackedCoordinates = this.#getArmyAttackedCoordinates(moveNum, 1)
+        const army1AttackedCoordinates = this.getArmyAttackedCoordinates(moveNum, 0)
+        const army2AttackedCoordinates = this.getArmyAttackedCoordinates(moveNum, 1)
 
         /**
          * X - Army 1 Positions
@@ -306,6 +379,7 @@ const testGameState = new GameState([
     [[5, 4, 0], [0, 0, 1]]
 ])
 console.log(testGameState.printArena(0))
+console.log(testGameState.getSoldierPossibleActions(0,0,1).length)
 
 const a = [1, 2, 5]
 const b = [10, 100, 1]
