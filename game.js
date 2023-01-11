@@ -309,6 +309,42 @@ class GameState {
         return soldierPossibleActions
     }
 
+    /**
+     * Checks whether on a certain move if the game position has been repeated three times.
+     */
+    #checkDrawByRepetition () {
+
+    }
+
+    /**
+     * Checks whether on a certain move if both Armies have no soldiers remaining, the game is automatically a draw by default.
+     */
+    #checkDrawByDefault (moveNum) {
+        if ((this.armies[0].getAliveCount() == 0) && (this.armies[0].getAliveCount(moveNum) == 0)) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    
+    #checkWinByCapture () {
+
+    }
+
+    /**
+     * Checks whether on a certain move if one army has no remaining soldiers, the other wins by default.
+     */
+    #checkWinByDefault (moveNum, armyNum) {
+        if ((this.armies[armyNum].getAliveCount() != 0) && (this.armies[((armyNum == 0) ? 1 : 0)].getAliveCount(moveNum) == 0)) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
 
     /**
      * DESIGNED FOR TESTING PURPOSES
