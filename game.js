@@ -151,23 +151,6 @@ class GameState {
         this.starCoordinates = this.#generateStarCoordinates()
         this.armies = this.#generateArmies(army1StartingPositions, army2StartingPositions)
         this.currentMoveNum = 1
-
-        /**
-         * Game Status is a 2D array of length 2
-         * First number represents the status of the game by the following codes
-         *      -1 - Game still in progress (default)
-         *       0 - Draw
-         *       1 - Win by Army 1
-         *       2 - Win by Army 2
-         * Second number represents the method for which the game has ended by the following codes.
-         *      -1 - NA (default)
-         *      For Draw
-         *           0 - By Default (both teams insuffient material)
-         *           1 - By Threefold Repetition (position has repeated three times with the same Army to move)
-         *      For Win by Army 1 or Army 2
-         *           0 - By Default (only one Army has no Soldiers alive)
-         *           1 - By Capture (one Army has entered the opposing Armies door coordinate)
-         */
         this.gameStatus = [-1, -1]
     }
 
@@ -281,44 +264,44 @@ class GameState {
                     }
 
                     // Filter out coordinates occupied by a Soldier or Star
-                    if (this.#isCoordinateInArray([x,y,z], this.starCoordinates)) {
+                    if (this.#isCoordinateInArray([x, y, z], this.starCoordinates)) {
                         continue
                     }
-                    if ((this.#isCoordinateInArray([x,y,z], this.armies[0].getCoordinates(moveNum)))) {
+                    if ((this.#isCoordinateInArray([x, y, z], this.armies[0].getCoordinates(moveNum)))) {
                         continue
                     }
-                    if ((this.#isCoordinateInArray([x,y,z], this.armies[1].getCoordinates(moveNum)))) {
+                    if ((this.#isCoordinateInArray([x, y, z], this.armies[1].getCoordinates(moveNum)))) {
                         continue
                     }
 
                     // Facing the +x direction
                     if (x == coord[0] + 1) {
-                        soldierPossibleActions.push([[x, y, z], [1,0,0]])
+                        soldierPossibleActions.push([[x, y, z], [1, 0, 0]])
                     }
 
                     // Facing the -x direction
                     if (x == coord[0] - 1) {
-                        soldierPossibleActions.push([[x, y, z], [-1,0,0]])
+                        soldierPossibleActions.push([[x, y, z], [-1, 0, 0]])
                     }
 
                     // Facing the +y direction
                     if (y == coord[1] + 1) {
-                        soldierPossibleActions.push([[x, y, z], [0,1,0]])
+                        soldierPossibleActions.push([[x, y, z], [0, 1, 0]])
                     }
 
                     // Facing the -y direction
                     if (y == coord[1] - 1) {
-                        soldierPossibleActions.push([[x, y, z], [0,-1,0]])
+                        soldierPossibleActions.push([[x, y, z], [0, -1, 0]])
                     }
 
                     // Facing the +z direction
                     if (z == coord[2] + 1) {
-                        soldierPossibleActions.push([[x, y, z], [0,0,1]])
+                        soldierPossibleActions.push([[x, y, z], [0, 0, 1]])
                     }
 
                     // Facing the -z direction
                     if (z == coord[2] - 1) {
-                        soldierPossibleActions.push([[x, y, z], [0,0,-1]])
+                        soldierPossibleActions.push([[x, y, z], [0, 0, -1]])
                     }
                 }
             }
@@ -330,14 +313,14 @@ class GameState {
     /**
      * Checks whether on a certain move if the game position has been repeated three times.
      */
-    #checkDrawByRepetition () {
+    #checkDrawByRepetition(moveNum) {
         return false
     }
 
     /**
      * Checks whether on a certain move if both Armies have no soldiers remaining, the game is automatically a draw by default.
      */
-    #checkDrawByDefault (moveNum) {
+    #checkDrawByDefault(moveNum) {
         if ((this.armies[0].getAliveCount() == 0) && (this.armies[0].getAliveCount(moveNum) == 0)) {
             return true
         }
@@ -346,18 +329,18 @@ class GameState {
         }
     }
 
-    
-    #checkWinByCapture (moveNum, armyNum) {
+
+    #checkWinByCapture(moveNum, armyNum) {
         if (armyNum == 0) {
             for (const soldier of this.armies[0].soldiers) {
-                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)), [5,5,0]) {
+                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)), [5, 5, 0]) {
                     return true
                 }
             }
         }
         else if (armyNum == 1) {
             for (const soldier of this.armies[0].soldiers) {
-                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)), [5,5,10]) {
+                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)), [5, 5, 10]) {
                     return true
                 }
             }
@@ -370,8 +353,8 @@ class GameState {
     /**
      * Checks whether on a certain move if one army has no remaining soldiers, the other wins by default.
      */
-    #checkWinByDefault (moveNum, armyNum) {
-        if ((this.armies[armyNum].getAliveCount() != 0) && (this.armies[((armyNum == 0) ? 1 : 0)].getAliveCount(moveNum) == 0)) {
+    #checkWinByDefault(moveNum, armyNum) {
+        if ((this.armies[armyNum].getAliveCount() != 0) && (this.armies[this.#opposingArmyNum(armyNum)].getAliveCount(moveNum) == 0)) {
             return true
         }
         else {
@@ -382,15 +365,114 @@ class GameState {
     /**
      * 
      */
-    playMove(moveNum) {
+    #opposingArmyNum (armyNum) {
+        return ((armyNum == 0) ? 1 : 0)
+    }
 
+    /**
+     * 
+     */
+    updateGameState(moveNum, armyNum, soldierNum, position) {
+
+        if (this.gameStatus[0] !== -1) {
+            console.error('Cannot execute move. Game is over!')
+            return
+        }
+
+        this.playMove(moveNum, armyNum, soldierNum, position)
+        this.updateArmies(moveNum, armyNum, soldierNum, position)
+        this.updateGameStatus(moveNum, armyNum)
+        
+        if (this.gameStatus[0] == 0) {
+            if (this.gameStatus[1] == 0) {
+                console.log('Army 1 wins by Default!')
+            }
+            if (this.gameStatus[1] == 1) {
+                console.log('Army 1 wins by Capture!')
+            }
+        }
+        else if (this.gameStatus[0] == 1) {
+            if (this.gameStatus[1] == 0) {
+                console.log('Army 2 wins by Default!')
+            }
+            if (this.gameStatus[1] == 1) {
+                console.log('Army 2 wins by Capture!')
+            }
+        }
+        else if (this.gameStatus[0] == 2) {
+            if (this.gameStatus[1] == 0) {
+                console.log('Draw by Default!')
+            }
+            if (this.gameStatus[1] == 1) {
+                console.log('Draw by Repetition!')
+            }
+        }
+    }
+
+    /**
+     * 
+     */
+    playMove(moveNum, armyNum, soldierNum, position) {
+        this.armies[armyNum].soldiers[soldierNum].setPosition(moveNum, position)
+    }
+
+    /**
+     * Updates all soldiers alive/dead status when a given move has been played
+     */
+    updateArmies(moveNum, armyNum, soldierNum, position) {
+
+        // Check whether the Soldier has moved into the opposing Armies attacked Zone
+        if (this.#isCoordinateInArray(position[0], this.getArmyAttackedCoordinates)) {
+            this.armies[armyNum].soldiers[soldierNum].setDeath(moveNum)
+        }
+
+        // Check whether any opposing Soldier is in the new attacked Zone
+        const newAttackedZone = this.#getAttackedCoordinates(position)
+        for (const soldier of this.armies[this.#opposingArmyNum(armyNum)].soldiers) {
+            if (this.#isCoordinateInArray(soldier.getPosition(moveNum)[0], newAttackedZone)) {
+                soldier.setDeath(moveNum)
+            }
+        }
     }
 
     /**
      * Update the game Status
      */
-    updateGameStatus () {
 
+    /**
+     * Game Status is a 2D array of length 2
+     * First number represents the status of the game by the following codes
+     *      -1 - Game still in progress (default)
+     *       0 - Win by Army 1
+     *       1 - Win by Army 2
+     *       2 - Draw
+     * Second number represents the method for which the game has ended by the following codes.
+     *      -1 - NA (default)
+     *      For Draw
+     *           0 - By Default (both teams insuffient material)
+     *           1 - By Threefold Repetition (position has repeated three times with the same Army to move)
+     *      For Win by Army 1 or Army 2
+     *           0 - By Default (only one Army has no Soldiers alive)
+     *           1 - By Capture (one Army has entered the opposing Armies door coordinate)
+     */
+    updateGameStatus(moveNum, armyNum) {
+        if (this.#checkDrawByDefault(moveNum)) {
+            this.gameStatus = [2, 0]
+            return
+        }
+        else if (this.#checkDrawByRepetition(moveNum)) {
+            this.gameStatus = [2, 1]
+            return
+        }
+        else if (this.#checkWinByDefault(moveNum, armyNum)) {
+            this.gameStatus = [armyNum, 0]
+            return
+        }
+        else if (this.#checkWinByCapture(moveNum, armyNum)) {
+            this.gameStatus = [armyNum, 1]
+            return
+        }
+        
     }
 
     /**
@@ -462,7 +544,7 @@ const testGameState = new GameState([
     [[5, 4, 0], [0, 0, 1]]
 ])
 console.log(testGameState.printArena(0))
-console.log(testGameState.getSoldierPossibleActions(0,0,1).length)
+console.log(testGameState.getSoldierPossibleActions(0, 0, 1).length)
 
 const a = [1, 2, 5]
 const b = [10, 100, 1]
