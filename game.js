@@ -151,6 +151,24 @@ class GameState {
         this.starCoordinates = this.#generateStarCoordinates()
         this.armies = this.#generateArmies(army1StartingPositions, army2StartingPositions)
         this.currentMoveNum = 1
+
+        /**
+         * Game Status is a 2D array of length 2
+         * First number represents the status of the game by the following codes
+         *      -1 - Game still in progress (default)
+         *       0 - Draw
+         *       1 - Win by Army 1
+         *       2 - Win by Army 2
+         * Second number represents the method for which the game has ended by the following codes.
+         *      -1 - NA (default)
+         *      For Draw
+         *           0 - By Default (both teams insuffient material)
+         *           1 - By Threefold Repetition (position has repeated three times with the same Army to move)
+         *      For Win by Army 1 or Army 2
+         *           0 - By Default (only one Army has no Soldiers alive)
+         *           1 - By Capture (one Army has entered the opposing Armies door coordinate)
+         */
+        this.gameStatus = [-1, -1]
     }
 
     #isCoordinateEqual(coord1, coord2) {
@@ -313,7 +331,7 @@ class GameState {
      * Checks whether on a certain move if the game position has been repeated three times.
      */
     #checkDrawByRepetition () {
-
+        return false
     }
 
     /**
@@ -329,8 +347,24 @@ class GameState {
     }
 
     
-    #checkWinByCapture () {
-
+    #checkWinByCapture (moveNum, armyNum) {
+        if (armyNum == 0) {
+            for (const soldier of this.armies[0].soldiers) {
+                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)), [5,5,0]) {
+                    return true
+                }
+            }
+        }
+        else if (armyNum == 1) {
+            for (const soldier of this.armies[0].soldiers) {
+                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)), [5,5,10]) {
+                    return true
+                }
+            }
+        }
+        else {
+            return false
+        }
     }
 
     /**
@@ -345,6 +379,19 @@ class GameState {
         }
     }
 
+    /**
+     * 
+     */
+    playMove(moveNum) {
+
+    }
+
+    /**
+     * Update the game Status
+     */
+    updateGameStatus () {
+
+    }
 
     /**
      * DESIGNED FOR TESTING PURPOSES
