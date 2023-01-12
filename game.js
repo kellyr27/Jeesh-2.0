@@ -179,6 +179,10 @@ class GameState {
         }
     }
 
+    getCurrentArmy () {
+        return this.currentArmyNum
+    }
+
     clone(existingGameState) {
         this.starCoordinates = structuredClone(existingGameState.starCoordinates)
         this.currentMoveNum = structuredClone(existingGameState.currentMoveNum)
@@ -287,7 +291,10 @@ class GameState {
 
 
         for (let i = 0; i < this.armies[armyNum].soldiers.length; i++) {
-            armyPossibleActions.push([i, this.getSoldierPossibleActions(moveNum, armyNum, i)])
+
+            for (const possibleAction of this.getSoldierPossibleActions(moveNum, armyNum, i)) {
+                armyPossibleActions.push([i, possibleAction])
+            }
         }
 
         return armyPossibleActions
@@ -492,6 +499,18 @@ class GameState {
     /**
      * 
      */
+    getResult () {
+        if (this.gameStatus[0] === -1) {
+            console.error('Requesting the result and the game has not finished!')
+        }
+        else {
+            return this.gameStatus[0]
+        }
+    }
+
+    /**
+     * 
+     */
     playMove(moveNum, armyNum, soldierNum, position) {
         this.armies[armyNum].soldiers[soldierNum].setPosition(moveNum, position)
     }
@@ -619,11 +638,11 @@ class GameState {
 /**
  * Get Possible Actions
  */
-function jeeshGetPossibleActions (state) {
+function jeeshGetPossibleActions(state) {
     return state.getCurrentArmyPossibleActions()
 }
 
-function jeeshGetNextState (state, action) {
+function jeeshGetNextState(state, action) {
     // Create a clone state for next state to return
     const nextState = new GameState()
     nextState.clone(state)
@@ -631,6 +650,52 @@ function jeeshGetNextState (state, action) {
     nextState.updateGameState(soldierNumToMove, positionSelected)
 
     return nextState
+}
+
+/**
+ * Simulates a game of Jeesh from a given State and returns the Gain depending on which Army we which to maximize
+ */
+function jeeshSimulateGame(state) {
+    const simulationState = new GameState()
+    simulationState.clone(state)
+
+    // Simulate a game
+    while (!simulationState.isGameOver()) {
+        const possibleActions = simulationState.getCurrentArmyPossibleActions()
+        const [soldierNumToMove, actionSelected] = selectRandomAction(possibleActions)
+        simulationState.updateGameState(soldierNumToMove, actionSelected)
+    }
+
+    return simulationState
+}
+
+function jeeshGetGain (state, rootState) {
+    const result = state.getResult()
+    
+    if (result === 2) {
+        return 0.5
+    }
+    // Game ended in win for Army 1
+    else if (result === 0) {
+        if (rootState.getCurrentArmy() === 0) {
+            return 1
+        }
+        else {
+            return 0
+        }
+    }
+    // Game ended in win for Army 2
+    else if (result === 1) {
+        if (rootState.getCurrentArmy() === 0) {
+            return 0
+        }
+        else {
+            return 1
+        }
+    }
+    else {
+        console.error('Game has not finished to get Gain!')
+    }
 }
 
 class Node {
@@ -678,21 +743,36 @@ class Node {
         return this.children
     }
 
+    getNumOfVisits () {
+        return this.n
+    }
+
+    getAction() {
+        return this.action
+    }
+
     getUCBScore(parentNode) {
-        return (this.s / this.n) + this.c * Math.sqrt((2 * Math.log(parentNode.n)) / this.n)
+        if (this.n == 0) {
+            return 100000
+        }
+        else {
+            return (this.s / this.n) + this.c * Math.sqrt((2 * Math.log(parentNode.n)) / this.n)
+        }
+
     }
 }
 
 // MCTS Algorithm
-function mcts() {
+function mcts(numOfIterations, state, getPossibleActions, getNextState, simulateGame, getGain) {
 
     /**
      * Selection Phase
      * Returns the selected leaf node for expansion
      */
     function selectionPhase(root) {
+        const nodeList = [root]
         let currentNode = root
-        while (!root.isLeaf()) {
+        while (!currentNode.isLeaf()) {
             // Select the child of the current node with the largest UCB score
             let highestUCBScore = 0
             let highestUCBChildIndex = -1
@@ -706,37 +786,75 @@ function mcts() {
                 }
             }
             currentNode = childNodes[highestUCBChildIndex]
+            nodeList.push(currentNode)
         }
-        return currentNode
+        return nodeList
     }
 
     /**
      * Expansion Phase
      */
-    function expansionPhase(selectedNode, getPossibleActions, getNextState) {
+    function expansionPhase(nodeList, getPossibleActions, getNextState) {
+        let selectedNode = nodeList[nodeList.length-1]
+
         // Check if the game is not in a decisive state
         if (!selectedNode.state.isGameOver()) {
             selectedNode.createChildren(getPossibleActions, getNextState)
             selectedNode = selectedNode.selectedRandomChild()
+            nodeList.push(selectedNode)
         }
-        
-        return selectedNode
+
+        return nodeList
     }
 
     /**
      * Simulation Phase
      */
-    function simulationPhase() {
-
+    function simulationPhase(nodeList, simulateGame, getGain) {
+        const simulatedGameState = simulateGame(nodeList[nodeList.length-1].state)
+        return getGain(simulatedGameState, nodeList[0].state)
     }
 
     // Backpropagation Phase
-    function backpropagationPhase() {
-
+    function backpropagationPhase(nodeList, gain) {
+        for (const node in nodeList) {
+            node.n += 1
+            node.s += gain
+        }
     }
 
     // Body of algorithm
 
+    // Create Root node
+    const root = new Node(state)
+    /**
+     * Iterate over algorithm for pre selected number of iterations
+     */
+    for (let iterNum = 0; iterNum < numOfIterations; iterNum++) {
+        if (iterNum % 100 == 0) {
+            console.log(`Currently in ${iterNum} of MCTS algorithm`)
+        }
+        let nodeList = selectionPhase(root)
+        nodeList = expansionPhase(nodeList, getPossibleActions, getNextState)
+        const gain = simulationPhase(nodeList, simulateGame, getGain)
+        backpropagationPhase(nodeList, gain)
+    }
+
+    // Select the child of the Root with the most number of Visits
+    let highestNumVisits = 0
+    let highestNumVisitsIndex = -1
+    const childNodes = currentNode.getChildren()
+    for (let i = 0; i < childNodes.length; i++) {
+        const currentNumOfVisits = childNodes.getNumOfVisits()
+
+        if (highestNumVisits < currentNumOfVisits) {
+            highestNumVisits = currentNumOfVisits
+            highestNumVisitsIndex = i
+        }
+    }
+
+    return childNodes[i].getAction()
+    
 }
 
 
@@ -757,7 +875,7 @@ function selectRandomAction(possibleActions) {
 
 
 // Play out random game
-function playRandomGame(gameState) {
+function playRandomVsRandom(gameState) {
     while (true) {
         // Army 1 move
         const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
@@ -779,65 +897,75 @@ function playRandomGame(gameState) {
     }
 }
 
-// let p1Wins = 0
-// let p2Wins = 0
-// let draws = 0
+function playMCTSVsRandom(gameState) {
+    while (true) {
+        // Army 1 move
+        const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
+        const [army1SoldierNumToMove, army1ActionSelected] = mcts(1000, gameState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain)
+        gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
+
+        if (gameState.isGameOver()) {
+            return gameState.gameStatus
+        }
+
+        // Army 2 move
+        const possibleArmy2Moves = gameState.getCurrentArmyPossibleActions()
+        const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
+        gameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
+
+        if (gameState.isGameOver()) {
+            return gameState.gameStatus
+        }
+    }
+}
+
+let p1Wins = 0
+let p2Wins = 0
+let draws = 0
 
 
-// for (let i = 0; i < 500; i++) {
+for (let i = 0; i < 1000; i++) {
 
-//     if (i % 50 == 0) {
-//         console.log(`Completed ${i} simulations`)
-//     }
+    if (i % 100 == 0) {
+        console.log(`Completed ${i} simulations`)
+    }
 
-//     const testGameState = new GameState([
-//         [[4, 6, 10], [0, 0, -1]],
-//         [[4, 5, 10], [0, 0, -1]],
-//         [[4, 4, 10], [0, 0, -1]],
-//         [[5, 6, 10], [0, 0, -1]],
-//         [[5, 5, 10], [0, 0, -1]],
-//         [[5, 4, 10], [0, 0, -1]],
-//         [[6, 6, 10], [0, 0, -1]],
-//         [[6, 5, 10], [0, 0, -1]],
-//         [[6, 4, 10], [0, 0, -1]],
+    const testGameState = new GameState([
+        [[5, 6, 10], [0, 0, -1]],
+        [[5, 5, 10], [0, 0, -1]],
+        [[5, 4, 10], [0, 0, -1]],
 
-//     ], [
-//         [[4, 6, 0], [0, 0, 1]],
-//         [[4, 5, 0], [0, 0, 1]],
-//         [[4, 4, 0], [0, 0, 1]],
-//         [[5, 6, 0], [0, 0, 1]],
-//         [[5, 5, 0], [0, 0, 1]],
-//         [[5, 4, 0], [0, 0, 1]],
-//         [[6, 6, 0], [0, 0, 1]],
-//         [[6, 5, 0], [0, 0, 1]],
-//         [[6, 4, 0], [0, 0, 1]],
-//     ])
+    ], [
+        [[5, 6, 0], [0, 0, 1]],
+        [[5, 5, 0], [0, 0, 1]],
+        [[5, 4, 0], [0, 0, 1]],
+    ])
 
-//     const resultStatus = playRandomGame(testGameState)
+    const resultStatus = playMCTSVsRandom(testGameState)
 
-//     if (resultStatus[0] == 0) {
-//         p1Wins += 1
-//     }
-//     else if (resultStatus[0] == 1) {
-//         p2Wins += 1
-//     }
-//     else if (resultStatus[0] == 2) {
-//         draws += 1
-//     }
-// }
+    if (resultStatus[0] == 0) {
+        p1Wins += 1
+    }
+    else if (resultStatus[0] == 1) {
+        p2Wins += 1
+    }
+    else if (resultStatus[0] == 2) {
+        draws += 1
+    }
+}
 
-// console.log(`p1 Wins ${p1Wins}\tp2 Wins ${p2Wins}\tDraws ${draws}`)
+console.log(`p1 Wins ${p1Wins}\tp2 Wins ${p2Wins}\tDraws ${draws}`)
 
 // Testing the deep clone
-const a = new GameState([
-    [[5, 5, 10], [0, 0, -1]]
+// const a = new GameState([
+//     [[5, 5, 10], [0, 0, -1]]
 
-], [
-    [[5, 5, 0], [0, 0, 1]]
-])
+// ], [
+//     [[5, 5, 0], [0, 0, 1]]
+// ])
 
-const b = new GameState()
-b.clone(a)
-b.updateGameState(0, [[5, 5, 9], [0, 0, -1]])
-console.log(a)
-console.log(b)
+// const b = new GameState()
+// b.clone(a)
+// b.updateGameState(0, [[5, 5, 9], [0, 0, -1]])
+// console.log(a)
+// console.log(b)
