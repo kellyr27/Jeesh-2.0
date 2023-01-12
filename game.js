@@ -60,10 +60,17 @@ function addArrays(a, b) {
 
 class Soldier {
     constructor(startingPosition) {
-        this.positions = {
-            0: startingPosition
+        if (startingPosition !== undefined) {
+            this.positions = {
+                0: startingPosition
+            }
+            this.deathIndex = -1
         }
-        this.deathIndex = -1
+    }
+
+    clone(existingSoldier) {
+        this.positions = structuredClone(existingSoldier.positions)
+        this.deathIndex = structuredClone(existingSoldier.deathIndex)
     }
 
     /**
@@ -108,7 +115,20 @@ class Soldier {
 
 class Army {
     constructor(startingPositions) {
-        this.soldiers = this.#generateSoldiers(startingPositions)
+        if (startingPositions !== undefined) {
+            this.soldiers = this.#generateSoldiers(startingPositions)
+        }
+    }
+
+    clone(existingArmy) {
+        this.soldiers = []
+
+        for (const soldier of existingArmy.soldiers) {
+            const newSoldier = new Soldier()
+            newSoldier.clone(soldier)
+            this.soldiers.push(newSoldier)
+        }
+
     }
 
     /**
@@ -150,11 +170,24 @@ class Army {
 
 class GameState {
     constructor(army1StartingPositions, army2StartingPositions) {
-        this.starCoordinates = this.#generateStarCoordinates()
-        this.armies = this.#generateArmies(army1StartingPositions, army2StartingPositions)
-        this.currentMoveNum = 1
-        this.currentArmyNum = 0
-        this.gameStatus = [-1, -1]
+        if (army2StartingPositions !== undefined) {
+            this.starCoordinates = this.#generateStarCoordinates()
+            this.armies = this.#generateArmies(army1StartingPositions, army2StartingPositions)
+            this.currentMoveNum = 1
+            this.currentArmyNum = 0
+            this.gameStatus = [-1, -1]
+        }
+    }
+
+    clone(existingGameState) {
+        this.starCoordinates = structuredClone(existingGameState.starCoordinates)
+        this.currentMoveNum = structuredClone(existingGameState.currentMoveNum)
+        this.currentArmyNum = structuredClone(existingGameState.currentArmyNum)
+        this.gameStatus = structuredClone(existingGameState.gameStatus)
+
+        this.armies = [new Army(), new Army()]
+        this.armies[0].clone(existingGameState.armies[0])
+        this.armies[1].clone(existingGameState.armies[1])
     }
 
     #isCoordinateEqual(coord1, coord2) {
@@ -606,7 +639,7 @@ function playRandomGame(gameState) {
         const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
         const [army1SoldierNumToMove, army1ActionSelected] = selectRandomAction(possibleArmy1Moves)
         gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
-        
+
         if (gameState.isGameOver()) {
             return gameState.gameStatus
         }
@@ -615,64 +648,72 @@ function playRandomGame(gameState) {
         const possibleArmy2Moves = gameState.getCurrentArmyPossibleActions()
         const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
         gameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
-        
+
         if (gameState.isGameOver()) {
             return gameState.gameStatus
         }
     }
 }
 
-let p1Wins = 0
-let p2Wins = 0
-let draws = 0
+// let p1Wins = 0
+// let p2Wins = 0
+// let draws = 0
 
 
-for (let i = 0; i < 2000; i++) {
+// for (let i = 0; i < 500; i++) {
 
-    if (i % 200 == 0) {
-        console.log(`Completed ${i} simulations`)
-    }
+//     if (i % 50 == 0) {
+//         console.log(`Completed ${i} simulations`)
+//     }
 
-    const testGameState = new GameState([
-        [[5, 6, 10], [0, 0, -1]],
-        [[5, 5, 10], [0, 0, -1]],
-        [[5, 4, 10], [0, 0, -1]],
-    
-    ], [
-        [[5, 6, 0], [0, 0, 1]],
-        [[5, 5, 0], [0, 0, 1]],
-        [[5, 4, 0], [0, 0, 1]],
-    ])
+//     const testGameState = new GameState([
+//         [[4, 6, 10], [0, 0, -1]],
+//         [[4, 5, 10], [0, 0, -1]],
+//         [[4, 4, 10], [0, 0, -1]],
+//         [[5, 6, 10], [0, 0, -1]],
+//         [[5, 5, 10], [0, 0, -1]],
+//         [[5, 4, 10], [0, 0, -1]],
+//         [[6, 6, 10], [0, 0, -1]],
+//         [[6, 5, 10], [0, 0, -1]],
+//         [[6, 4, 10], [0, 0, -1]],
 
-    const resultStatus = playRandomGame(testGameState)
+//     ], [
+//         [[4, 6, 0], [0, 0, 1]],
+//         [[4, 5, 0], [0, 0, 1]],
+//         [[4, 4, 0], [0, 0, 1]],
+//         [[5, 6, 0], [0, 0, 1]],
+//         [[5, 5, 0], [0, 0, 1]],
+//         [[5, 4, 0], [0, 0, 1]],
+//         [[6, 6, 0], [0, 0, 1]],
+//         [[6, 5, 0], [0, 0, 1]],
+//         [[6, 4, 0], [0, 0, 1]],
+//     ])
 
-    if (resultStatus[0] == 0) {
-        p1Wins += 1
-    }
-    else if (resultStatus[0] == 1) {
-        p2Wins += 1
-    }
-    else if (resultStatus[0] == 2) {
-        draws += 1
-    }
-}
+//     const resultStatus = playRandomGame(testGameState)
 
-console.log(`p1 Wins ${p1Wins}\tp2 Wins ${p2Wins}\tDraws ${draws}`)
-
-// while (!testGameState.isGameOver()) {
-//     // Army 1 move
-//     const possibleArmy1Moves = testGameState.getCurrentArmyPossibleActions()
-//     const [army1SoldierNumToMove, army1ActionSelected] = selectRandomAction(possibleArmy1Moves)
-//     testGameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
-//     testGameState.printArena()
-//     console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
-
-
-//     // Army 2 move
-//     const possibleArmy2Moves = testGameState.getCurrentArmyPossibleActions()
-//     const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
-//     testGameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
-//     testGameState.printArena()
-//     console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
-
+//     if (resultStatus[0] == 0) {
+//         p1Wins += 1
+//     }
+//     else if (resultStatus[0] == 1) {
+//         p2Wins += 1
+//     }
+//     else if (resultStatus[0] == 2) {
+//         draws += 1
+//     }
 // }
+
+// console.log(`p1 Wins ${p1Wins}\tp2 Wins ${p2Wins}\tDraws ${draws}`)
+
+// Testing the deep clone
+const a = new GameState([
+    [[5, 5, 10], [0, 0, -1]]
+
+], [
+    [[5, 5, 0], [0, 0, 1]]
+])
+
+const b = new GameState()
+b.clone(a)
+b.updateGameState(0,[[5,5,9],[0,0,-1]])
+console.log(a)
+console.log(b)
