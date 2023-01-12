@@ -179,7 +179,7 @@ class GameState {
         }
     }
 
-    getCurrentArmy () {
+    getCurrentArmy() {
         return this.currentArmyNum
     }
 
@@ -499,7 +499,7 @@ class GameState {
     /**
      * 
      */
-    getResult () {
+    getResult() {
         if (this.gameStatus[0] === -1) {
             console.error('Requesting the result and the game has not finished!')
         }
@@ -669,9 +669,9 @@ function jeeshSimulateGame(state) {
     return simulationState
 }
 
-function jeeshGetGain (state, rootState) {
+function jeeshGetGain(state, rootState) {
     const result = state.getResult()
-    
+
     if (result === 2) {
         return 0.5
     }
@@ -698,6 +698,17 @@ function jeeshGetGain (state, rootState) {
     }
 }
 
+function getRandomSubarray(arr, size) {
+    var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
+    while (i-- > min) {
+        index = Math.floor((i + 1) * Math.random());
+        temp = shuffled[index];
+        shuffled[index] = shuffled[i];
+        shuffled[i] = temp;
+    }
+    return shuffled.slice(min);
+}
+
 class Node {
 
     constructor(state, action) {
@@ -718,9 +729,14 @@ class Node {
     }
 
     // Create list of children from list of possible actions
-    createChildren(getPossibleActions, getNextState) {
+    createChildren(getPossibleActions, getNextState, maxNumActions) {
 
-        const possibleActions = getPossibleActions(this.state)
+        let possibleActions = getPossibleActions(this.state)
+
+        // Select only a predefined number of possible actions to save memory
+        if (possibleActions.length > maxNumActions) {
+            possibleActions = getRandomSubarray(possibleActions, maxNumActions)
+        }
 
         for (const action of possibleActions) {
             this.children.push(new Node(getNextState(this.state, action), action))
@@ -743,7 +759,7 @@ class Node {
         return this.children
     }
 
-    getNumOfVisits () {
+    getNumOfVisits() {
         return this.n
     }
 
@@ -751,25 +767,30 @@ class Node {
         return this.action
     }
 
-    getUCBScore(parentNode) {
+    updateValues(s) {
+        this.n += 1
+        this.s += s
+    }
+
+    getUCBScore(parentNode, explorationFactor) {
         if (this.n == 0) {
             return 100000
         }
         else {
-            return (this.s / this.n) + this.c * Math.sqrt((2 * Math.log(parentNode.n)) / this.n)
+            return (this.s / this.n) + explorationFactor * Math.sqrt((2 * Math.log(parentNode.n)) / this.n)
         }
 
     }
 }
 
 // MCTS Algorithm
-function mcts(numOfIterations, state, getPossibleActions, getNextState, simulateGame, getGain) {
+function mcts(numOfIterations, state, getPossibleActions, getNextState, simulateGame, getGain, maxNumActions, explorationFactor) {
 
     /**
      * Selection Phase
      * Returns the selected leaf node for expansion
      */
-    function selectionPhase(root) {
+    function selectionPhase(root, explorationFactor) {
         const nodeList = [root]
         let currentNode = root
         while (!currentNode.isLeaf()) {
@@ -778,7 +799,7 @@ function mcts(numOfIterations, state, getPossibleActions, getNextState, simulate
             let highestUCBChildIndex = -1
             const childNodes = currentNode.getChildren()
             for (let i = 0; i < childNodes.length; i++) {
-                const currentUCB = childNodes[i].getUCBScore(currentNode)
+                const currentUCB = childNodes[i].getUCBScore(currentNode, explorationFactor)
 
                 if (currentUCB > highestUCBScore) {
                     highestUCBScore = currentUCB
@@ -794,12 +815,12 @@ function mcts(numOfIterations, state, getPossibleActions, getNextState, simulate
     /**
      * Expansion Phase
      */
-    function expansionPhase(nodeList, getPossibleActions, getNextState) {
-        let selectedNode = nodeList[nodeList.length-1]
+    function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions) {
+        let selectedNode = nodeList[nodeList.length - 1]
 
         // Check if the game is not in a decisive state
         if (!selectedNode.state.isGameOver()) {
-            selectedNode.createChildren(getPossibleActions, getNextState)
+            selectedNode.createChildren(getPossibleActions, getNextState, maxNumActions)
             selectedNode = selectedNode.selectedRandomChild()
             nodeList.push(selectedNode)
         }
@@ -811,15 +832,14 @@ function mcts(numOfIterations, state, getPossibleActions, getNextState, simulate
      * Simulation Phase
      */
     function simulationPhase(nodeList, simulateGame, getGain) {
-        const simulatedGameState = simulateGame(nodeList[nodeList.length-1].state)
+        const simulatedGameState = simulateGame(nodeList[nodeList.length - 1].state)
         return getGain(simulatedGameState, nodeList[0].state)
     }
 
     // Backpropagation Phase
     function backpropagationPhase(nodeList, gain) {
-        for (const node in nodeList) {
-            node.n += 1
-            node.s += gain
+        for (const node of nodeList) {
+            node.updateValues(gain)
         }
     }
 
@@ -834,8 +854,8 @@ function mcts(numOfIterations, state, getPossibleActions, getNextState, simulate
         if (iterNum % 100 == 0) {
             console.log(`Currently in ${iterNum} of MCTS algorithm`)
         }
-        let nodeList = selectionPhase(root)
-        nodeList = expansionPhase(nodeList, getPossibleActions, getNextState)
+        let nodeList = selectionPhase(root, explorationFactor)
+        nodeList = expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions)
         const gain = simulationPhase(nodeList, simulateGame, getGain)
         backpropagationPhase(nodeList, gain)
     }
@@ -843,9 +863,10 @@ function mcts(numOfIterations, state, getPossibleActions, getNextState, simulate
     // Select the child of the Root with the most number of Visits
     let highestNumVisits = 0
     let highestNumVisitsIndex = -1
-    const childNodes = currentNode.getChildren()
+    const childNodes = root.getChildren()
     for (let i = 0; i < childNodes.length; i++) {
-        const currentNumOfVisits = childNodes.getNumOfVisits()
+        const currentNumOfVisits = childNodes[i].getNumOfVisits()
+        console.log(`${i} has ${currentNumOfVisits}`)
 
         if (highestNumVisits < currentNumOfVisits) {
             highestNumVisits = currentNumOfVisits
@@ -853,8 +874,8 @@ function mcts(numOfIterations, state, getPossibleActions, getNextState, simulate
         }
     }
 
-    return childNodes[i].getAction()
-    
+    return childNodes[highestNumVisitsIndex].getAction()
+
 }
 
 
@@ -901,7 +922,7 @@ function playMCTSVsRandom(gameState) {
     while (true) {
         // Army 1 move
         const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
-        const [army1SoldierNumToMove, army1ActionSelected] = mcts(1000, gameState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain)
+        const [army1SoldierNumToMove, army1ActionSelected] = mcts(1000, gameState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 9, 0.7)
         gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
 
         if (gameState.isGameOver()) {
