@@ -138,7 +138,9 @@ class Army {
         const positions = []
 
         for (const soldier of this.soldiers) {
-            positions.push(soldier.getPosition(moveNum)[0])
+            if (soldier.isAlive(moveNum)) {
+                positions.push(soldier.getPosition(moveNum)[0])
+            }
         }
 
         return positions
@@ -344,7 +346,7 @@ class GameState {
      * Checks whether on a certain move if both Armies have no soldiers remaining, the game is automatically a draw by default.
      */
     #checkDrawByDefault(moveNum) {
-        if ((this.armies[0].getAliveCount() == 0) && (this.armies[0].getAliveCount(moveNum) == 0)) {
+        if ((this.armies[0].getAliveCount() == 0) && (this.armies[1].getAliveCount(moveNum) == 0)) {
             return true
         }
         else {
@@ -410,35 +412,47 @@ class GameState {
         this.currentArmyNum = this.#opposingArmyNum(this.currentArmyNum)
         this.currentMoveNum += 1
 
-        if (this.gameStatus[0] == 0) {
-            if (this.gameStatus[1] == 0) {
-                console.log('Army 1 wins by Default!')
-                return
-            }
-            if (this.gameStatus[1] == 1) {
-                console.log('Army 1 wins by Capture!')
-                return
-            }
+        // if (this.gameStatus[0] == 0) {
+        //     if (this.gameStatus[1] == 0) {
+        //         console.log('Army 1 wins by Default!')
+        //         return
+        //     }
+        //     if (this.gameStatus[1] == 1) {
+        //         console.log('Army 1 wins by Capture!')
+        //         return
+        //     }
+        // }
+        // else if (this.gameStatus[0] == 1) {
+        //     if (this.gameStatus[1] == 0) {
+        //         console.log('Army 2 wins by Default!')
+        //         return
+        //     }
+        //     if (this.gameStatus[1] == 1) {
+        //         console.log('Army 2 wins by Capture!')
+        //         return
+        //     }
+        // }
+        // else if (this.gameStatus[0] == 2) {
+        //     if (this.gameStatus[1] == 0) {
+        //         console.log('Draw by Default!')
+        //         return
+        //     }
+        //     if (this.gameStatus[1] == 1) {
+        //         console.log('Draw by Repetition!')
+        //         return
+        //     }
+        // }
+    }
+
+    /**
+     * 
+     */
+    isGameOver() {
+        if (this.gameStatus[0] !== -1) {
+            return true
         }
-        else if (this.gameStatus[0] == 1) {
-            if (this.gameStatus[1] == 0) {
-                console.log('Army 2 wins by Default!')
-                return
-            }
-            if (this.gameStatus[1] == 1) {
-                console.log('Army 2 wins by Capture!')
-                return
-            }
-        }
-        else if (this.gameStatus[0] == 2) {
-            if (this.gameStatus[1] == 0) {
-                console.log('Draw by Default!')
-                return
-            }
-            if (this.gameStatus[1] == 1) {
-                console.log('Draw by Repetition!')
-                return
-            }
+        else {
+            return false
         }
     }
 
@@ -584,35 +598,81 @@ function selectRandomAction(possibleActions) {
     return listPossibleActions[randomActionNum]
 }
 
-const testGameState = new GameState([
-    [[5, 5, 10], [0, 0, -1]],
-    [[5, 4, 5], [0, 0, -1]]
-], [
-    [[5, 5, 0], [0, 0, 1]],
-    [[5, 4, 0], [0, 0, 1]]
-])
-
-testGameState.printArena(testGameState.currentMoveNum)
-console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
-
 
 // Play out random game
-let iter = 0
-while (iter !== 2) {
-    // Army 1 move
-    const possibleArmy1Moves = testGameState.getCurrentArmyPossibleActions()
-    const [army1SoldierNumToMove, army1ActionSelected] = selectRandomAction(possibleArmy1Moves)
-    testGameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
-    testGameState.printArena()
-    console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
+function playRandomGame(gameState) {
+    while (true) {
+        // Army 1 move
+        const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
+        const [army1SoldierNumToMove, army1ActionSelected] = selectRandomAction(possibleArmy1Moves)
+        gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
+        
+        if (gameState.isGameOver()) {
+            return gameState.gameStatus
+        }
 
-
-    // Army 2 move
-    const possibleArmy2Moves = testGameState.getCurrentArmyPossibleActions()
-    const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
-    testGameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
-    testGameState.printArena()
-    console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
-
-    iter += 1
+        // Army 2 move
+        const possibleArmy2Moves = gameState.getCurrentArmyPossibleActions()
+        const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
+        gameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
+        
+        if (gameState.isGameOver()) {
+            return gameState.gameStatus
+        }
+    }
 }
+
+let p1Wins = 0
+let p2Wins = 0
+let draws = 0
+
+
+for (let i = 0; i < 2000; i++) {
+
+    if (i % 200 == 0) {
+        console.log(`Completed ${i} simulations`)
+    }
+
+    const testGameState = new GameState([
+        [[5, 6, 10], [0, 0, -1]],
+        [[5, 5, 10], [0, 0, -1]],
+        [[5, 4, 10], [0, 0, -1]],
+    
+    ], [
+        [[5, 6, 0], [0, 0, 1]],
+        [[5, 5, 0], [0, 0, 1]],
+        [[5, 4, 0], [0, 0, 1]],
+    ])
+
+    const resultStatus = playRandomGame(testGameState)
+
+    if (resultStatus[0] == 0) {
+        p1Wins += 1
+    }
+    else if (resultStatus[0] == 1) {
+        p2Wins += 1
+    }
+    else if (resultStatus[0] == 2) {
+        draws += 1
+    }
+}
+
+console.log(`p1 Wins ${p1Wins}\tp2 Wins ${p2Wins}\tDraws ${draws}`)
+
+// while (!testGameState.isGameOver()) {
+//     // Army 1 move
+//     const possibleArmy1Moves = testGameState.getCurrentArmyPossibleActions()
+//     const [army1SoldierNumToMove, army1ActionSelected] = selectRandomAction(possibleArmy1Moves)
+//     testGameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
+//     testGameState.printArena()
+//     console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
+
+
+//     // Army 2 move
+//     const possibleArmy2Moves = testGameState.getCurrentArmyPossibleActions()
+//     const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
+//     testGameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
+//     testGameState.printArena()
+//     console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
+
+// }
