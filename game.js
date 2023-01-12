@@ -151,6 +151,7 @@ class GameState {
         this.starCoordinates = this.#generateStarCoordinates()
         this.armies = this.#generateArmies(army1StartingPositions, army2StartingPositions)
         this.currentMoveNum = 1
+        this.currentArmyNum = 0
         this.gameStatus = [-1, -1]
     }
 
@@ -233,6 +234,28 @@ class GameState {
         }
 
         return armyAttackedCoordinates
+    }
+
+    /**
+     * Get current Armies possible moves
+     */
+    getCurrentArmyPossibleActions() {
+        return this.#getArmyPossibleActions(this.currentMoveNum, this.currentArmyNum)
+    }
+
+
+    /**
+     * Returns a list of possible moves for an given Army at an given move
+     */
+    #getArmyPossibleActions(moveNum, armyNum) {
+        let armyPossibleActions = {}
+
+
+        for (let i = 0; i < this.armies[armyNum].soldiers.length; i++) {
+            armyPossibleActions[i] = this.getSoldierPossibleActions(moveNum, armyNum, i)
+        }
+
+        return armyPossibleActions
     }
 
     /**
@@ -331,16 +354,17 @@ class GameState {
 
 
     #checkWinByCapture(moveNum, armyNum) {
+
         if (armyNum == 0) {
             for (const soldier of this.armies[0].soldiers) {
-                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)), [5, 5, 0]) {
+                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)[0], [5, 5, 0])) {
                     return true
                 }
             }
         }
         else if (armyNum == 1) {
-            for (const soldier of this.armies[0].soldiers) {
-                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)), [5, 5, 10]) {
+            for (const soldier of this.armies[1].soldiers) {
+                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)[0], [5, 5, 10])) {
                     return true
                 }
             }
@@ -365,46 +389,55 @@ class GameState {
     /**
      * 
      */
-    #opposingArmyNum (armyNum) {
+    #opposingArmyNum(armyNum) {
         return ((armyNum == 0) ? 1 : 0)
     }
 
     /**
      * 
      */
-    updateGameState(moveNum, armyNum, soldierNum, position) {
+    updateGameState(soldierNum, position) {
 
         if (this.gameStatus[0] !== -1) {
             console.error('Cannot execute move. Game is over!')
             return
         }
 
-        this.playMove(moveNum, armyNum, soldierNum, position)
-        this.updateArmies(moveNum, armyNum, soldierNum, position)
-        this.updateGameStatus(moveNum, armyNum)
-        
+        this.playMove(this.currentMoveNum, this.currentArmyNum, soldierNum, position)
+        this.updateArmies(this.currentMoveNum, this.currentArmyNum, soldierNum, position)
+        this.updateGameStatus(this.currentMoveNum, this.currentArmyNum)
+
+        this.currentArmyNum = this.#opposingArmyNum(this.currentArmyNum)
+        this.currentMoveNum += 1
+
         if (this.gameStatus[0] == 0) {
             if (this.gameStatus[1] == 0) {
                 console.log('Army 1 wins by Default!')
+                return
             }
             if (this.gameStatus[1] == 1) {
                 console.log('Army 1 wins by Capture!')
+                return
             }
         }
         else if (this.gameStatus[0] == 1) {
             if (this.gameStatus[1] == 0) {
                 console.log('Army 2 wins by Default!')
+                return
             }
             if (this.gameStatus[1] == 1) {
                 console.log('Army 2 wins by Capture!')
+                return
             }
         }
         else if (this.gameStatus[0] == 2) {
             if (this.gameStatus[1] == 0) {
                 console.log('Draw by Default!')
+                return
             }
             if (this.gameStatus[1] == 1) {
                 console.log('Draw by Repetition!')
+                return
             }
         }
     }
@@ -422,7 +455,7 @@ class GameState {
     updateArmies(moveNum, armyNum, soldierNum, position) {
 
         // Check whether the Soldier has moved into the opposing Armies attacked Zone
-        if (this.#isCoordinateInArray(position[0], this.getArmyAttackedCoordinates)) {
+        if (this.#isCoordinateInArray(position[0], this.getArmyAttackedCoordinates(moveNum, this.#opposingArmyNum()))) {
             this.armies[armyNum].soldiers[soldierNum].setDeath(moveNum)
         }
 
@@ -472,19 +505,19 @@ class GameState {
             this.gameStatus = [armyNum, 1]
             return
         }
-        
+
     }
 
     /**
      * DESIGNED FOR TESTING PURPOSES
      * Prints the state of the Arena in the command line
      */
-    printArena(moveNum) {
-        const army1Coordinates = this.armies[0].getCoordinates(moveNum)
-        const army2Coordinates = this.armies[1].getCoordinates(moveNum)
+    printArena() {
+        const army1Coordinates = this.armies[0].getCoordinates(this.currentMoveNum)
+        const army2Coordinates = this.armies[1].getCoordinates(this.currentMoveNum)
 
-        const army1AttackedCoordinates = this.getArmyAttackedCoordinates(moveNum, 0)
-        const army2AttackedCoordinates = this.getArmyAttackedCoordinates(moveNum, 1)
+        const army1AttackedCoordinates = this.getArmyAttackedCoordinates(this.currentMoveNum, 0)
+        const army2AttackedCoordinates = this.getArmyAttackedCoordinates(this.currentMoveNum, 1)
 
         /**
          * X - Army 1 Positions
@@ -536,6 +569,21 @@ class GameState {
     }
 }
 
+// Select random possible action
+function selectRandomAction(possibleActions) {
+    const listPossibleActions = []
+
+    for (const [soldierNum, soldierPossibleActions] of Object.entries(possibleActions)) {
+        for (const soldierPossibleAction of soldierPossibleActions) {
+            listPossibleActions.push([soldierNum, soldierPossibleAction])
+        }
+    }
+
+    const randomActionNum = generateRandomInt(listPossibleActions.length)
+
+    return listPossibleActions[randomActionNum]
+}
+
 const testGameState = new GameState([
     [[5, 5, 10], [0, 0, -1]],
     [[5, 4, 5], [0, 0, -1]]
@@ -543,8 +591,28 @@ const testGameState = new GameState([
     [[5, 5, 0], [0, 0, 1]],
     [[5, 4, 0], [0, 0, 1]]
 ])
-console.log(testGameState.printArena(0))
-console.log(testGameState.getSoldierPossibleActions(0, 0, 1).length)
 
-const a = [1, 2, 5]
-const b = [10, 100, 1]
+testGameState.printArena(testGameState.currentMoveNum)
+console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
+
+
+// Play out random game
+let iter = 0
+while (iter !== 2) {
+    // Army 1 move
+    const possibleArmy1Moves = testGameState.getCurrentArmyPossibleActions()
+    const [army1SoldierNumToMove, army1ActionSelected] = selectRandomAction(possibleArmy1Moves)
+    testGameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
+    testGameState.printArena()
+    console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
+
+
+    // Army 2 move
+    const possibleArmy2Moves = testGameState.getCurrentArmyPossibleActions()
+    const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
+    testGameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
+    testGameState.printArena()
+    console.log('<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-<><>-')
+
+    iter += 1
+}
