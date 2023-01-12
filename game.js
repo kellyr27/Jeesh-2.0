@@ -283,11 +283,11 @@ class GameState {
      * Returns a list of possible moves for an given Army at an given move
      */
     #getArmyPossibleActions(moveNum, armyNum) {
-        let armyPossibleActions = {}
+        let armyPossibleActions = []
 
 
         for (let i = 0; i < this.armies[armyNum].soldiers.length; i++) {
-            armyPossibleActions[i] = this.getSoldierPossibleActions(moveNum, armyNum, i)
+            armyPossibleActions.push([i, this.getSoldierPossibleActions(moveNum, armyNum, i)])
         }
 
         return armyPossibleActions
@@ -616,19 +616,143 @@ class GameState {
     }
 }
 
-// Select random possible action
-function selectRandomAction(possibleActions) {
-    const listPossibleActions = []
+/**
+ * Get Possible Actions
+ */
+function jeeshGetPossibleActions (state) {
+    return state.getCurrentArmyPossibleActions()
+}
 
-    for (const [soldierNum, soldierPossibleActions] of Object.entries(possibleActions)) {
-        for (const soldierPossibleAction of soldierPossibleActions) {
-            listPossibleActions.push([soldierNum, soldierPossibleAction])
-        }
+function jeeshGetNextState (state, action) {
+    // Create a clone state for next state to return
+    const nextState = new GameState()
+    nextState.clone(state)
+    const [soldierNumToMove, positionSelected] = action
+    nextState.updateGameState(soldierNumToMove, positionSelected)
+
+    return nextState
+}
+
+class Node {
+
+    constructor(state, action) {
+
+        // Action taken on the previous state
+        this.action = action
+        this.state = state
+        this.children = []
+
+        // For calculating the UCB Score
+        this.n = 0
+        this.s = 0
     }
 
-    const randomActionNum = generateRandomInt(listPossibleActions.length)
+    // Checks if the Node is a leaf node (no children)
+    isLeaf() {
+        return (this.children.length == 0)
+    }
 
-    return listPossibleActions[randomActionNum]
+    // Create list of children from list of possible actions
+    createChildren(getPossibleActions, getNextState) {
+
+        const possibleActions = getPossibleActions(this.state)
+
+        for (const action of possibleActions) {
+            this.children.push(new Node(getNextState(this.state, action), action))
+        }
+
+    }
+
+    /**
+     * Selects a random child for the Expansion Phase
+     */
+    selectedRandomChild() {
+        const randomChildIndex = generateRandomInt(this.children.length)
+        return this.children[randomChildIndex]
+    }
+
+    /**
+     * Select Child with the highest UCB score
+     */
+    getChildren() {
+        return this.children
+    }
+
+    getUCBScore(parentNode) {
+        return (this.s / this.n) + this.c * Math.sqrt((2 * Math.log(parentNode.n)) / this.n)
+    }
+}
+
+// MCTS Algorithm
+function mcts() {
+
+    /**
+     * Selection Phase
+     * Returns the selected leaf node for expansion
+     */
+    function selectionPhase(root) {
+        let currentNode = root
+        while (!root.isLeaf()) {
+            // Select the child of the current node with the largest UCB score
+            let highestUCBScore = 0
+            let highestUCBChildIndex = -1
+            const childNodes = currentNode.getChildren()
+            for (let i = 0; i < childNodes.length; i++) {
+                const currentUCB = childNodes[i].getUCBScore(currentNode)
+
+                if (currentUCB > highestUCBScore) {
+                    highestUCBScore = currentUCB
+                    highestUCBChildIndex = i
+                }
+            }
+            currentNode = childNodes[highestUCBChildIndex]
+        }
+        return currentNode
+    }
+
+    /**
+     * Expansion Phase
+     */
+    function expansionPhase(selectedNode, getPossibleActions, getNextState) {
+        // Check if the game is not in a decisive state
+        if (!selectedNode.state.isGameOver()) {
+            selectedNode.createChildren(getPossibleActions, getNextState)
+            selectedNode = selectedNode.selectedRandomChild()
+        }
+        
+        return selectedNode
+    }
+
+    /**
+     * Simulation Phase
+     */
+    function simulationPhase() {
+
+    }
+
+    // Backpropagation Phase
+    function backpropagationPhase() {
+
+    }
+
+    // Body of algorithm
+
+}
+
+
+// Select random possible action
+function selectRandomAction(possibleActions) {
+    // const listPossibleActions = []
+
+    // for (const [soldierNum, soldierPossibleActions] of Object.entries(possibleActions)) {
+    //     for (const soldierPossibleAction of soldierPossibleActions) {
+    //         listPossibleActions.push([soldierNum, soldierPossibleAction])
+    //     }
+    // }
+
+    const randomActionNum = generateRandomInt(possibleActions.length)
+
+    return possibleActions[randomActionNum]
 }
 
 
@@ -714,6 +838,6 @@ const a = new GameState([
 
 const b = new GameState()
 b.clone(a)
-b.updateGameState(0,[[5,5,9],[0,0,-1]])
+b.updateGameState(0, [[5, 5, 9], [0, 0, -1]])
 console.log(a)
 console.log(b)
