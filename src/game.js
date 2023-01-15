@@ -378,14 +378,14 @@ class GameState {
     /**
      * Checks whether on a certain move if the game position has been repeated three times.
      */
-    #checkDrawByRepetition(moveNum) {
+    #checkDrawByRepetition (moveNum) {
         return false
     }
 
     /**
      * Checks whether on a certain move if both Armies have no soldiers remaining, the game is automatically a draw by default.
      */
-    #checkDrawByDefault(moveNum) {
+    #checkDrawByDefault (moveNum) {
         if ((this.armies[0].getAliveCount() == 0) && (this.armies[1].getAliveCount(moveNum) == 0)) {
             return true
         }
@@ -394,6 +394,17 @@ class GameState {
         }
     }
 
+    /**
+     * 
+     */
+    #checkDrawByMaxMoves (moveNum) {
+        if (moveNum === 500) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
 
     #checkWinByCapture(moveNum, armyNum) {
 
@@ -550,6 +561,7 @@ class GameState {
      *      For Draw
      *           0 - By Default (both teams insuffient material)
      *           1 - By Threefold Repetition (position has repeated three times with the same Army to move)
+     *           2 - By Maximum Number of Moves (set to 500)
      *      For Win by Army 1 or Army 2
      *           0 - By Default (only one Army has no Soldiers alive)
      *           1 - By Capture (one Army has entered the opposing Armies door coordinate)
@@ -558,6 +570,9 @@ class GameState {
         if (this.#checkDrawByDefault(moveNum)) {
             this.gameStatus = [2, 0]
             return
+        }
+        else if (this.#checkDrawByMaxMoves(moveNum)) {
+            this.gameStatus = [2,2]
         }
         else if (this.#checkDrawByRepetition(moveNum)) {
             this.gameStatus = [2, 1]
@@ -922,7 +937,7 @@ function playMCTSVsRandom(gameState) {
     while (true) {
         // Army 1 move
         const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
-        const [army1SoldierNumToMove, army1ActionSelected] = mcts(1000, gameState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 9, 0.7)
+        const [army1SoldierNumToMove, army1ActionSelected] = mcts(100, gameState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 5, 0.7)
         gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
 
         if (gameState.isGameOver()) {
