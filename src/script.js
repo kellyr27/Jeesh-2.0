@@ -255,22 +255,89 @@ class StarsDisplay {
     }
 }
 
+/**
+ * Checks if two arrays are equal (COPY TO REMOVE)
+ */
+function arrayEquals(a, b) {
+    return Array.isArray(a) &&
+        Array.isArray(b) &&
+        a.length === b.length &&
+        a.every((val, index) => val === b[index])
+}
+
+
 class ArmyDisplay {
 
-    constructor(scene, coordinates) {
+    constructor(scene, positions) {
         this.scene = scene
-        this.soldiers = this.createSoldiers(coordinates)
+        this.soldiers = this.createSoldiers(positions)
     }
 
-    #createSoldier (coordinate) {
-        
+    orientateSoldier (soldier, direction) {
+        if (arrayEquals(direction, [1,0,0])) {
+            soldier[0].geometry.rotateZ(Math.PI / 2)
+            soldier[1].geometry.rotateZ(Math.PI / 2)
+        }
+        else if (arrayEquals(direction, [-1,0,0])) {
+            soldier[0].geometry.rotateZ(-Math.PI / 2)
+            soldier[1].geometry.rotateZ(-Math.PI / 2)
+        }
+        else if (arrayEquals(direction, [0,1,0])) {
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, Math.PI / 2 , Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, Math.PI / 2 , Math.PI / 2))
+        }
+        else if (arrayEquals(direction, [0,-1,0])) {
+
+        }
+        else if (arrayEquals(direction, [0,0,1])) {
+            soldier[0].geometry.rotateX(-Math.PI/ 2)
+            soldier[1].geometry.rotateX(-Math.PI / 2)
+        }
+        else if (arrayEquals(direction, [0,0,-1])) {
+            soldier[0].geometry.rotateX(Math.PI / 2)
+            soldier[1].geometry.rotateX(Math.PI / 2)
+        }
+        else {
+            console.log(direction)
+            console.error('Direction inputted incorrectly.')
+        }
     }
 
-    createSoldiers(coordinates) {
+    #createSoldier (position) {
+        let coneMaterial = new THREE.MeshBasicMaterial( {color: 0xff0000} )
+        let coneGeometry = new THREE.ConeGeometry(0.4,0.8,20)
+        let coneEdgeGeometry = new THREE.EdgesGeometry(coneGeometry)
+        let coneEdgeMaterial = new THREE.LineBasicMaterial( { color: 0xffffff} )
+
+        let coneMesh = new THREE.Mesh(
+            coneGeometry,
+            coneMaterial
+        )
+        // Add isSelected for raycasting
+        coneMesh.isSelected = false
+
+        let coneLine = new THREE.LineSegments(
+            coneEdgeGeometry, 
+            coneEdgeMaterial 
+        )
+
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(position[0][0], position[0][1], position[0][2])
+
+        coneMesh.position.set(xOffset, yOffset, zOffset)
+        coneLine.position.set(xOffset, yOffset, zOffset)
+
+        this.scene.add(coneMesh, coneLine)
+
+        return [coneMesh, coneLine]
+    }
+
+    createSoldiers(positions) {
         const soldiers = []
 
-        for (const coordinate of coordinates) {
-            soldiers.push(this.#createSoldier(coordinate))
+        for (const position of positions) {
+            const soldier = this.#createSoldier(position)
+            soldiers.push(soldier)
+            this.orientateSoldier(soldier, position[1])
         }
 
         return soldiers
@@ -280,3 +347,4 @@ class ArmyDisplay {
 
 let testArena = new Arena(scene)
 let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
+let testArmy = new ArmyDisplay(scene, [[[5,5,10],[0,1,0]], [[5,4,10],[0,0,1]]])
