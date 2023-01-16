@@ -6,6 +6,95 @@ const CUBE_SIZE = 1
 const ARENA_SIZE = 11
 
 /**
+ * Canvas
+ */
+const canvas = document.querySelector('canvas.webgl')
+const scene = new THREE.Scene()
+
+
+/**
+ * Panel
+ */
+const canvas2 = document.getElementById('panel')
+const ctx = canvas2.getContext('2d')
+
+class SelectionPanel {
+    /**
+     * 
+     */
+    panelSplit = [0.15, 0.25, 0.2, 0.25, 0.15]
+    panelSplitCumulative = this.panelSplit.map((sum => value => sum += value)(0))
+
+    tileColorPalette = {
+        scroll: {
+            default: 'purple',
+            hover: 'magenta',
+            selected: 'green',
+            blocked: 'grey'
+        },
+        selection: {
+            default: 'red',
+            hover: 'maroon',
+            selected: 'green',
+            blocked: 'grey'
+        }
+    }
+
+    constructor(canvas) {
+        this.canvas = canvas
+        this.currentDirections = this.setInitialCurrentDirections()
+        this.scrollTilePositions = this.setScrollTilePositions()
+        this.currentSoldierNum = 0
+    }
+
+    /**
+     * Set scroll tile positions
+     */
+    setScrollTilePositions () {
+        return {
+            up: [
+                [0, 0],
+                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+                [this.canvas.width, 0]
+            ],
+            left: [
+                [0, 0],
+                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+                [0, this.canvas.height]
+            ],
+            down: [
+                [0, this.canvas.height],
+                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+                [this.canvas.width, this.canvas.height]
+            ],
+            right: [
+                [this.canvas.width, this.canvas.height],
+                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+                [this.canvas.width, 0]
+            ]
+        }
+    }
+
+    /**
+     * Sets the initial directions to Army 1
+     */
+    setInitialCurrentDirections() {
+        return {
+            face: '-z',
+            up: '+y',
+            down: '-y',
+            left: '-x',
+            right: '+x'
+        }
+    }
+}
+
+
+/**
  * Classes
  */
 
@@ -179,27 +268,28 @@ class ArmyDisplay {
 
     orientateSoldier(soldier, direction) {
         if (arrayEquals(direction, [1, 0, 0])) {
-            soldier[0].geometry.rotateZ(Math.PI / 2)
-            soldier[1].geometry.rotateZ(Math.PI / 2)
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
         }
         else if (arrayEquals(direction, [-1, 0, 0])) {
-            soldier[0].geometry.rotateZ(-Math.PI / 2)
-            soldier[1].geometry.rotateZ(-Math.PI / 2)
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
         }
         else if (arrayEquals(direction, [0, 1, 0])) {
-            soldier[0].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, Math.PI / 2, Math.PI / 2))
-            soldier[1].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, Math.PI / 2, Math.PI / 2))
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(Math.PI, 0, 0))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(Math.PI, 0, 0))
         }
         else if (arrayEquals(direction, [0, -1, 0])) {
-
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, 0))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, 0))
         }
         else if (arrayEquals(direction, [0, 0, 1])) {
-            soldier[0].geometry.rotateX(-Math.PI / 2)
-            soldier[1].geometry.rotateX(-Math.PI / 2)
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
         }
         else if (arrayEquals(direction, [0, 0, -1])) {
-            soldier[0].geometry.rotateX(Math.PI / 2)
-            soldier[1].geometry.rotateX(Math.PI / 2)
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
         }
         else {
             console.log(direction)
@@ -254,7 +344,13 @@ class ArmyDisplay {
     }
 
     getSoldierPosition(soldierNum) {
-        return this.soldiers[soldierNum][0].position
+        const { x, y, z } = this.soldiers[soldierNum][0].position
+        return [x, y, z]
+    }
+
+    getSoldierRotation(soldierNum) {
+        const { x, y, z } = this.soldiers[soldierNum][0].rotation
+        return [x, y, z]
     }
 
     updateSoldierPosition(soldierNum, x, y, z) {
@@ -263,6 +359,14 @@ class ArmyDisplay {
 
         this.soldiers[soldierNum][0].position.set(x, y, z)
         this.soldiers[soldierNum][1].position.set(x, y, z)
+    }
+
+    updateSoldierRotation(soldierNum, x, y, z) {
+
+        // const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
+
+        this.soldiers[soldierNum][0].rotation.set(x, y, z)
+        this.soldiers[soldierNum][1].rotation.set(x, y, z)
     }
 
     setSelectedColor(soldierNum) {
@@ -277,12 +381,6 @@ class ArmyDisplay {
         this.soldiers[soldierNum][0].material.color.setHex(0xff0000)
     }
 }
-
-/**
- * Canvas
- */
-const canvas = document.querySelector('canvas.webgl')
-const scene = new THREE.Scene()
 
 /**
  * Axes helper
@@ -362,7 +460,8 @@ renderer.render(scene, camera)
 
 let testArena = new Arena(scene)
 let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
-let testArmy = new ArmyDisplay(scene, [[[5, 5, 10], [0, 1, 0]], [[5, 4, 10], [0, 0, 1]]])
+let testArmy = new ArmyDisplay(scene, [[[5, 5, 10], [1, 0, 0]], [[5, 4, 10], [1, 0, 0]]])
+let testPanel = new SelectionPanel(canvas2)
 
 /**
  * Animations
@@ -376,28 +475,51 @@ let userRayCaster = {
     selectedSoldier: -1
 }
 let userMove = {
+    startingFlag: true,
     startTime: -1,
     soldierNum: -1,
-    startX: -1,
-    startY: -1,
-    startZ: -1,
+    startXPosition: -1,
+    startYPosition: -1,
+    startZPosition: -1,
+    startXRotation: -1,
+    startYRotation: -1,
+    startZRotation: -1,
     finishX: -1,
     finishY: -1,
     finishZ: -1,
+    finishXRotation: -1,
+    finishYRotation: -1,
+    finishZRotation: -1,
+    setStartingParameters: (startTime, startXPosition, startYPosition, startZPosition, startXRotation, startYRotation, startZRotation) => {
+        this.startTime = startTime
+        this.startXPosition = startXPosition
+        this.startYPosition = startYPosition
+        this.startZPosition = startZPosition
+        this.startXRotation = startXRotation
+        this.startYRotation = startYRotation
+        this.startZRotation = startZRotation
+        this.startingFlag = false
+    },
+    resetStartingFlag: () => {
+        this.startingFlag = true
+    },
+    getStartingFlag: () => {
+        return this.startingFlag
+    },
+    getCurrentPositions: () => {
+
+    },
+
 }
 
+function recordUserMoveStartingParameters() {
+
+}
+
+/**
+ * 
+ */
 canvas.addEventListener('click', (evt) => {
-    inMotion = true
-    userMove.soldierNum = 0
-
-    const [x, y, z] = adjustToDisplayCoordinate(10, 10, 10)
-
-    userMove.finishX = x
-    userMove.finishY = y
-    userMove.finishZ = z
-
-    console.log(x, y, z)
-
     if (userRayCaster.hoveredSoldier !== -1) {
         if (userRayCaster.selectedSoldier !== -1) {
             testArmy.setDefaultColor(userRayCaster.selectedSoldier)
@@ -469,30 +591,31 @@ const tick = () => {
     // Check whether motion time has finished
     if (inMotion) {
 
-        if (userMove.startTime === -1) {
-            userMove.startTime = elapsedTime
+        if (userMove.getStartingFlag()) {
 
-            const {x, y, z} = testArmy.getSoldierPosition(userMove.soldierNum)
-            console.log(testArmy.getSoldierPosition(userMove.soldierNum))
-            console.log(x, y, z)
-            userMove.startX = x
-            userMove.startY = y
-            userMove.startZ = z
+            const [xPosition, yPosition, zPosition] = testArmy.getSoldierPosition(userMove.soldierNum)
+            const [xRotation, yRotation, zRotation] = testArmy.getSoldierRotation(userMove.soldierNum)
+
+            userMove.setStartingParameters(elapsedTime, xPosition, yPosition, zPosition, xRotation, yRotation, zRotation)
         }
 
         const elapsedTimeInMotion = elapsedTime - userMove.startTime
 
-        console.log(elapsedTimeInMotion, userMove.startX + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishX - userMove.startX))
-
         testArmy.updateSoldierPosition(
             userMove.soldierNum,
-            userMove.startX + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishX - userMove.startX),
-            userMove.startY + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishY - userMove.startY),
-            userMove.startZ + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishZ - userMove.startZ)
+            userMove.startXPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishX - userMove.startX),
+            userMove.startYPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishY - userMove.startY),
+            userMove.startZPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishZ - userMove.startZ)
+        )
+
+        testArmy.updateSoldierRotation(
+            userMove.soldierNum,
+            userMove.startXRotation + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishXRotation - userMove.startXRotation),
+            userMove.startYRotation + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishYRotation - userMove.startYRotation),
+            userMove.startZRotation + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishZRotation - userMove.startZRotation)
         )
 
         if (elapsedTimeInMotion >= MOVE_TIME) {
-            userMove.startTime = -1
             inMotion = false
         }
     }
