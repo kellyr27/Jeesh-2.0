@@ -108,3 +108,117 @@ const tick = () => {
 }
 
 tick()
+
+/**
+ * Classes
+ */
+
+class Arena {
+
+    cubeGeometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)
+    cubeEdgesGeometry = new THREE.EdgesGeometry(this.cubeGeometry)
+    cubeLineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
+
+    constructor(scene) {
+        this.scene = scene
+        // this.cubeGeometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)
+
+        this.cubes = this.createCubes()
+    }
+
+    /**
+     * Centres the Arena display to (0,0,0)
+     */
+    #adjustToDisplayCoordinate(x, y, z) {
+        return [
+            x + CUBE_SIZE / 2 - ARENA_SIZE / 2,
+            y + CUBE_SIZE / 2 - ARENA_SIZE / 2,
+            z + CUBE_SIZE / 2 - ARENA_SIZE / 2
+        ]
+    }
+
+    #createCube(x, y, z) {
+        let cube = new THREE.Mesh(
+            this.cubeGeometry,
+            new THREE.MeshBasicMaterial({
+                color: 0xffff00,
+                transparent: true,
+                opacity: 0.03
+            })
+        )
+
+        let cubeLine = new THREE.LineSegments(
+            this.cubeEdgesGeometry,
+            this.cubeLineMaterial)
+
+
+        const [xOffset, yOffset, zOffset] = this.#adjustToDisplayCoordinate(x, y, z)
+
+        cube.position.set(xOffset, yOffset, zOffset)
+        cubeLine.position.set(xOffset, yOffset, zOffset)
+        this.scene.add(cube, cubeLine)
+
+        return cube
+    }
+
+    createCubes() {
+        let cubesArray = []
+
+        for (let x = 0; x < ARENA_SIZE; x++) {
+            let xArray = []
+            for (let y = 0; y < ARENA_SIZE; y++) {
+                let yArray = []
+                for (let z = 0; z < ARENA_SIZE; z++) {
+                    yArray.push(this.#createCube(x, y, z))
+                }
+                xArray.push(yArray)
+            }
+            cubesArray.push(xArray)
+        }
+
+        return cubesArray
+    }
+
+    /**
+     * Cube material codes are (in order of priority):
+     * 0 - Transparent (Default)
+     * 1 - Attacked Cube of Army 1
+     * 2 - Attacked Cube of Army 2
+     * 3 - Attacked Cube of both Army 1 & Army 2
+     * 4 - Door
+     */
+    setCubeColorCode(x, y, z, code) {
+        if (code === 0) {
+            this.#setCubeColor(x, y, z, 0xffff00, 0.03)
+            return
+        }
+        else if (code === 1) {
+            this.#setCubeColor(x, y, z, 0x00ff00, 0.5)
+            return
+        }
+        else if (code === 2) {
+            this.#setCubeColor(x, y, z, 0xff0000, 0.5)
+            return
+        }
+        else if (code === 3) {
+            this.#setCubeColor(x, y, z, 0xff00ff, 0.2)
+            return
+        }
+        else if (code === 4) {
+            this.#setCubeColor(x, y, z, 0xffff00, 0.5)
+            return
+        }
+        else {
+            console.error('Cube material code was incorrectly inputted.')
+        }
+    }
+
+    #setCubeColor(x, y, z, color, opacity) {
+        this.cubes[x][y][z].material.color.setHex(color)
+        this.cubes[x][y][z].material.opacity = opacity
+    }
+
+
+}
+
+let testArena = new Arena(scene)
