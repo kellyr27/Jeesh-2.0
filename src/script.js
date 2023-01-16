@@ -6,110 +6,6 @@ const CUBE_SIZE = 1
 const ARENA_SIZE = 11
 
 /**
- * Canvas
- */
-const canvas = document.querySelector('canvas.webgl')
-const scene = new THREE.Scene()
-
-/**
- * Axes helper
- */
-const axesHelper = new THREE.AxesHelper(10);
-scene.add(axesHelper)
-
-/**
- * Sizes
- */
-const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
-}
-
-window.addEventListener('resize', () => {
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
-
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
-
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-})
-
-/**
- * Raycaster
- */
-const raycaster = new THREE.Raycaster()
-
-// Does not work on Safari browser
-window.addEventListener('dblclick', () => {
-    if (!document.fullscreenElement) {
-        canvas.requestFullscreen()
-    }
-    else {
-        document.exitFullscreen()
-    }
-})
-
-/**
- * Cursor
- */
-const mouse = new THREE.Vector2()
-window.addEventListener('mousemove', (evt) => {
-    mouse.x = 2 * (evt.clientX / sizes.width) - 1
-    mouse.y = - (2 * (evt.clientY / sizes.height) - 1)
-})
-
-/**
- * Camera
- */
-const aspectRatio = sizes.width / sizes.height
-const camera = new THREE.PerspectiveCamera(45, aspectRatio, 1, 100)
-camera.position.set(0, 0, ARENA_SIZE + 3)
-scene.add(camera)
-
-/**
- * Controls
- */
-const controls = new TrackballControls(camera, canvas)
-
-/**
- * Renderer
- */
-const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
-})
-renderer.setSize(sizes.width, sizes.height)
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-renderer.render(scene, camera)
-
-/**
- * Animations
- */
-const clock = new THREE.Clock()
-const tick = () => {
-
-    const elapsedTime = clock.getElapsedTime()
-
-    // Cast a ray
-    raycaster.setFromCamera(mouse, camera)
-
-    // Update controls
-    controls.update()
-
-    // Render
-    renderer.render(scene, camera)
-
-    window.requestAnimationFrame(tick)
-
-}
-
-tick()
-
-/**
  * Classes
  */
 
@@ -273,27 +169,27 @@ class ArmyDisplay {
         this.soldiers = this.createSoldiers(positions)
     }
 
-    orientateSoldier (soldier, direction) {
-        if (arrayEquals(direction, [1,0,0])) {
+    orientateSoldier(soldier, direction) {
+        if (arrayEquals(direction, [1, 0, 0])) {
             soldier[0].geometry.rotateZ(Math.PI / 2)
             soldier[1].geometry.rotateZ(Math.PI / 2)
         }
-        else if (arrayEquals(direction, [-1,0,0])) {
+        else if (arrayEquals(direction, [-1, 0, 0])) {
             soldier[0].geometry.rotateZ(-Math.PI / 2)
             soldier[1].geometry.rotateZ(-Math.PI / 2)
         }
-        else if (arrayEquals(direction, [0,1,0])) {
-            soldier[0].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, Math.PI / 2 , Math.PI / 2))
-            soldier[1].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, Math.PI / 2 , Math.PI / 2))
+        else if (arrayEquals(direction, [0, 1, 0])) {
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, Math.PI / 2, Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, Math.PI / 2, Math.PI / 2))
         }
-        else if (arrayEquals(direction, [0,-1,0])) {
+        else if (arrayEquals(direction, [0, -1, 0])) {
 
         }
-        else if (arrayEquals(direction, [0,0,1])) {
-            soldier[0].geometry.rotateX(-Math.PI/ 2)
+        else if (arrayEquals(direction, [0, 0, 1])) {
+            soldier[0].geometry.rotateX(-Math.PI / 2)
             soldier[1].geometry.rotateX(-Math.PI / 2)
         }
-        else if (arrayEquals(direction, [0,0,-1])) {
+        else if (arrayEquals(direction, [0, 0, -1])) {
             soldier[0].geometry.rotateX(Math.PI / 2)
             soldier[1].geometry.rotateX(Math.PI / 2)
         }
@@ -303,22 +199,22 @@ class ArmyDisplay {
         }
     }
 
-    #createSoldier (position) {
-        let coneMaterial = new THREE.MeshBasicMaterial( {color: 0xff0000} )
-        let coneGeometry = new THREE.ConeGeometry(0.4,0.8,20)
+    #createSoldier(position, index) {
+        let coneMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        let coneGeometry = new THREE.ConeGeometry(0.4, 0.8, 20)
         let coneEdgeGeometry = new THREE.EdgesGeometry(coneGeometry)
-        let coneEdgeMaterial = new THREE.LineBasicMaterial( { color: 0xffffff} )
+        let coneEdgeMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
 
         let coneMesh = new THREE.Mesh(
             coneGeometry,
             coneMaterial
         )
-        // Add isSelected for raycasting
-        coneMesh.isSelected = false
+
+        coneMesh.index = index
 
         let coneLine = new THREE.LineSegments(
-            coneEdgeGeometry, 
-            coneEdgeMaterial 
+            coneEdgeGeometry,
+            coneEdgeMaterial
         )
 
         const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(position[0][0], position[0][1], position[0][2])
@@ -334,17 +230,181 @@ class ArmyDisplay {
     createSoldiers(positions) {
         const soldiers = []
 
-        for (const position of positions) {
-            const soldier = this.#createSoldier(position)
+        for (const [index, position] of positions.entries()) {
+            const soldier = this.#createSoldier(position, index)
             soldiers.push(soldier)
             this.orientateSoldier(soldier, position[1])
         }
 
         return soldiers
     }
+
+    getSoldiers() {
+        return this.soldiers.map((el) => {
+            return el[0]
+        })
+    }
+
+    setHoveredColor (soldierNum) {
+        this.soldiers[soldierNum][0].material.color.setHex(0x0000ff)
+    }
+
+    setDefaultColor (soldierNum) {
+        this.soldiers[soldierNum][0].material.color.setHex(0xff0000)
+    }
 }
+
+/**
+ * Canvas
+ */
+const canvas = document.querySelector('canvas.webgl')
+const scene = new THREE.Scene()
+
+/**
+ * Axes helper
+ */
+const axesHelper = new THREE.AxesHelper(10);
+scene.add(axesHelper)
+
+/**
+ * Sizes
+ */
+const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight
+}
+
+window.addEventListener('resize', () => {
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+    camera.updateProjectionMatrix()
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+})
+
+/**
+ * Raycaster
+ */
+const raycaster = new THREE.Raycaster()
+
+// Does not work on Safari browser
+window.addEventListener('dblclick', () => {
+    if (!document.fullscreenElement) {
+        canvas.requestFullscreen()
+    }
+    else {
+        document.exitFullscreen()
+    }
+})
+
+/**
+ * Cursor
+ */
+const mouse = new THREE.Vector2()
+window.addEventListener('mousemove', (evt) => {
+    mouse.x = 2 * (evt.clientX / sizes.width) - 1
+    mouse.y = - (2 * (evt.clientY / sizes.height) - 1)
+})
+
+/**
+ * Camera
+ */
+const aspectRatio = sizes.width / sizes.height
+const camera = new THREE.PerspectiveCamera(45, aspectRatio, 1, 100)
+camera.position.set(0, 0, ARENA_SIZE + 3)
+scene.add(camera)
+
+/**
+ * Controls
+ */
+const controls = new TrackballControls(camera, canvas)
+
+/**
+ * Renderer
+ */
+const renderer = new THREE.WebGLRenderer({
+    canvas: canvas
+})
+renderer.setSize(sizes.width, sizes.height)
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.render(scene, camera)
 
 
 let testArena = new Arena(scene)
 let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
-let testArmy = new ArmyDisplay(scene, [[[5,5,10],[0,1,0]], [[5,4,10],[0,0,1]]])
+let testArmy = new ArmyDisplay(scene, [[[5, 5, 10], [0, 1, 0]], [[5, 4, 10], [0, 0, 1]]])
+
+/**
+ * Animations
+ */
+const clock = new THREE.Clock()
+const moveTime = 3
+let mouseStart = false
+let inMotion = false
+let userRayCaster = {
+    hoveredSoldier: -1,
+    selectedSoldier: -1
+}
+
+const tick = () => {
+
+    const elapsedTime = clock.getElapsedTime()
+
+    /**
+     * 
+     */
+    raycaster.setFromCamera(mouse, camera)
+
+
+    if (!inMotion) {
+        // Cast a ray
+        let intersectedSoldier = raycaster.intersectObjects(testArmy.getSoldiers())
+
+        if (intersectedSoldier.length !== 0) {
+            const currentIntersectedSoldierIndex = intersectedSoldier[0].object.index
+            // Check if user has hovered to an new Soldier
+            if (currentIntersectedSoldierIndex !== userRayCaster.hoveredSoldier) {
+                if (userRayCaster.hoveredSoldier === -1) {
+                    testArmy.setHoveredColor(currentIntersectedSoldierIndex)
+                }
+                else {
+                    testArmy.setDefaultColor(userRayCaster.hoveredSoldier)
+                    testArmy.setHoveredColor(currentIntersectedSoldierIndex)
+                }
+            }
+
+            userRayCaster.hoveredSoldier = currentIntersectedSoldierIndex
+        }
+
+        else {
+            if (userRayCaster.hoveredSoldier !== -1) {
+                testArmy.setDefaultColor(userRayCaster.hoveredSoldier)
+            }
+
+            userRayCaster.hoveredSoldier = -1
+        }
+
+
+
+        // console.log(userRayCaster.hoveredSoldier)
+
+    }
+
+    // Update controls
+    controls.update()
+
+    // Render
+    renderer.render(scene, camera)
+
+    window.requestAnimationFrame(tick)
+
+}
+
+tick()
+
