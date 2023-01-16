@@ -113,6 +113,15 @@ tick()
  * Classes
  */
 
+function adjustToDisplayCoordinate(x, y, z) {
+    return [
+        x + CUBE_SIZE / 2 - ARENA_SIZE / 2,
+        y + CUBE_SIZE / 2 - ARENA_SIZE / 2,
+        z + CUBE_SIZE / 2 - ARENA_SIZE / 2
+    ]
+}
+
+
 class Arena {
 
     cubeGeometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)
@@ -121,24 +130,12 @@ class Arena {
 
     constructor(scene) {
         this.scene = scene
-        // this.cubeGeometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)
-
         this.cubes = this.createCubes()
     }
 
-    /**
-     * Centres the Arena display to (0,0,0)
-     */
-    #adjustToDisplayCoordinate(x, y, z) {
-        return [
-            x + CUBE_SIZE / 2 - ARENA_SIZE / 2,
-            y + CUBE_SIZE / 2 - ARENA_SIZE / 2,
-            z + CUBE_SIZE / 2 - ARENA_SIZE / 2
-        ]
-    }
 
     #createCube(x, y, z) {
-        let cube = new THREE.Mesh(
+        let cubeMesh = new THREE.Mesh(
             this.cubeGeometry,
             new THREE.MeshBasicMaterial({
                 color: 0xffff00,
@@ -152,17 +149,17 @@ class Arena {
             this.cubeLineMaterial)
 
 
-        const [xOffset, yOffset, zOffset] = this.#adjustToDisplayCoordinate(x, y, z)
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
 
-        cube.position.set(xOffset, yOffset, zOffset)
+        cubeMesh.position.set(xOffset, yOffset, zOffset)
         cubeLine.position.set(xOffset, yOffset, zOffset)
-        this.scene.add(cube, cubeLine)
+        this.scene.add(cubeMesh, cubeLine)
 
-        return cube
+        return cubeMesh
     }
 
     createCubes() {
-        let cubesArray = []
+        let cubes = []
 
         for (let x = 0; x < ARENA_SIZE; x++) {
             let xArray = []
@@ -173,10 +170,10 @@ class Arena {
                 }
                 xArray.push(yArray)
             }
-            cubesArray.push(xArray)
+            cubes.push(xArray)
         }
 
-        return cubesArray
+        return cubes
     }
 
     /**
@@ -221,4 +218,65 @@ class Arena {
 
 }
 
+class StarsDisplay {
+
+    starGeometry = new THREE.OctahedronGeometry(0.5, 0)
+    starEdgeGeometry = new THREE.EdgesGeometry(this.starGeometry)
+    starEdgeMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
+    starMaterial = new THREE.MeshBasicMaterial({ color: 0x101010 })
+
+    constructor(scene, coordinates) {
+        this.scene = scene
+        this.stars = this.createStars(coordinates)
+    }
+
+    #createStar(coordinate) {
+        let starMesh = new THREE.Mesh(this.starGeometry, this.starMaterial)
+        let starLine = new THREE.LineSegments(this.starEdgeGeometry, this.starEdgeMaterial)
+
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(coordinate[0], coordinate[1], coordinate[2])
+
+        starMesh.position.set(xOffset, yOffset, zOffset)
+        starLine.position.set(xOffset, yOffset, zOffset)
+
+        this.scene.add(starMesh, starLine)
+
+        return starMesh
+    }
+
+    createStars(coordinates) {
+        let starsArray = []
+
+        for (const coordinate of coordinates) {
+            starsArray.push(this.#createStar(coordinate))
+        }
+
+        return starsArray
+    }
+}
+
+class ArmyDisplay {
+
+    constructor(scene, coordinates) {
+        this.scene = scene
+        this.soldiers = this.createSoldiers(coordinates)
+    }
+
+    #createSoldier (coordinate) {
+        
+    }
+
+    createSoldiers(coordinates) {
+        const soldiers = []
+
+        for (const coordinate of coordinates) {
+            soldiers.push(this.#createSoldier(coordinate))
+        }
+
+        return soldiers
+    }
+}
+
+
 let testArena = new Arena(scene)
+let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
