@@ -11,7 +11,6 @@ const ARENA_SIZE = 11
 const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
-
 /**
  * Panel
  */
@@ -40,17 +39,67 @@ class SelectionPanel {
         }
     }
 
-    constructor(canvas) {
+    constructor(canvas, initialLegalMoves) {
         this.canvas = canvas
         this.currentDirections = this.setInitialCurrentDirections()
         this.scrollTilePositions = this.setScrollTilePositions()
+        this.currentHoveredTitle = [-1, -1, -1]
+        this.legalMoves = initialLegalMoves
         this.currentSoldierNum = 0
+
     }
+
+    /**
+     * Draws Path2D object onto canvas
+     */
+    #drawTile(co1, co2, co3, co4, color, isBlocked) {
+        let scroll = new Path2D()
+        scroll.blocked = isBlocked
+        scroll.moveTo(co1[0], co1[1])
+        scroll.lineTo(co2[0], co2[1])
+        scroll.lineTo(co3[0], co3[1])
+        scroll.lineTo(co4[0], co4[1])
+        scroll.closePath()
+        ctx.fillStyle = color
+        ctx.strokeStyle = 'black'
+
+        ctx.stroke(scroll)
+        ctx.fill(scroll)
+
+        return scroll
+    }
+
+    /**
+     * Draw the four scroll tiles
+     */
+    drawScrollTiles() {
+        const scrollTiles = []
+
+        for (let scrollTilePosition in this.scrollTilePositions) {
+
+            const scroll = this.#drawTile(
+                this.scrollTilePositions[scrollTilePosition][0],
+                this.scrollTilePositions[scrollTilePosition][1],
+                this.scrollTilePositions[scrollTilePosition][2],
+                this.scrollTilePositions[scrollTilePosition][3],
+                this.tileColorPalette['scroll']['default'],
+                false
+            )
+            scrollTiles.push(scroll)
+        }
+
+        return scrollTiles
+    }
+
+    drawSelectionPanel() {
+        this.scrollTiles = this.drawScrollTiles()
+    }
+
 
     /**
      * Set scroll tile positions
      */
-    setScrollTilePositions () {
+    setScrollTilePositions() {
         return {
             up: [
                 [0, 0],
@@ -91,8 +140,18 @@ class SelectionPanel {
             right: '+x'
         }
     }
-}
 
+    /**
+     * Sets the legal moves for the currently selected Soldier
+     */
+    setLegalMoves(legalMoves) {
+        this.legalMoves = legalMoves
+    }
+
+    /**
+     * 
+     */
+}
 
 /**
  * Classes
@@ -461,7 +520,7 @@ renderer.render(scene, camera)
 let testArena = new Arena(scene)
 let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
 let testArmy = new ArmyDisplay(scene, [[[5, 5, 10], [1, 0, 0]], [[5, 4, 10], [1, 0, 0]]])
-let testPanel = new SelectionPanel(canvas2)
+let testPanel = new SelectionPanel(canvas2, [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
 
 /**
  * Animations
@@ -549,6 +608,9 @@ const tick = () => {
 
     const elapsedTime = clock.getElapsedTime()
 
+    // Draw 
+    testPanel.drawSelectionPanel()
+
     /**
      * 
      */
@@ -627,7 +689,6 @@ const tick = () => {
     renderer.render(scene, camera)
 
     window.requestAnimationFrame(tick)
-
 }
 
 tick()
