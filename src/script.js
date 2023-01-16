@@ -17,6 +17,14 @@ function adjustToDisplayCoordinate(x, y, z) {
     ]
 }
 
+function adjustToGameCoordinate(x, y, z) {
+    return [
+        x - CUBE_SIZE / 2 + ARENA_SIZE / 2,
+        y - CUBE_SIZE / 2 + ARENA_SIZE / 2,
+        z - CUBE_SIZE / 2 + ARENA_SIZE / 2
+    ]
+}
+
 
 class Arena {
 
@@ -245,23 +253,27 @@ class ArmyDisplay {
         })
     }
 
-    updateSoldierPosition(soldierNum, x, y, z) {
-        
-        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
-
-        this.soldiers[soldierNum][0].position.set(xOffset, yOffset, zOffset)
-        this.soldiers[soldierNum][1].position.set(xOffset, yOffset, zOffset)
+    getSoldierPosition(soldierNum) {
+        return this.soldiers[soldierNum][0].position
     }
 
-    setSelectedColor (soldierNum) {
+    updateSoldierPosition(soldierNum, x, y, z) {
+
+        // const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
+
+        this.soldiers[soldierNum][0].position.set(x, y, z)
+        this.soldiers[soldierNum][1].position.set(x, y, z)
+    }
+
+    setSelectedColor(soldierNum) {
         this.soldiers[soldierNum][0].material.color.setHex(0x00ff00)
     }
 
-    setHoveredColor (soldierNum) {
+    setHoveredColor(soldierNum) {
         this.soldiers[soldierNum][0].material.color.setHex(0x0000ff)
     }
 
-    setDefaultColor (soldierNum) {
+    setDefaultColor(soldierNum) {
         this.soldiers[soldierNum][0].material.color.setHex(0xff0000)
     }
 }
@@ -356,16 +368,36 @@ let testArmy = new ArmyDisplay(scene, [[[5, 5, 10], [0, 1, 0]], [[5, 4, 10], [0,
  * Animations
  */
 const clock = new THREE.Clock()
-const moveTime = 3
+const MOVE_TIME = 3
 let mouseStart = false
 let inMotion = false
 let userRayCaster = {
     hoveredSoldier: -1,
     selectedSoldier: -1
 }
+let userMove = {
+    startTime: -1,
+    soldierNum: -1,
+    startX: -1,
+    startY: -1,
+    startZ: -1,
+    finishX: -1,
+    finishY: -1,
+    finishZ: -1,
+}
 
 canvas.addEventListener('click', (evt) => {
-    
+    inMotion = true
+    userMove.soldierNum = 0
+
+    const [x, y, z] = adjustToDisplayCoordinate(10, 10, 10)
+
+    userMove.finishX = x
+    userMove.finishY = y
+    userMove.finishZ = z
+
+    console.log(x, y, z)
+
     if (userRayCaster.hoveredSoldier !== -1) {
         if (userRayCaster.selectedSoldier !== -1) {
             testArmy.setDefaultColor(userRayCaster.selectedSoldier)
@@ -386,7 +418,7 @@ canvas.addEventListener('contextmenu', (evt) => {
         else {
             testArmy.setDefaultColor(userRayCaster.selectedSoldier)
         }
-        
+
         userRayCaster.selectedSoldier = -1
     }
 })
@@ -409,14 +441,14 @@ const tick = () => {
         // If the cursor is currently hovering over an Soldier
         if (intersectedSoldier.length !== 0) {
             const currentIntersectedSoldierIndex = intersectedSoldier[0].object.index
-            
+
             // If the Soldier is being hovered over for the first time
             if (currentIntersectedSoldierIndex !== previousIntersectedSoldierIndex) {
 
                 if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRayCaster.selectedSoldier)) {
                     testArmy.setDefaultColor(previousIntersectedSoldierIndex)
                 }
-                
+
                 if (currentIntersectedSoldierIndex !== userRayCaster.selectedSoldier) {
                     testArmy.setHoveredColor(currentIntersectedSoldierIndex)
                 }
@@ -431,6 +463,37 @@ const tick = () => {
             }
 
             userRayCaster.hoveredSoldier = -1
+        }
+    }
+
+    // Check whether motion time has finished
+    if (inMotion) {
+
+        if (userMove.startTime === -1) {
+            userMove.startTime = elapsedTime
+
+            const {x, y, z} = testArmy.getSoldierPosition(userMove.soldierNum)
+            console.log(testArmy.getSoldierPosition(userMove.soldierNum))
+            console.log(x, y, z)
+            userMove.startX = x
+            userMove.startY = y
+            userMove.startZ = z
+        }
+
+        const elapsedTimeInMotion = elapsedTime - userMove.startTime
+
+        console.log(elapsedTimeInMotion, userMove.startX + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishX - userMove.startX))
+
+        testArmy.updateSoldierPosition(
+            userMove.soldierNum,
+            userMove.startX + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishX - userMove.startX),
+            userMove.startY + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishY - userMove.startY),
+            userMove.startZ + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishZ - userMove.startZ)
+        )
+
+        if (elapsedTimeInMotion >= MOVE_TIME) {
+            userMove.startTime = -1
+            inMotion = false
         }
     }
 
