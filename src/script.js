@@ -245,6 +245,14 @@ class ArmyDisplay {
         })
     }
 
+    updateSoldierPosition(soldierNum, x, y, z) {
+        
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
+
+        this.soldiers[soldierNum][0].position.set(xOffset, yOffset, zOffset)
+        this.soldiers[soldierNum][1].position.set(xOffset, yOffset, zOffset)
+    }
+
     setSelectedColor (soldierNum) {
         this.soldiers[soldierNum][0].material.color.setHex(0x00ff00)
     }
@@ -357,6 +365,7 @@ let userRayCaster = {
 }
 
 canvas.addEventListener('click', (evt) => {
+    
     if (userRayCaster.hoveredSoldier !== -1) {
         if (userRayCaster.selectedSoldier !== -1) {
             testArmy.setDefaultColor(userRayCaster.selectedSoldier)
@@ -364,11 +373,20 @@ canvas.addEventListener('click', (evt) => {
         userRayCaster.selectedSoldier = userRayCaster.hoveredSoldier
         testArmy.setSelectedColor(userRayCaster.selectedSoldier)
     }
+    else if (userRayCaster.selectedSoldier !== -1) {
+        testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+    }
 })
 
 canvas.addEventListener('contextmenu', (evt) => {
     if (userRayCaster.selectedSoldier !== -1) {
-        testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+        if (userRayCaster.hoveredSoldier === userRayCaster.selectedSoldier) {
+            testArmy.setHoveredColor(userRayCaster.selectedSoldier)
+        }
+        else {
+            testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+        }
+        
         userRayCaster.selectedSoldier = -1
     }
 })
