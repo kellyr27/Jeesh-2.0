@@ -245,6 +245,10 @@ class ArmyDisplay {
         })
     }
 
+    setSelectedColor (soldierNum) {
+        this.soldiers[soldierNum][0].material.color.setHex(0x00ff00)
+    }
+
     setHoveredColor (soldierNum) {
         this.soldiers[soldierNum][0].material.color.setHex(0x0000ff)
     }
@@ -352,6 +356,23 @@ let userRayCaster = {
     selectedSoldier: -1
 }
 
+canvas.addEventListener('click', (evt) => {
+    if (userRayCaster.hoveredSoldier !== -1) {
+        if (userRayCaster.selectedSoldier !== -1) {
+            testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+        }
+        userRayCaster.selectedSoldier = userRayCaster.hoveredSoldier
+        testArmy.setSelectedColor(userRayCaster.selectedSoldier)
+    }
+})
+
+canvas.addEventListener('contextmenu', (evt) => {
+    if (userRayCaster.selectedSoldier !== -1) {
+        testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+        userRayCaster.selectedSoldier = -1
+    }
+})
+
 const tick = () => {
 
     const elapsedTime = clock.getElapsedTime()
@@ -365,16 +386,20 @@ const tick = () => {
     if (!inMotion) {
         // Cast a ray
         let intersectedSoldier = raycaster.intersectObjects(testArmy.getSoldiers())
+        const previousIntersectedSoldierIndex = userRayCaster.hoveredSoldier
 
+        // If the cursor is currently hovering over an Soldier
         if (intersectedSoldier.length !== 0) {
             const currentIntersectedSoldierIndex = intersectedSoldier[0].object.index
-            // Check if user has hovered to an new Soldier
-            if (currentIntersectedSoldierIndex !== userRayCaster.hoveredSoldier) {
-                if (userRayCaster.hoveredSoldier === -1) {
-                    testArmy.setHoveredColor(currentIntersectedSoldierIndex)
+            
+            // If the Soldier is being hovered over for the first time
+            if (currentIntersectedSoldierIndex !== previousIntersectedSoldierIndex) {
+
+                if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRayCaster.selectedSoldier)) {
+                    testArmy.setDefaultColor(previousIntersectedSoldierIndex)
                 }
-                else {
-                    testArmy.setDefaultColor(userRayCaster.hoveredSoldier)
+                
+                if (currentIntersectedSoldierIndex !== userRayCaster.selectedSoldier) {
                     testArmy.setHoveredColor(currentIntersectedSoldierIndex)
                 }
             }
@@ -383,17 +408,12 @@ const tick = () => {
         }
 
         else {
-            if (userRayCaster.hoveredSoldier !== -1) {
-                testArmy.setDefaultColor(userRayCaster.hoveredSoldier)
+            if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRayCaster.selectedSoldier)) {
+                testArmy.setDefaultColor(previousIntersectedSoldierIndex)
             }
 
             userRayCaster.hoveredSoldier = -1
         }
-
-
-
-        // console.log(userRayCaster.hoveredSoldier)
-
     }
 
     // Update controls
