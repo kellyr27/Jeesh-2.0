@@ -52,9 +52,17 @@ const scene = new THREE.Scene()
 const canvas2 = document.getElementById('panel')
 const ctx = canvas2.getContext('2d')
 
+/**
+ * Selection Panel 
+ * Used to select what the next move will be played for Human Player 1
+ * 
+ * TERMINOLOGY
+ * - SELECTION TILE - Used to select the coordinate for the next move. All tiles are facing the same direction
+ * - SCROLL TILE - Used to move between directions for displaying coordinates
+ */
 class SelectionPanel {
     /**
-     * 
+     * Percentage splits for the tiling of the Selection Panel
      */
     panelSplit = [0.15, 0.25, 0.2, 0.25, 0.15]
     panelSplitCumulative = this.panelSplit.map((sum => value => sum += value)(0))
@@ -127,39 +135,16 @@ class SelectionPanel {
         return scrollTiles
     }
 
+
+    drawSelectionTile() {
+
+    }
+
     /**
      * Draws the Selection Tiles
      */
     drawSelectionTiles() {
         const selectionTiles = []
-
-        // for (let i = 0; i < 3; i++) {
-        //     for (let j = 0; j < 3; j++) {
-
-        //         if (this.blockedMoves.filter(move => positionEquals(move, this.#getOffsetDrawSelectionTile(i, j))).length > 0) {
-        //             const tile = this.#drawTile(
-        //                 [this.panelSplitCumulative[i] * canvas.width, this.panelSplitCumulative[j] * canvas.height],
-        //                 [this.panelSplitCumulative[i] * canvas.width, this.panelSplitCumulative[j + 1] * canvas.height],
-        //                 [this.panelSplitCumulative[i + 1] * canvas.width, this.panelSplitCumulative[j + 1] * canvas.height],
-        //                 [this.panelSplitCumulative[i + 1] * canvas.width, this.panelSplitCumulative[j] * canvas.height],
-        //                 this.tileColorPalette['selection']['blocked'],
-        //                 true
-        //             )
-        //             selectionTiles.push(tile)
-        //         }
-        //         else {
-        //             const tile = this.#drawTile(
-        //                 [this.panelSplitCumulative[i] * canvas.width, this.panelSplitCumulative[j] * canvas.height],
-        //                 [this.panelSplitCumulative[i] * canvas.width, this.panelSplitCumulative[j + 1] * canvas.height],
-        //                 [this.panelSplitCumulative[i + 1] * canvas.width, this.panelSplitCumulative[j + 1] * canvas.height],
-        //                 [this.panelSplitCumulative[i + 1] * canvas.width, this.panelSplitCumulative[j] * canvas.height],
-        //                 this.tileColorPalette['selection']['default'],
-        //                 false
-        //             )
-        //             selectionTiles.push(tile)
-        //         }
-        //     }
-        // }
 
         const faceSelectionCoordinates = this.legalMoves
             .filter((el) => {
@@ -183,7 +168,6 @@ class SelectionPanel {
                     currentCoordinate = addCoordinates(currentCoordinate, [i, j, this.currentDirections.face[2]])
                 }
 
-                console.log(currentCoordinate)
 
                 /**
                  * 
@@ -222,23 +206,23 @@ class SelectionPanel {
         this.drawText()
     }
 
-    getDirectionText (direction) {
-        if (arrayEquals(direction, [1,0,0])) {
+    getDirectionText(direction) {
+        if (arrayEquals(direction, [1, 0, 0])) {
             return '+x'
         }
-        else if (arrayEquals(direction, [-1,0,0])) {
+        else if (arrayEquals(direction, [-1, 0, 0])) {
             return '-x'
         }
-        else if (arrayEquals(direction, [0,1,0])) {
+        else if (arrayEquals(direction, [0, 1, 0])) {
             return '+y'
         }
-        else if (arrayEquals(direction, [0,-1,0])) {
+        else if (arrayEquals(direction, [0, -1, 0])) {
             return '-y'
         }
-        else if (arrayEquals(direction, [0,0,1])) {
+        else if (arrayEquals(direction, [0, 0, 1])) {
             return '+z'
         }
-        else if (arrayEquals(direction, [0,0,-1])) {
+        else if (arrayEquals(direction, [0, 0, -1])) {
             return '-z'
         }
     }
@@ -520,7 +504,6 @@ class ArmyDisplay {
             soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
         }
         else {
-            console.log(direction)
             console.error('Direction inputted incorrectly.')
         }
     }
@@ -700,7 +683,11 @@ let mouseStart = false
 let inMotion = false
 let userRayCaster = {
     hoveredSoldier: -1,
-    selectedSoldier: -1
+    selectedSoldier: -1,
+    hoveredSelectionTile: -1,
+    selectedSelectionTile: -1,
+    hoveredScrollTile: -1,
+    selectedScrollTile: -1
 }
 let userMove = {
     startingFlag: true,
@@ -743,6 +730,40 @@ let userMove = {
 function recordUserMoveStartingParameters() {
 
 }
+
+/**
+ * Update Path2D objects color
+ */
+function updatePath2DColor(path2DObject, color) {
+    ctx.fillStyle = color
+    ctx.strokeStyle = 'black'
+    ctx.stroke(path2DObject)
+    ctx.fill(path2DObject)
+}
+
+/**
+ * 
+ */
+canvas2.addEventListener('mousemove', (evt) => {
+    evt = evt || window.event
+
+    console.log('1')
+
+    // Update the Scroll tiles
+    for (let i = testPanel.scrollTiles.length - 1; i >= 0; i--) {
+
+        if (testPanel.scrollTiles[i] && ctx.isPointInPath(testPanel.scrollTiles[i], evt.offsetX, evt.offsetY) && !testPanel.scrollTiles[i].blocked) {
+            canvas2.style.cursor = 'pointer'
+            updatePath2DColor(testPanel.scrollTiles[i], testPanel.tileColorPalette['scroll']['hover'])
+        } else {
+            updatePath2DColor(testPanel.scrollTiles[i], testPanel.tileColorPalette['scroll']['default'])
+        }
+    }
+})
+
+canvas2.addEventListener('mouseleave', (evt) => {
+    console.log(2)
+})
 
 /**
  * 
