@@ -6,6 +6,41 @@ const CUBE_SIZE = 1
 const ARENA_SIZE = 11
 
 /**
+ * Checks if two arrays are equal (COPY TO REMOVE)
+ */
+function arrayEquals(a, b) {
+    return Array.isArray(a) &&
+        Array.isArray(b) &&
+        a.length === b.length &&
+        a.every((val, index) => val === b[index])
+}
+
+/**
+ * 
+ */
+function arrayInArray(innerArr, outerArr) {
+    for (const arr of outerArr) {
+        if (arrayEquals(arr, innerArr)) {
+            return true
+        }
+    }
+    return false
+}
+
+/**
+     * Adds positions together and returns the sum
+     */
+function addCoordinates(...positions) {
+    let sum = [0, 0, 0]
+    for (let position of positions) {
+        sum[0] += position[0]
+        sum[1] += position[1]
+        sum[2] += position[2]
+    }
+    return sum
+}
+
+/**
  * Canvas
  */
 const canvas = document.querySelector('canvas.webgl')
@@ -39,11 +74,12 @@ class SelectionPanel {
         }
     }
 
-    constructor(canvas, initialLegalMoves) {
+    constructor(canvas, currentPosition, initialLegalMoves) {
         this.canvas = canvas
         this.currentDirections = this.setInitialCurrentDirections()
         this.scrollTilePositions = this.setScrollTilePositions()
         this.currentHoveredTitle = [-1, -1, -1]
+        this.currentPosition = currentPosition
         this.legalMoves = initialLegalMoves
         this.currentSoldierNum = 0
 
@@ -91,8 +127,96 @@ class SelectionPanel {
         return scrollTiles
     }
 
+    /**
+     * Draws the Selection Tiles
+     */
+    drawSelectionTiles() {
+        const selectionTiles = []
+
+        // for (let i = 0; i < 3; i++) {
+        //     for (let j = 0; j < 3; j++) {
+
+        //         if (this.blockedMoves.filter(move => positionEquals(move, this.#getOffsetDrawSelectionTile(i, j))).length > 0) {
+        //             const tile = this.#drawTile(
+        //                 [this.panelSplitCumulative[i] * canvas.width, this.panelSplitCumulative[j] * canvas.height],
+        //                 [this.panelSplitCumulative[i] * canvas.width, this.panelSplitCumulative[j + 1] * canvas.height],
+        //                 [this.panelSplitCumulative[i + 1] * canvas.width, this.panelSplitCumulative[j + 1] * canvas.height],
+        //                 [this.panelSplitCumulative[i + 1] * canvas.width, this.panelSplitCumulative[j] * canvas.height],
+        //                 this.tileColorPalette['selection']['blocked'],
+        //                 true
+        //             )
+        //             selectionTiles.push(tile)
+        //         }
+        //         else {
+        //             const tile = this.#drawTile(
+        //                 [this.panelSplitCumulative[i] * canvas.width, this.panelSplitCumulative[j] * canvas.height],
+        //                 [this.panelSplitCumulative[i] * canvas.width, this.panelSplitCumulative[j + 1] * canvas.height],
+        //                 [this.panelSplitCumulative[i + 1] * canvas.width, this.panelSplitCumulative[j + 1] * canvas.height],
+        //                 [this.panelSplitCumulative[i + 1] * canvas.width, this.panelSplitCumulative[j] * canvas.height],
+        //                 this.tileColorPalette['selection']['default'],
+        //                 false
+        //             )
+        //             selectionTiles.push(tile)
+        //         }
+        //     }
+        // }
+
+        const faceSelectionCoordinates = this.legalMoves
+            .filter((el) => {
+                return arrayEquals(el[1], this.currentDirections.face)
+            })
+            .map((el) => {
+                return el[0]
+            })
+
+
+            for(let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                let currentCoordinate = this.currentPosition[0]
+                if (this.currentDirections.face[0] !== 0) {
+                    currentCoordinate = addCoordinates(currentCoordinate, [this.currentDirections.face[0], i, j])
+                }
+                else if (this.currentDirections.face[1] !== 0) {
+                    currentCoordinate = addCoordinates(currentCoordinate, [i, this.currentDirections.face[0], j])
+                }
+                else if (this.currentDirections.face[2] !== 0) {
+                    currentCoordinate = addCoordinates(currentCoordinate, [i, j, this.currentDirections.face[0]])
+                }
+
+                /**
+                 * 
+                 */
+                if (arrayInArray(currentCoordinate, faceSelectionCoordinates)) {
+                    const tile = this.#drawTile(
+                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+                        this.tileColorPalette['selection']['default'],
+                        false
+                    )
+                    selectionTiles.push(tile)
+                }
+                else {
+                    const tile = this.#drawTile(
+                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+                        this.tileColorPalette['selection']['blocked'],
+                        true
+                    )
+                    selectionTiles.push(tile)
+                }
+            }
+        }
+
+        return selectionTiles
+    }
+
     drawSelectionPanel() {
         this.scrollTiles = this.drawScrollTiles()
+        this.selectionTiles = this.drawSelectionTiles()
     }
 
 
@@ -133,11 +257,11 @@ class SelectionPanel {
      */
     setInitialCurrentDirections() {
         return {
-            face: '-z',
-            up: '+y',
-            down: '-y',
-            left: '-x',
-            right: '+x'
+            face: [0, 0, -1],
+            up: [0, 1, 0],
+            down: [0, -1, 0],
+            left: [-1, 0, 0],
+            right: [1, 0, 0]
         }
     }
 
@@ -306,17 +430,6 @@ class StarsDisplay {
         return starsArray
     }
 }
-
-/**
- * Checks if two arrays are equal (COPY TO REMOVE)
- */
-function arrayEquals(a, b) {
-    return Array.isArray(a) &&
-        Array.isArray(b) &&
-        a.length === b.length &&
-        a.every((val, index) => val === b[index])
-}
-
 
 class ArmyDisplay {
 
@@ -520,7 +633,7 @@ renderer.render(scene, camera)
 let testArena = new Arena(scene)
 let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
 let testArmy = new ArmyDisplay(scene, [[[5, 5, 10], [1, 0, 0]], [[5, 4, 10], [1, 0, 0]]])
-let testPanel = new SelectionPanel(canvas2, [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
+let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
 
 /**
  * Animations
