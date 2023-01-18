@@ -4,7 +4,9 @@
  * If every Soldier in an Army is dead, then that Player has either lost (if the other Army has remaining Soldiers) or a draw.
  */
 
-class Army {
+import Soldier from "./soldier.js"
+
+export default class Army {
 
     constructor(startingPositions) {
         if (startingPositions !== undefined) {
@@ -62,3 +64,5 @@ class Army {
     }
 
 }
+
+let a = new Army([[[1,1,1],[0,0,1]]])

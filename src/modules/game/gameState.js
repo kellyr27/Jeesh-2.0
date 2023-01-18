@@ -1,188 +1,27 @@
 /**
- * COORDINATE
- *  - Defined as an ARRAY of 3 dimensional co-ordinates [x, y, z]
- * 
- * DIRECTION
- *  - Defined as an INTEGER direction the object is facing
- *  - Direction key
- *      0 - +x
- *      1 - -x
- *      2 - +y
- *      3 - -y
- *      4 - +z
- *      5 - -z
- * 
- * POSITION
- *  - Defined as an ARRAY of [COORDINATE, DIRECTION]
+ * GAME STATE
+ * Jeesh is a two player, turn based game.
+ * Each Player has one Army.
  */
 
-const ARENA_SIZE = 11
-const MAX_STARS = 81
-const ATTACK_SIZE = 3
-
-/**
- * Checks if two arrays are equal
- */
-function arrayEquals(a, b) {
-    return Array.isArray(a) &&
-        Array.isArray(b) &&
-        a.length === b.length &&
-        a.every((val, index) => val === b[index])
-}
-
-/**
- * Checks if an number (num) is inbetween two digits (MIN and MAX) (not including MAX)
- */
-function isNumBetween(num, min, max) {
-    if ((num < min) || (num >= max)) {
-        return false
-    }
-    else {
-        return true
-    }
-}
-
-/**
- * Generates a random integer between 0 and MAX (not including MAX)
- */
-function generateRandomInt(max) {
-    return Math.floor(Math.random() * max)
-}
-
-/**
- * Adds two arrays of the same length using matrix addition
- */
-function addArrays(a, b) {
-    return a.map((el, index) => {
-        return el + b[index]
-    })
-}
-
-class Soldier {
-    constructor(startingPosition) {
-        if (startingPosition !== undefined) {
-            this.positions = {
-                0: startingPosition
-            }
-            this.deathIndex = -1
-        }
-    }
-
-    clone(existingSoldier) {
-        this.positions = structuredClone(existingSoldier.positions)
-        this.deathIndex = structuredClone(existingSoldier.deathIndex)
-    }
-
-    /**
-     * Checks whether the Soldier is alive at an given move.
-     */
-    isAlive(moveNum) {
-        if (this.deathIndex === -1) {
-            return true
-        }
-        else if (this.deathIndex > moveNum) {
-            return true
-        }
-        else {
-            return false
-        }
-    }
-
-    /**
-     * Sets the move number at which the Soldier died.
-     */
-    setDeath(moveNum) {
-        this.deathIndex = moveNum
-    }
-
-    /**
-     * Gets the Soldiers position at a given move.
-     * Does not check whether the Soldiers status (alive/dead) at a the given position
-     */
-    getPosition(moveNum) {
-        const foundPositionIndex = Object.keys(this.positions).reverse().find(el => parseInt(el) <= moveNum)
-        return this.positions[foundPositionIndex]
-    }
-
-    /**
-     * Sets the Soliders position at an given move.
-     */
-    setPosition(moveNum, position) {
-        this.positions[moveNum] = position
-    }
-
-}
-
-class Army {
-    constructor(startingPositions) {
-        if (startingPositions !== undefined) {
-            this.soldiers = this.#generateSoldiers(startingPositions)
-        }
-    }
-
-    clone(existingArmy) {
-        this.soldiers = []
-
-        for (const soldier of existingArmy.soldiers) {
-            const newSoldier = new Soldier()
-            newSoldier.clone(soldier)
-            this.soldiers.push(newSoldier)
-        }
-
-    }
-
-    /**
-     * Generates a list of Soldiers at each of the starting positions
-     */
-    #generateSoldiers(startingPositions) {
-        const soldiers = []
-
-        for (const position of startingPositions) {
-            soldiers.push(new Soldier(position))
-        }
-
-        return soldiers
-    }
-
-    /**
-     * Gets the number of Soldiers alive at a given move.
-     */
-    getAliveCount(moveNum) {
-        return this.soldiers.filter(soldier => soldier.isAlive(moveNum)).length
-    }
-
-    /**
-     * Gets an array of Soldier coordinates at an given move.
-     */
-    getCoordinates(moveNum) {
-        const positions = []
-
-        for (const soldier of this.soldiers) {
-            if (soldier.isAlive(moveNum)) {
-                positions.push(soldier.getPosition(moveNum)[0])
-            }
-        }
-
-        return positions
-    }
-
-}
+import Army from "./army.js"
+import { arrayEquals, arrayInArray } from "../globals.js"
 
 class GameState {
+
     constructor(army1StartingPositions, army2StartingPositions) {
         if (army2StartingPositions !== undefined) {
-            this.starCoordinates = this.#generateStarCoordinates()
-            this.armies = this.#generateArmies(army1StartingPositions, army2StartingPositions)
+            this.starCoordinates = this.#createStars()
+            this.armies = this.#createArmies(army1StartingPositions, army2StartingPositions)
             this.currentMoveNum = 1
             this.currentArmyNum = 0
             this.gameStatus = [-1, -1]
         }
     }
 
-    getCurrentArmy() {
-        return this.currentArmyNum
-    }
-
+    /**
+     * Creates a clone of a game state
+     */
     clone(existingGameState) {
         this.starCoordinates = structuredClone(existingGameState.starCoordinates)
         this.currentMoveNum = structuredClone(existingGameState.currentMoveNum)
@@ -194,24 +33,11 @@ class GameState {
         this.armies[1].clone(existingGameState.armies[1])
     }
 
-    #isCoordinateEqual(coord1, coord2) {
-        return arrayEquals(coord1, coord2)
-    }
-
-    #isCoordinateInArray(coord, arr) {
-        for (const coordInArr of arr) {
-            if (this.#isCoordinateEqual(coord, coordInArr)) {
-                return true
-            }
-        }
-        return false
-    }
-
     /**
      * Generates a list of random star positions for a random number of stars (up to MAX_STARS)
      * Stars cannot be touching the edge of the ARENA
      */
-    #generateStarCoordinates() {
+    #createStars() {
         const numStars = generateRandomInt(MAX_STARS)
         const starCoordinates = []
 
@@ -229,8 +55,34 @@ class GameState {
     /**
      * Generates two armies in the starting positions
      */
-    #generateArmies(army1StartingPositions, army2StartingPositions) {
+    #createArmies(army1StartingPositions, army2StartingPositions) {
         return [new Army(army1StartingPositions), new Army(army2StartingPositions)]
+    }
+
+    /**
+     * Checks if two coordinates are the same
+     */
+    #isCoordinateEqual(coord1, coord2) {
+        return arrayEquals(coord1, coord2)
+    }
+
+    /**
+     * Checks if an coordinate appears in an array of coordinates
+     */
+    #isCoordinateInArray(coord, arr) {
+        if (arrayInArray(coord, arr)) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    /**
+     * Returns the Current Army Number to move
+     */
+    getCurrentArmyNum() {
+        return this.currentArmyNum
     }
 
     /**
@@ -378,14 +230,14 @@ class GameState {
     /**
      * Checks whether on a certain move if the game position has been repeated three times.
      */
-    #checkDrawByRepetition (moveNum) {
+    #checkDrawByRepetition(moveNum) {
         return false
     }
 
     /**
      * Checks whether on a certain move if both Armies have no soldiers remaining, the game is automatically a draw by default.
      */
-    #checkDrawByDefault (moveNum) {
+    #checkDrawByDefault(moveNum) {
         if ((this.armies[0].getAliveCount() == 0) && (this.armies[1].getAliveCount(moveNum) == 0)) {
             return true
         }
@@ -397,7 +249,7 @@ class GameState {
     /**
      * 
      */
-    #checkDrawByMaxMoves (moveNum) {
+    #checkDrawByMaxMoves(moveNum) {
         if (moveNum === 500) {
             return true
         }
@@ -572,7 +424,7 @@ class GameState {
             return
         }
         else if (this.#checkDrawByMaxMoves(moveNum)) {
-            this.gameStatus = [2,2]
+            this.gameStatus = [2, 2]
         }
         else if (this.#checkDrawByRepetition(moveNum)) {
             this.gameStatus = [2, 1]
@@ -649,359 +501,3 @@ class GameState {
         }
     }
 }
-
-/**
- * Get Possible Actions
- */
-function jeeshGetPossibleActions(state) {
-    return state.getCurrentArmyPossibleActions()
-}
-
-function jeeshGetNextState(state, action) {
-    // Create a clone state for next state to return
-    const nextState = new GameState()
-    nextState.clone(state)
-    const [soldierNumToMove, positionSelected] = action
-    nextState.updateGameState(soldierNumToMove, positionSelected)
-
-    return nextState
-}
-
-/**
- * Simulates a game of Jeesh from a given State and returns the Gain depending on which Army we which to maximize
- */
-function jeeshSimulateGame(state) {
-    const simulationState = new GameState()
-    simulationState.clone(state)
-
-    // Simulate a game
-    while (!simulationState.isGameOver()) {
-        const possibleActions = simulationState.getCurrentArmyPossibleActions()
-        const [soldierNumToMove, actionSelected] = selectRandomAction(possibleActions)
-        simulationState.updateGameState(soldierNumToMove, actionSelected)
-    }
-
-    return simulationState
-}
-
-function jeeshGetGain(state, rootState) {
-    const result = state.getResult()
-
-    if (result === 2) {
-        return 0.5
-    }
-    // Game ended in win for Army 1
-    else if (result === 0) {
-        if (rootState.getCurrentArmyNum() === 0) {
-            return 1
-        }
-        else {
-            return 0
-        }
-    }
-    // Game ended in win for Army 2
-    else if (result === 1) {
-        if (rootState.getCurrentArmyNum() === 0) {
-            return 0
-        }
-        else {
-            return 1
-        }
-    }
-    else {
-        console.error('Game has not finished to get Gain!')
-    }
-}
-
-function getRandomSubarray(arr, size) {
-    var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
-    while (i-- > min) {
-        index = Math.floor((i + 1) * Math.random());
-        temp = shuffled[index];
-        shuffled[index] = shuffled[i];
-        shuffled[i] = temp;
-    }
-    return shuffled.slice(min);
-}
-
-class Node {
-
-    constructor(state, action) {
-
-        // Action taken on the previous state
-        this.action = action
-        this.state = state
-        this.children = []
-
-        // For calculating the UCB Score
-        this.n = 0
-        this.s = 0
-    }
-
-    // Checks if the Node is a leaf node (no children)
-    isLeaf() {
-        return (this.children.length == 0)
-    }
-
-    // Create list of children from list of possible actions
-    createChildren(getPossibleActions, getNextState, maxNumActions) {
-
-        let possibleActions = getPossibleActions(this.state)
-
-        // Select only a predefined number of possible actions to save memory
-        if (possibleActions.length > maxNumActions) {
-            possibleActions = getRandomSubarray(possibleActions, maxNumActions)
-        }
-
-        for (const action of possibleActions) {
-            this.children.push(new Node(getNextState(this.state, action), action))
-        }
-
-    }
-
-    /**
-     * Selects a random child for the Expansion Phase
-     */
-    selectedRandomChild() {
-        const randomChildIndex = generateRandomInt(this.children.length)
-        return this.children[randomChildIndex]
-    }
-
-    /**
-     * Select Child with the highest UCB score
-     */
-    getChildren() {
-        return this.children
-    }
-
-    getNumOfVisits() {
-        return this.n
-    }
-
-    getAction() {
-        return this.action
-    }
-
-    updateValues(s) {
-        this.n += 1
-        this.s += s
-    }
-
-    getUCBScore(parentNode, explorationFactor) {
-        if (this.n == 0) {
-            return 100000
-        }
-        else {
-            return (this.s / this.n) + explorationFactor * Math.sqrt((2 * Math.log(parentNode.n)) / this.n)
-        }
-
-    }
-}
-
-// MCTS Algorithm
-function mcts(numOfIterations, state, getPossibleActions, getNextState, simulateGame, getGain, maxNumActions, explorationFactor) {
-
-    /**
-     * Selection Phase
-     * Returns the selected leaf node for expansion
-     */
-    function selectionPhase(root, explorationFactor) {
-        const nodeList = [root]
-        let currentNode = root
-        while (!currentNode.isLeaf()) {
-            // Select the child of the current node with the largest UCB score
-            let highestUCBScore = 0
-            let highestUCBChildIndex = -1
-            const childNodes = currentNode.getChildren()
-            for (let i = 0; i < childNodes.length; i++) {
-                const currentUCB = childNodes[i].getUCBScore(currentNode, explorationFactor)
-
-                if (currentUCB > highestUCBScore) {
-                    highestUCBScore = currentUCB
-                    highestUCBChildIndex = i
-                }
-            }
-            currentNode = childNodes[highestUCBChildIndex]
-            nodeList.push(currentNode)
-        }
-        return nodeList
-    }
-
-    /**
-     * Expansion Phase
-     */
-    function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions) {
-        let selectedNode = nodeList[nodeList.length - 1]
-
-        // Check if the game is not in a decisive state
-        if (!selectedNode.state.isGameOver()) {
-            selectedNode.createChildren(getPossibleActions, getNextState, maxNumActions)
-            selectedNode = selectedNode.selectedRandomChild()
-            nodeList.push(selectedNode)
-        }
-
-        return nodeList
-    }
-
-    /**
-     * Simulation Phase
-     */
-    function simulationPhase(nodeList, simulateGame, getGain) {
-        const simulatedGameState = simulateGame(nodeList[nodeList.length - 1].state)
-        return getGain(simulatedGameState, nodeList[0].state)
-    }
-
-    // Backpropagation Phase
-    function backpropagationPhase(nodeList, gain) {
-        for (const node of nodeList) {
-            node.updateValues(gain)
-        }
-    }
-
-    // Body of algorithm
-
-    // Create Root node
-    const root = new Node(state)
-    /**
-     * Iterate over algorithm for pre selected number of iterations
-     */
-    for (let iterNum = 0; iterNum < numOfIterations; iterNum++) {
-        if (iterNum % 100 == 0) {
-            console.log(`Currently in ${iterNum} of MCTS algorithm`)
-        }
-        let nodeList = selectionPhase(root, explorationFactor)
-        nodeList = expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions)
-        const gain = simulationPhase(nodeList, simulateGame, getGain)
-        backpropagationPhase(nodeList, gain)
-    }
-
-    // Select the child of the Root with the most number of Visits
-    let highestNumVisits = 0
-    let highestNumVisitsIndex = -1
-    const childNodes = root.getChildren()
-    for (let i = 0; i < childNodes.length; i++) {
-        const currentNumOfVisits = childNodes[i].getNumOfVisits()
-        console.log(`${i} has ${currentNumOfVisits}`)
-
-        if (highestNumVisits < currentNumOfVisits) {
-            highestNumVisits = currentNumOfVisits
-            highestNumVisitsIndex = i
-        }
-    }
-
-    return childNodes[highestNumVisitsIndex].getAction()
-
-}
-
-
-// Select random possible action
-function selectRandomAction(possibleActions) {
-    // const listPossibleActions = []
-
-    // for (const [soldierNum, soldierPossibleActions] of Object.entries(possibleActions)) {
-    //     for (const soldierPossibleAction of soldierPossibleActions) {
-    //         listPossibleActions.push([soldierNum, soldierPossibleAction])
-    //     }
-    // }
-
-    const randomActionNum = generateRandomInt(possibleActions.length)
-
-    return possibleActions[randomActionNum]
-}
-
-
-// Play out random game
-function playRandomVsRandom(gameState) {
-    while (true) {
-        // Army 1 move
-        const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
-        const [army1SoldierNumToMove, army1ActionSelected] = selectRandomAction(possibleArmy1Moves)
-        gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
-
-        if (gameState.isGameOver()) {
-            return gameState.gameStatus
-        }
-
-        // Army 2 move
-        const possibleArmy2Moves = gameState.getCurrentArmyPossibleActions()
-        const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
-        gameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
-
-        if (gameState.isGameOver()) {
-            return gameState.gameStatus
-        }
-    }
-}
-
-function playMCTSVsRandom(gameState) {
-    while (true) {
-        // Army 1 move
-        const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
-        const [army1SoldierNumToMove, army1ActionSelected] = mcts(100, gameState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 5, 0.7)
-        gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
-
-        if (gameState.isGameOver()) {
-            return gameState.gameStatus
-        }
-
-        // Army 2 move
-        const possibleArmy2Moves = gameState.getCurrentArmyPossibleActions()
-        const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
-        gameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
-
-        if (gameState.isGameOver()) {
-            return gameState.gameStatus
-        }
-    }
-}
-
-let p1Wins = 0
-let p2Wins = 0
-let draws = 0
-
-
-for (let i = 0; i < 1000; i++) {
-
-    if (i % 100 == 0) {
-        console.log(`Completed ${i} simulations`)
-    }
-
-    const testGameState = new GameState([
-        [[5, 6, 10], [0, 0, -1]],
-        [[5, 5, 10], [0, 0, -1]],
-        [[5, 4, 10], [0, 0, -1]],
-
-    ], [
-        [[5, 6, 0], [0, 0, 1]],
-        [[5, 5, 0], [0, 0, 1]],
-        [[5, 4, 0], [0, 0, 1]],
-    ])
-
-    const resultStatus = playMCTSVsRandom(testGameState)
-
-    if (resultStatus[0] == 0) {
-        p1Wins += 1
-    }
-    else if (resultStatus[0] == 1) {
-        p2Wins += 1
-    }
-    else if (resultStatus[0] == 2) {
-        draws += 1
-    }
-}
-
-console.log(`p1 Wins ${p1Wins}\tp2 Wins ${p2Wins}\tDraws ${draws}`)
-
-// Testing the deep clone
-// const a = new GameState([
-//     [[5, 5, 10], [0, 0, -1]]
-
-// ], [
-//     [[5, 5, 0], [0, 0, 1]]
-// ])
-
-// const b = new GameState()
-// b.clone(a)
-// b.updateGameState(0, [[5, 5, 9], [0, 0, -1]])
-// console.log(a)
-// console.log(b)

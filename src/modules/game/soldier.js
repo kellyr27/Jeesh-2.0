@@ -5,7 +5,7 @@
  * Once a soldier is Dead, it can no longer be moved.
  */
 
-class Soldier {
+export default class Soldier {
 
     constructor(startingPosition) {
         if (startingPosition !== undefined) {
