@@ -1,16 +1,16 @@
 /**
  * Constants for the game
  */
-const CUBE_SIZE = 1
-const ARENA_SIZE = 11
-const ATTACK_SIZE = 3
-const MOVE_TIME_SECS = 3
-const MAX_NUM_STARS = 81
+export const CUBE_SIZE = 1
+export const ARENA_SIZE = 11
+export const ATTACK_SIZE = 3
+export const MOVE_TIME_SECS = 3
+export const MAX_NUM_STARS = 81
 
 /**
  * Checks if two arrays are equal
  */
-function arrayEquals(a, b) {
+export function arrayEquals(a, b) {
     return Array.isArray(a) &&
         Array.isArray(b) &&
         a.length === b.length &&
@@ -20,7 +20,7 @@ function arrayEquals(a, b) {
 /**
  * Checks if an array is contained in an Array of arrays.
  */
-function arrayInArray(checkArr, arrOfArrs) {
+export function arrayInArray(checkArr, arrOfArrs) {
     for (const arr of arrOfArrs) {
         if (arrayEquals(arr, checkArr)) {
             return true
@@ -32,7 +32,7 @@ function arrayInArray(checkArr, arrOfArrs) {
 /**
  * Adds arrays together and returns the sum
  */
-function addArrays(a, b) {
+export function addArrays(a, b) {
     
     if (!arrayEquals) {
         return console.error(`Array ${a} and Array ${b} are of different length. They cannot be added.`)
@@ -61,6 +61,3 @@ export function isNumBetween(num, min, max) {
 export function generateRandomInt(max) {
     return Math.floor(Math.random() * max)
 }
-
-export const test1 = 10
-export const test2 = 20
