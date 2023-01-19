@@ -1,0 +1,150 @@
+import { arrayEquals, adjustToDisplayCoordinate } from "../globals.js"
+
+/**
+ * Army Display (Soldiers)
+ */
+export default class ArmyDisplay {
+
+    /**
+     * Color palette for the Soldiers depending on the Army choosen
+     */
+    colorPalette = {
+        0: {
+            default: 'red', 
+            hovered: 'blue', 
+            selected: 'green'
+        },
+        1: {
+            default: 'purple', 
+            hovered: 'blue', 
+            selected: 'green'
+        }
+    }
+
+    constructor(scene, armyNum, startingPositions) {
+        this.scene = scene
+        this.armyNum = armyNum
+        this.soldiers = this.#createSoldiers(startingPositions)
+    }
+
+    /**
+     * Orientates the Soldier to face their starting direction.
+     */
+    #orientateSoldier(soldier, direction) {
+        if (arrayEquals(direction, [1, 0, 0])) {
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
+        }
+        else if (arrayEquals(direction, [-1, 0, 0])) {
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
+        }
+        else if (arrayEquals(direction, [0, 1, 0])) {
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(Math.PI, 0, 0))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(Math.PI, 0, 0))
+        }
+        else if (arrayEquals(direction, [0, -1, 0])) {
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, 0))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, 0))
+        }
+        else if (arrayEquals(direction, [0, 0, 1])) {
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
+        }
+        else if (arrayEquals(direction, [0, 0, -1])) {
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
+        }
+        else {
+            console.error('Direction inputted incorrectly.')
+        }
+    }
+
+    /**
+     * Creates a single Soldier object in Three js
+     */
+    #createSoldier(position, index) {
+        let coneMaterial = new THREE.MeshBasicMaterial({ color: this.colorPalette[this.armyNum].default })
+        let coneGeometry = new THREE.ConeGeometry(0.4, 0.8, 20)
+        let coneEdgeGeometry = new THREE.EdgesGeometry(coneGeometry)
+        let coneEdgeMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
+
+        let coneMesh = new THREE.Mesh(
+            coneGeometry,
+            coneMaterial
+        )
+        let coneLine = new THREE.LineSegments(
+            coneEdgeGeometry,
+            coneEdgeMaterial
+        )
+        coneMesh.index = index
+
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(position[0])
+
+        coneMesh.position.set(xOffset, yOffset, zOffset)
+        coneLine.position.set(xOffset, yOffset, zOffset)
+
+        this.scene.add(coneMesh, coneLine)
+
+        return [coneMesh, coneLine]
+    }
+
+    #createSoldiers(positions) {
+        const soldiers = []
+
+        for (const [index, position] of positions.entries()) {
+            const soldier = this.#createSoldier(position, index)
+            soldiers.push(soldier)
+            this.#orientateSoldier(soldier, position[1])
+        }
+
+        return soldiers
+    }
+
+    /**
+     * Returns a list of the Soldiers (only the Threejs Mesh - not the Outline)
+     */
+    getSoldiers() {
+        return this.soldiers.map((el) => {
+            return el[0]
+        })
+    }
+
+    getSoldierPosition(soldierNum) {
+        const { x, y, z } = this.soldiers[soldierNum][0].position
+        return [x, y, z]
+    }
+
+    getSoldierRotation(soldierNum) {
+        const { x, y, z } = this.soldiers[soldierNum][0].rotation
+        return [x, y, z]
+    }
+
+    setSoldierPosition(soldierNum, x, y, z) {
+
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
+
+        this.soldiers[soldierNum][0].position.set(xOffset, yOffset, zOffset)
+        this.soldiers[soldierNum][1].position.set(xOffset, yOffset, zOffset)
+    }
+
+    setSoldierRotation(soldierNum, x, y, z) {
+
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
+
+        this.soldiers[soldierNum][0].rotation.set(xOffset, yOffset, zOffset)
+        this.soldiers[soldierNum][1].rotation.set(xOffset, yOffset, zOffset)
+    }
+
+    setSelectedColor(soldierNum) {
+        this.soldiers[soldierNum][0].material.color.setHex(this.colorPalette[this.armyNum].selected)
+    }
+
+    setHoveredColor(soldierNum) {
+        this.soldiers[soldierNum][0].material.color.setHex(this.colorPalette[this.armyNum].hovered)
+    }
+
+    setDefaultColor(soldierNum) {
+        this.soldiers[soldierNum][0].material.color.setHex(this.colorPalette[this.armyNum].default)
+    }
+}
