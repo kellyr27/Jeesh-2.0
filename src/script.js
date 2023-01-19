@@ -1,6 +1,8 @@
 import './style.css'
 import * as THREE from 'three'
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js'
+import GameState from './modules/game/gameState'
+
 
 const CUBE_SIZE = 1
 const ARENA_SIZE = 11

@@ -2,6 +2,8 @@
  * Monte Carlo Tree Search Algorithm
  */
 
+import {jeeshSimulateGame, jeeshGetNextState, jeeshGetGain, jeeshGetPossibleActions} from './transfer.js'
+
 /**
  * Selection Phase
  * Returns an list of nodes that connect the Root node to the Selected Node
@@ -67,7 +69,7 @@ function backpropagationPhase(nodeList, gain) {
 /**
  * Select the child of the Root with the most number of Visits
  */
-function chooseAction (rootState) {
+function chooseAction(rootState) {
 
     let highestNumVisits = 0
     let highestNumVisitsIndex = -1
@@ -85,20 +87,33 @@ function chooseAction (rootState) {
     return childNodes[highestNumVisitsIndex]
 }
 
-export default function mcts(numOfIterations, state, getPossibleActions, getNextState, simulateGame, getGain, maxNumActions, explorationFactor) {
+/**
+ * Monte Carlo Tree Search Algorithm
+ */
+export function mcts(numOfIterations, initialState, getPossibleActionsFunc, getNextStateFunc, simulateGameFunc, getGainFunc, maxNumActions, explorationFactor) {
 
     // Create Root node
-    const root = new Node(state)
+    const root = new Node(initialState)
 
     // Iterate over algorithm for pre selected number of iterations
     for (let iterNum = 0; iterNum < numOfIterations; iterNum++) {
         let nodeList = selectionPhase(root, explorationFactor)
-        nodeList = expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions)
-        const gain = simulationPhase(nodeList, simulateGame, getGain)
+        nodeList = expansionPhase(nodeList, getPossibleActionsFunc, getNextStateFunc, maxNumActions)
+        const gain = simulationPhase(nodeList, simulateGameFunc, getGainFunc)
         backpropagationPhase(nodeList, gain)
     }
 
     // Select the child of the Root with the most number of Visits
-    const chosenState = chooseAction (root)
+    const chosenState = chooseAction(root)
     return chosenState.getAction()
+}
+
+/**
+ * MCTS Bot 1
+ * - 1000 Iterations / move
+ * - Maximum of 5 moves per state
+ * - Exploration factor of 0.7
+ */
+export function mctsBot1(initialState) {
+    return mcts(1000, initialState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 5, 0.7)
 }
