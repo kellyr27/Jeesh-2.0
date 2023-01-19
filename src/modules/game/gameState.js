@@ -89,7 +89,7 @@ export default class GameState {
      * Returns the opposing Armies number to move
      */
     getOpposingArmyNum(armyNum) {
-        return ((armyNum == 0) ? 1 : 0)
+        return ((armyNum === 0) ? 1 : 0)
     }
 
     /**
@@ -159,7 +159,7 @@ export default class GameState {
                     }
 
                     // Remove the coordinate that the soldier currently occupies
-                    if ((x == 0) && (y == 0) && (z == 0)) {
+                    if ((x === 0) && (y === 0) && (z === 0)) {
                         continue
                     }
 
@@ -175,32 +175,32 @@ export default class GameState {
                     }
 
                     // Facing the +x direction
-                    if (x == coord[0] + 1) {
+                    if (x === coord[0] + 1) {
                         soldierPossibleActions.push([[x, y, z], [1, 0, 0]])
                     }
 
                     // Facing the -x direction
-                    if (x == coord[0] - 1) {
+                    if (x === coord[0] - 1) {
                         soldierPossibleActions.push([[x, y, z], [-1, 0, 0]])
                     }
 
                     // Facing the +y direction
-                    if (y == coord[1] + 1) {
+                    if (y === coord[1] + 1) {
                         soldierPossibleActions.push([[x, y, z], [0, 1, 0]])
                     }
 
                     // Facing the -y direction
-                    if (y == coord[1] - 1) {
+                    if (y === coord[1] - 1) {
                         soldierPossibleActions.push([[x, y, z], [0, -1, 0]])
                     }
 
                     // Facing the +z direction
-                    if (z == coord[2] + 1) {
+                    if (z === coord[2] + 1) {
                         soldierPossibleActions.push([[x, y, z], [0, 0, 1]])
                     }
 
                     // Facing the -z direction
-                    if (z == coord[2] - 1) {
+                    if (z === coord[2] - 1) {
                         soldierPossibleActions.push([[x, y, z], [0, 0, -1]])
                     }
                 }
@@ -246,7 +246,7 @@ export default class GameState {
      * If both Armies have no soldiers remaining, the game is automatically a draw by default.
      */
     #checkDrawByDefault(moveNum) {
-        if ((this.armies[0].getAliveCount() == 0) && (this.armies[1].getAliveCount(moveNum) == 0)) {
+        if ((this.armies[0].getAliveCount() === 0) && (this.armies[1].getAliveCount(moveNum) === 0)) {
             return true
         }
         else {
@@ -272,14 +272,14 @@ export default class GameState {
      */
     #checkWinByCapture(moveNum, armyNum) {
 
-        if (armyNum == 0) {
+        if (armyNum === 0) {
             for (const soldier of this.armies[0].soldiers) {
                 if (this.#isCoordinateEqual(soldier.getPosition(moveNum)[0], [5, 5, 0])) {
                     return true
                 }
             }
         }
-        else if (armyNum == 1) {
+        else if (armyNum === 1) {
             for (const soldier of this.armies[1].soldiers) {
                 if (this.#isCoordinateEqual(soldier.getPosition(moveNum)[0], [5, 5, 10])) {
                     return true
@@ -295,7 +295,7 @@ export default class GameState {
      * If one army has no remaining soldiers, the other wins by default.
      */
     #checkWinByDefault(moveNum, armyNum) {
-        if ((this.armies[armyNum].getAliveCount() != 0) && (this.armies[this.getOpposingArmyNum(armyNum)].getAliveCount(moveNum) == 0)) {
+        if ((this.armies[armyNum].getAliveCount() !== 0) && (this.armies[this.getOpposingArmyNum(armyNum)].getAliveCount(moveNum) === 0)) {
             return true
         }
         else {
@@ -364,36 +364,36 @@ export default class GameState {
             return
         }
 
-        if (this.gameStatus[0] == 0) {
-            if (this.gameStatus[1] == 0) {
+        if (this.gameStatus[0] === 0) {
+            if (this.gameStatus[1] === 0) {
                 console.log('Army 1 wins by Default!')
                 return
             }
-            if (this.gameStatus[1] == 1) {
+            if (this.gameStatus[1] === 1) {
                 console.log('Army 1 wins by Capture!')
                 return
             }
         }
-        else if (this.gameStatus[0] == 1) {
-            if (this.gameStatus[1] == 0) {
+        else if (this.gameStatus[0] === 1) {
+            if (this.gameStatus[1] === 0) {
                 console.log('Army 2 wins by Default!')
                 return
             }
-            if (this.gameStatus[1] == 1) {
+            if (this.gameStatus[1] === 1) {
                 console.log('Army 2 wins by Capture!')
                 return
             }
         }
-        else if (this.gameStatus[0] == 2) {
-            if (this.gameStatus[1] == 0) {
+        else if (this.gameStatus[0] === 2) {
+            if (this.gameStatus[1] === 0) {
                 console.log('Draw by Default!')
                 return
             }
-            if (this.gameStatus[1] == 1) {
+            if (this.gameStatus[1] === 1) {
                 console.log('Draw by Repetition!')
                 return
             }
-            if (this.gameStatus[2] == 2) {
+            if (this.gameStatus[2] === 2) {
                 console.log('Draw by Max Moves Reached!')
             }
         }
