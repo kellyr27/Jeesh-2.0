@@ -1,7 +1,7 @@
-import { CUBE_SIZE, ARENA_SIZE } from "../globals.js"
+import { CUBE_SIZE, ARENA_SIZE, adjustToDisplayCoordinate } from "../globals.js"
 
 /**
- * Arena (or Battle Room)
+ * Arena Threejs Display (or Battle Room)
  */
 export default class Arena {
 
@@ -54,7 +54,7 @@ export default class Arena {
             this.cubeLineMaterial)
 
 
-        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate([x, y, z])
 
         cubeMesh.position.set(xOffset, yOffset, zOffset)
         cubeLine.position.set(xOffset, yOffset, zOffset)
