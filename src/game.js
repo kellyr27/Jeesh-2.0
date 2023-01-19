@@ -278,7 +278,7 @@ class GameState {
     /**
      * Get current Armies possible moves
      */
-    getCurrentArmyPossibleActions() {
+    #getCurrentArmyPossibleMoves() {
         return this.#getArmyPossibleActions(this.currentMoveNum, this.currentArmyNum)
     }
 
@@ -654,7 +654,7 @@ class GameState {
  * Get Possible Actions
  */
 function jeeshGetPossibleActions(state) {
-    return state.getCurrentArmyPossibleActions()
+    return state.#getCurrentArmyPossibleMoves()
 }
 
 function jeeshGetNextState(state, action) {
@@ -676,7 +676,7 @@ function jeeshSimulateGame(state) {
 
     // Simulate a game
     while (!simulationState.isGameOver()) {
-        const possibleActions = simulationState.getCurrentArmyPossibleActions()
+        const possibleActions = simulationState.#getCurrentArmyPossibleMoves()
         const [soldierNumToMove, actionSelected] = selectRandomAction(possibleActions)
         simulationState.updateGameState(soldierNumToMove, actionSelected)
     }
@@ -914,7 +914,7 @@ function selectRandomAction(possibleActions) {
 function playRandomVsRandom(gameState) {
     while (true) {
         // Army 1 move
-        const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
+        const possibleArmy1Moves = gameState.#getCurrentArmyPossibleMoves()
         const [army1SoldierNumToMove, army1ActionSelected] = selectRandomAction(possibleArmy1Moves)
         gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
 
@@ -923,7 +923,7 @@ function playRandomVsRandom(gameState) {
         }
 
         // Army 2 move
-        const possibleArmy2Moves = gameState.getCurrentArmyPossibleActions()
+        const possibleArmy2Moves = gameState.#getCurrentArmyPossibleMoves()
         const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
         gameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
 
@@ -936,7 +936,7 @@ function playRandomVsRandom(gameState) {
 function playMCTSVsRandom(gameState) {
     while (true) {
         // Army 1 move
-        const possibleArmy1Moves = gameState.getCurrentArmyPossibleActions()
+        const possibleArmy1Moves = gameState.#getCurrentArmyPossibleMoves()
         const [army1SoldierNumToMove, army1ActionSelected] = mcts(100, gameState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 5, 0.7)
         gameState.updateGameState(army1SoldierNumToMove, army1ActionSelected)
 
@@ -945,7 +945,7 @@ function playMCTSVsRandom(gameState) {
         }
 
         // Army 2 move
-        const possibleArmy2Moves = gameState.getCurrentArmyPossibleActions()
+        const possibleArmy2Moves = gameState.#getCurrentArmyPossibleMoves()
         const [army2SoldierNumToMove, army2ActionSelected] = selectRandomAction(possibleArmy2Moves)
         gameState.updateGameState(army2SoldierNumToMove, army2ActionSelected)
 
