@@ -7,7 +7,7 @@
 import Army from "./army.js"
 import { arrayEquals, arrayInArray, isNumBetween } from "../globals.js"
 
-class GameState {
+export default class GameState {
 
     constructor(army1StartingPositions, army2StartingPositions) {
         if (army2StartingPositions !== undefined) {
