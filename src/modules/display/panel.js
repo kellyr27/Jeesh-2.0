@@ -7,19 +7,18 @@
  * - SCROLL TILE - Used to move between directions for displaying coordinates
  */
 
-import { arrayEquals } from "../globals.js"
+import { arrayEquals, arrayInArray } from "../globals.js"
 
 class Tile {
 
-    constructor(ctx, color, edges, axis1, axis2) {
+    constructor(ctx, color, edges, relativeAxis) {
         this.ctx = ctx
         this.color = color
         this.edges = edges
 
         // For Selection Tiles only
-        if (axis1 === undefined) {
-            this.axis1 = axis1
-            this.axis2 = axis2
+        if (relativeAxis === undefined) {
+            this.relativeAxis = relativeAxis
         }
     }
 
@@ -38,11 +37,15 @@ class Tile {
         this.ctx.stroke(scroll)
         this.ctx.fill(scroll)
 
-        return scroll
+        // return scroll
     }
 
     setColor(color) {
         this.color = color
+    }
+
+    getRelativeAxis() {
+        return this.relativeAxis
     }
 }
 
@@ -54,43 +57,16 @@ export default class SelectionPanel {
     panelSplit = [0.15, 0.25, 0.2, 0.25, 0.15]
     panelSplitCumulative = this.panelSplit.map((sum => value => sum += value)(0))
 
-    scrollTileCoordinates = {
-        up: [
-            [0, 0],
-            [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-            [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-            [this.canvas.width, 0]
-        ],
-        left: [
-            [0, 0],
-            [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-            [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-            [0, this.canvas.height]
-        ],
-        down: [
-            [0, this.canvas.height],
-            [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-            [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-            [this.canvas.width, this.canvas.height]
-        ],
-        right: [
-            [this.canvas.width, this.canvas.height],
-            [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-            [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-            [this.canvas.width, 0]
-        ]
-    }
-
     tileColorPalette = {
         scroll: {
             default: 'purple',
-            hover: 'magenta',
+            hovered: 'magenta',
             selected: 'green',
             blocked: 'grey'
         },
         selection: {
             default: 'red',
-            hover: 'maroon',
+            hovered: 'maroon',
             selected: 'green',
             blocked: 'grey'
         }
@@ -106,6 +82,7 @@ export default class SelectionPanel {
         this.currentPosition = currentPosition
         this.legalMoves = initialLegalMoves
 
+        this.scrollTileCoordinates = this.createScrollTileCoordinates()
         this.currentDirections = {
             face: [0, 0, -1],
             up: [0, 1, 0],
@@ -113,9 +90,78 @@ export default class SelectionPanel {
             left: [-1, 0, 0],
             right: [1, 0, 0]
         }
+        this.currentTiles = {
+            scroll: {
+                hovered: -1,
+                selected: -1
+            },
+            selection: {
+                hovered: [-1,-1],
+                selected: [-1,-1]
+            }
+        }
 
         this.scrollTiles = this.#createScrollTiles()
         this.selectionTiles = this.#createSelectionTiles()
+    }
+
+    drawSelectionPanel() {
+        this.drawScrollTiles()
+    }
+
+    createScrollTileCoordinates() {
+        return {
+            up: [
+                [0, 0],
+                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+                [this.canvas.width, 0]
+            ],
+            left: [
+                [0, 0],
+                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+                [0, this.canvas.height]
+            ],
+            down: [
+                [0, this.canvas.height],
+                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+                [this.canvas.width, this.canvas.height]
+            ],
+            right: [
+                [this.canvas.width, this.canvas.height],
+                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+                [this.canvas.width, 0]
+            ]
+        }
+    }
+
+    drawScrollTiles () {
+        for (const scrollTile of this.scrollTiles) {
+            scrollTile.drawTile()
+        }
+    }
+
+    /**
+     * 
+     */
+    updateScrollTiles() {
+        console.log(this.scrollTiles)
+
+        for (let i = 0; i < this.scrollTiles.length; i++) {
+
+            if (this.currentTiles['scroll']['selected'] === i) {
+                this.currentTiles[i].setColor(this.tileColorPalette['scroll']['blocked'])
+            }
+            else if (this.currentTiles['scroll']['hovered'] === i) {
+                this.currentTiles[i].setColor(this.tileColorPalette['scroll']['hovered'])
+            }
+            else {
+                this.currentTiles[i].setColor(this.tileColorPalette['scroll']['default'])
+            }
+        }
     }
 
     /**
@@ -153,16 +199,16 @@ export default class SelectionPanel {
     /**
      * 
      */
-    getAbsoluteCoordinate() {
-        let currentCoordinate = this.currentPosition[0]
+    getAbsoluteCoordinate(tile) {
+
         if (this.currentDirections.face[0] !== 0) {
-            currentCoordinate = addCoordinates(currentCoordinate, [this.currentDirections.face[0], i, j])
+            return addCoordinates(this.currentPosition[0], [this.currentDirections.face[0], tile.axis1, tile.axis2])
         }
         else if (this.currentDirections.face[1] !== 0) {
-            currentCoordinate = addCoordinates(currentCoordinate, [i, this.currentDirections.face[1], j])
+            return addCoordinates(this.currentPosition[0], [tile.axis1, this.currentDirections.face[1], tile.axis2])
         }
         else if (this.currentDirections.face[2] !== 0) {
-            currentCoordinate = addCoordinates(currentCoordinate, [i, j, this.currentDirections.face[2]])
+            return addCoordinates(this.currentPosition[0], [tile.axis1, tile.axis2, this.currentDirections.face[2]])
         }
     }
 
@@ -172,7 +218,22 @@ export default class SelectionPanel {
     updateSelectionTiles() {
         const faceSelectionCoordinates = this.#getCurrentFaceCoordinates()
 
+        for (const selectionTile of this.selectionTiles) {
 
+            // If the tile is not a possible Move
+            if (!arrayInArray(this.getAbsoluteCoordinate(selectionTile), faceSelectionCoordinates)) {
+                selectionTile.setColor(this.tileColorPalette['selection']['blocked'])
+            }
+            else if (arrayEquals(selectionTile.getRelativeAxis(), this.currentTiles['selection']['selected'])) {
+                selectionTile.setColor(this.tileColorPalette['selection']['selected'])
+            }
+            else if (arrayEquals(selectionTile.getRelativeAxis(), this.currentTiles['selection']['hovered'])) {
+                selectionTile.setColor(this.tileColorPalette['selection']['hovered'])
+            }
+            else {
+                selectionTile.setColor(this.tileColorPalette['selection']['default'])
+            }
+        }
     }
 
     /**
@@ -192,69 +253,8 @@ export default class SelectionPanel {
                     [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
                     [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height]
                     ],
-                    i,
-                    j
+                    [i, j]
                 )
-            }
-        }
-
-        return selectionTiles
-    }
-
-    /**
-     * Draws the Selection Tiles
-     */
-    drawSelectionTiles() {
-        const selectionTiles = []
-
-        const faceSelectionCoordinates = this.#getCurrentFaceCoordinates()
-
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-
-                /**
-                 * Determine the co-ordinate of the tile
-                 */
-                let currentCoordinate = this.currentPosition[0]
-                if (this.currentDirections.face[0] !== 0) {
-                    currentCoordinate = addCoordinates(currentCoordinate, [this.currentDirections.face[0], i, j])
-                }
-                else if (this.currentDirections.face[1] !== 0) {
-                    currentCoordinate = addCoordinates(currentCoordinate, [i, this.currentDirections.face[1], j])
-                }
-                else if (this.currentDirections.face[2] !== 0) {
-                    currentCoordinate = addCoordinates(currentCoordinate, [i, j, this.currentDirections.face[2]])
-                }
-
-
-                /**
-                 * 
-                 */
-                if (arrayInArray(currentCoordinate, faceSelectionCoordinates)) {
-                    const tile = new Tile(
-                        this.ctx,
-                        this.tileColorPalette['selection']['default'],
-                        [
-                            [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                            [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                            [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                            [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height]
-                        ]
-                    )
-
-                    selectionTiles.push(tile)
-                }
-                else {
-                    const tile = this.#drawTile(
-                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                        this.tileColorPalette['selection']['blocked'],
-                        true
-                    )
-                    selectionTiles.push(tile)
-                }
             }
         }
 

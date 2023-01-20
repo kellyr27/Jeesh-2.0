@@ -2,7 +2,7 @@ import './style.css'
 import * as THREE from 'three'
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js'
 import GameState from './modules/game/gameState'
-
+import SelectionPanel from './modules/display/panel'
 
 const CUBE_SIZE = 1
 const ARENA_SIZE = 11
@@ -54,270 +54,272 @@ const scene = new THREE.Scene()
 const canvas2 = document.getElementById('panel')
 const ctx = canvas2.getContext('2d')
 
-/**
- * Selection Panel 
- * Used to select what the next move will be played for Human Player 1
- * 
- * TERMINOLOGY
- * - SELECTION TILE - Used to select the coordinate for the next move. All tiles are facing the same direction
- * - SCROLL TILE - Used to move between directions for displaying coordinates
- */
-class SelectionPanel {
-    /**
-     * Percentage splits for the tiling of the Selection Panel
-     */
-    panelSplit = [0.15, 0.25, 0.2, 0.25, 0.15]
-    panelSplitCumulative = this.panelSplit.map((sum => value => sum += value)(0))
+// /**
+//  * Selection Panel 
+//  * Used to select what the next move will be played for Human Player 1
+//  * 
+//  * TERMINOLOGY
+//  * - SELECTION TILE - Used to select the coordinate for the next move. All tiles are facing the same direction
+//  * - SCROLL TILE - Used to move between directions for displaying coordinates
+//  */
+// class SelectionPanel {
+//     /**
+//      * Percentage splits for the tiling of the Selection Panel
+//      */
+//     panelSplit = [0.15, 0.25, 0.2, 0.25, 0.15]
+//     panelSplitCumulative = this.panelSplit.map((sum => value => sum += value)(0))
 
-    tileColorPalette = {
-        scroll: {
-            default: 'purple',
-            hover: 'magenta',
-            selected: 'green',
-            blocked: 'grey'
-        },
-        selection: {
-            default: 'red',
-            hover: 'maroon',
-            selected: 'green',
-            blocked: 'grey'
-        }
-    }
+//     tileColorPalette = {
+//         scroll: {
+//             default: 'purple',
+//             hover: 'magenta',
+//             selected: 'green',
+//             blocked: 'grey'
+//         },
+//         selection: {
+//             default: 'red',
+//             hover: 'maroon',
+//             selected: 'green',
+//             blocked: 'grey'
+//         }
+//     }
 
-    constructor(canvas, currentPosition, initialLegalMoves) {
-        this.canvas = canvas
-        this.currentDirections = this.setInitialCurrentDirections()
-        this.scrollTilePositions = this.setScrollTilePositions()
-        this.currentHoveredTitle = [-1, -1, -1]
-        this.currentPosition = currentPosition
-        this.legalMoves = initialLegalMoves
-        this.currentSoldierNum = 0
+//     constructor(canvas, currentPosition, initialLegalMoves) {
+//         this.canvas = canvas
+//         this.ctx = this.canvas.getContext('2d')
+//         this.currentDirections = this.setInitialCurrentDirections()
+//         this.scrollTilePositions = this.setScrollTilePositions()
+//         this.currentHoveredTitle = [-1, -1, -1]
+//         this.currentPosition = currentPosition
+//         this.legalMoves = initialLegalMoves
+//         this.currentSoldierNum = 0
 
-    }
+//     }
 
-    /**
-     * Draws Path2D object onto canvas
-     */
-    #drawTile(co1, co2, co3, co4, color, isBlocked) {
-        let scroll = new Path2D()
-        scroll.blocked = isBlocked
-        scroll.moveTo(co1[0], co1[1])
-        scroll.lineTo(co2[0], co2[1])
-        scroll.lineTo(co3[0], co3[1])
-        scroll.lineTo(co4[0], co4[1])
-        scroll.closePath()
-        ctx.fillStyle = color
-        ctx.strokeStyle = 'black'
+//     /**
+//      * Draws Path2D object onto canvas
+//      */
+//     #drawTile(co1, co2, co3, co4, color, isBlocked) {
+//         console.log(co1)
+//         let scroll = new Path2D()
+//         scroll.blocked = isBlocked
+//         scroll.moveTo(co1[0], co1[1])
+//         scroll.lineTo(co2[0], co2[1])
+//         scroll.lineTo(co3[0], co3[1])
+//         scroll.lineTo(co4[0], co4[1])
+//         scroll.closePath()
+//         this.ctx.fillStyle = color
+//         this.ctx.strokeStyle = 'black'
 
-        ctx.stroke(scroll)
-        ctx.fill(scroll)
+//         this.ctx.stroke(scroll)
+//         this.ctx.fill(scroll)
 
-        return scroll
-    }
+//         return scroll
+//     }
 
-    /**
-     * Draw the four scroll tiles
-     */
-    drawScrollTiles() {
-        const scrollTiles = []
+//     /**
+//      * Draw the four scroll tiles
+//      */
+//     drawScrollTiles() {
+//         const scrollTiles = []
 
-        for (let scrollTilePosition in this.scrollTilePositions) {
+//         for (let scrollTilePosition in this.scrollTilePositions) {
 
-            const scroll = this.#drawTile(
-                this.scrollTilePositions[scrollTilePosition][0],
-                this.scrollTilePositions[scrollTilePosition][1],
-                this.scrollTilePositions[scrollTilePosition][2],
-                this.scrollTilePositions[scrollTilePosition][3],
-                this.tileColorPalette['scroll']['default'],
-                false
-            )
-            scrollTiles.push(scroll)
-        }
+//             const scroll = this.#drawTile(
+//                 this.scrollTilePositions[scrollTilePosition][0],
+//                 this.scrollTilePositions[scrollTilePosition][1],
+//                 this.scrollTilePositions[scrollTilePosition][2],
+//                 this.scrollTilePositions[scrollTilePosition][3],
+//                 this.tileColorPalette['scroll']['default'],
+//                 false
+//             )
+//             scrollTiles.push(scroll)
+//         }
 
-        return scrollTiles
-    }
-
-
-    drawSelectionTile() {
-
-    }
-
-    /**
-     * Draws the Selection Tiles
-     */
-    drawSelectionTiles() {
-        const selectionTiles = []
-
-        const faceSelectionCoordinates = this.legalMoves
-            .filter((el) => {
-                return arrayEquals(el[1], this.currentDirections.face)
-            })
-            .map((el) => {
-                return el[0]
-            })
+//         return scrollTiles
+//     }
 
 
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-                let currentCoordinate = this.currentPosition[0]
-                if (this.currentDirections.face[0] !== 0) {
-                    currentCoordinate = addCoordinates(currentCoordinate, [this.currentDirections.face[0], i, j])
-                }
-                else if (this.currentDirections.face[1] !== 0) {
-                    currentCoordinate = addCoordinates(currentCoordinate, [i, this.currentDirections.face[1], j])
-                }
-                else if (this.currentDirections.face[2] !== 0) {
-                    currentCoordinate = addCoordinates(currentCoordinate, [i, j, this.currentDirections.face[2]])
-                }
+//     drawSelectionTile() {
+
+//     }
+
+//     /**
+//      * Draws the Selection Tiles
+//      */
+//     drawSelectionTiles() {
+//         const selectionTiles = []
+
+//         const faceSelectionCoordinates = this.legalMoves
+//             .filter((el) => {
+//                 return arrayEquals(el[1], this.currentDirections.face)
+//             })
+//             .map((el) => {
+//                 return el[0]
+//             })
 
 
-                /**
-                 * 
-                 */
-                if (arrayInArray(currentCoordinate, faceSelectionCoordinates)) {
-                    const tile = this.#drawTile(
-                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                        this.tileColorPalette['selection']['default'],
-                        false
-                    )
-                    selectionTiles.push(tile)
-                }
-                else {
-                    const tile = this.#drawTile(
-                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                        this.tileColorPalette['selection']['blocked'],
-                        true
-                    )
-                    selectionTiles.push(tile)
-                }
-            }
-        }
+//         for (let i = -1; i <= 1; i++) {
+//             for (let j = -1; j <= 1; j++) {
+//                 let currentCoordinate = this.currentPosition[0]
+//                 if (this.currentDirections.face[0] !== 0) {
+//                     currentCoordinate = addCoordinates(currentCoordinate, [this.currentDirections.face[0], i, j])
+//                 }
+//                 else if (this.currentDirections.face[1] !== 0) {
+//                     currentCoordinate = addCoordinates(currentCoordinate, [i, this.currentDirections.face[1], j])
+//                 }
+//                 else if (this.currentDirections.face[2] !== 0) {
+//                     currentCoordinate = addCoordinates(currentCoordinate, [i, j, this.currentDirections.face[2]])
+//                 }
 
-        return selectionTiles
-    }
 
-    drawSelectionPanel() {
-        this.scrollTiles = this.drawScrollTiles()
-        this.selectionTiles = this.drawSelectionTiles()
-        this.drawText()
-    }
+//                 /**
+//                  * 
+//                  */
+//                 if (arrayInArray(currentCoordinate, faceSelectionCoordinates)) {
+//                     const tile = this.#drawTile(
+//                         [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+//                         [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+//                         [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+//                         [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+//                         this.tileColorPalette['selection']['default'],
+//                         false
+//                     )
+//                     selectionTiles.push(tile)
+//                 }
+//                 else {
+//                     const tile = this.#drawTile(
+//                         [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+//                         [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+//                         [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+//                         [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+//                         this.tileColorPalette['selection']['blocked'],
+//                         true
+//                     )
+//                     selectionTiles.push(tile)
+//                 }
+//             }
+//         }
 
-    getDirectionText(direction) {
-        if (arrayEquals(direction, [1, 0, 0])) {
-            return '+x'
-        }
-        else if (arrayEquals(direction, [-1, 0, 0])) {
-            return '-x'
-        }
-        else if (arrayEquals(direction, [0, 1, 0])) {
-            return '+y'
-        }
-        else if (arrayEquals(direction, [0, -1, 0])) {
-            return '-y'
-        }
-        else if (arrayEquals(direction, [0, 0, 1])) {
-            return '+z'
-        }
-        else if (arrayEquals(direction, [0, 0, -1])) {
-            return '-z'
-        }
-    }
+//         return selectionTiles
+//     }
 
-    /**
-     * Draws the Text
-     */
-    drawText() {
-        ctx.font = "1em Helvetica"
+//     drawSelectionPanel() {
+//         this.scrollTiles = this.drawScrollTiles()
+//         this.selectionTiles = this.drawSelectionTiles()
+//         this.drawText()
+//     }
 
-        const textWidthOffset = (txt) => {
-            return ctx.measureText(txt).width
-        }
-        const textHeightOffset = (txt) => {
-            const metrics = ctx.measureText(txt)
-            // const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
-            const actualHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
-            return actualHeight
-        }
+//     getDirectionText(direction) {
+//         if (arrayEquals(direction, [1, 0, 0])) {
+//             return '+x'
+//         }
+//         else if (arrayEquals(direction, [-1, 0, 0])) {
+//             return '-x'
+//         }
+//         else if (arrayEquals(direction, [0, 1, 0])) {
+//             return '+y'
+//         }
+//         else if (arrayEquals(direction, [0, -1, 0])) {
+//             return '-y'
+//         }
+//         else if (arrayEquals(direction, [0, 0, 1])) {
+//             return '+z'
+//         }
+//         else if (arrayEquals(direction, [0, 0, -1])) {
+//             return '-z'
+//         }
+//     }
 
-        ctx.strokeText(this.getDirectionText(this.currentDirections['up']),
-            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['up'])),
-            this.panelSplit[0] * 0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['up'])) / 2)
-        ctx.strokeText(this.getDirectionText(this.currentDirections['down']),
-            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['down'])),
-            (1 - 0.5 * this.panelSplit[4]) * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['down'])) / 2)
-        ctx.strokeText(this.getDirectionText(this.currentDirections['left']),
-            0.5 * this.panelSplit[0] * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['left'])),
-            0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['left'])) / 2)
-        ctx.strokeText(this.getDirectionText(this.currentDirections['right']),
-            (1 - 0.5 * this.panelSplit[4]) * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['right'])),
-            0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['right'])) / 2)
-        ctx.strokeText(this.getDirectionText(this.currentDirections['face']),
-            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['face'])),
-            0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['face'])) / 2)
-    }
+//     /**
+//      * Draws the Text
+//      */
+//     drawText() {
+//         this.ctx.font = "1em Helvetica"
 
-    /**
-     * Set scroll tile positions
-     */
-    setScrollTilePositions() {
-        return {
-            up: [
-                [0, 0],
-                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-                [this.canvas.width, 0]
-            ],
-            left: [
-                [0, 0],
-                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-                [0, this.canvas.height]
-            ],
-            down: [
-                [0, this.canvas.height],
-                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-                [this.canvas.width, this.canvas.height]
-            ],
-            right: [
-                [this.canvas.width, this.canvas.height],
-                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-                [this.canvas.width, 0]
-            ]
-        }
-    }
+//         const textWidthOffset = (txt) => {
+//             return this.ctx.measureText(txt).width
+//         }
+//         const textHeightOffset = (txt) => {
+//             const metrics = this.ctx.measureText(txt)
+//             // const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
+//             const actualHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
+//             return actualHeight
+//         }
 
-    /**
-     * Sets the initial directions to Army 1
-     */
-    setInitialCurrentDirections() {
-        return {
-            face: [0, 0, -1],
-            up: [0, 1, 0],
-            down: [0, -1, 0],
-            left: [-1, 0, 0],
-            right: [1, 0, 0]
-        }
-    }
+//         this.ctx.strokeText(this.getDirectionText(this.currentDirections['up']),
+//             0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['up'])),
+//             this.panelSplit[0] * 0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['up'])) / 2)
+//         this.ctx.strokeText(this.getDirectionText(this.currentDirections['down']),
+//             0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['down'])),
+//             (1 - 0.5 * this.panelSplit[4]) * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['down'])) / 2)
+//         this.ctx.strokeText(this.getDirectionText(this.currentDirections['left']),
+//             0.5 * this.panelSplit[0] * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['left'])),
+//             0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['left'])) / 2)
+//         this.ctx.strokeText(this.getDirectionText(this.currentDirections['right']),
+//             (1 - 0.5 * this.panelSplit[4]) * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['right'])),
+//             0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['right'])) / 2)
+//         this.ctx.strokeText(this.getDirectionText(this.currentDirections['face']),
+//             0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['face'])),
+//             0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['face'])) / 2)
+//     }
 
-    /**
-     * Sets the legal moves for the currently selected Soldier
-     */
-    setLegalMoves(legalMoves) {
-        this.legalMoves = legalMoves
-    }
+//     /**
+//      * Set scroll tile positions
+//      */
+//     setScrollTilePositions() {
+//         return {
+//             up: [
+//                 [0, 0],
+//                 [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+//                 [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+//                 [this.canvas.width, 0]
+//             ],
+//             left: [
+//                 [0, 0],
+//                 [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+//                 [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+//                 [0, this.canvas.height]
+//             ],
+//             down: [
+//                 [0, this.canvas.height],
+//                 [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+//                 [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+//                 [this.canvas.width, this.canvas.height]
+//             ],
+//             right: [
+//                 [this.canvas.width, this.canvas.height],
+//                 [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+//                 [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+//                 [this.canvas.width, 0]
+//             ]
+//         }
+//     }
 
-    /**
-     * 
-     */
-}
+//     /**
+//      * Sets the initial directions to Army 1
+//      */
+//     setInitialCurrentDirections() {
+//         return {
+//             face: [0, 0, -1],
+//             up: [0, 1, 0],
+//             down: [0, -1, 0],
+//             left: [-1, 0, 0],
+//             right: [1, 0, 0]
+//         }
+//     }
+
+//     /**
+//      * Sets the legal moves for the currently selected Soldier
+//      */
+//     setLegalMoves(legalMoves) {
+//         this.legalMoves = legalMoves
+//     }
+
+//     /**
+//      * 
+//      */
+// }
 
 /**
  * Classes
@@ -674,7 +676,9 @@ renderer.render(scene, camera)
 let testArena = new Arena(scene)
 let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
 let testArmy = new ArmyDisplay(scene, [[[5, 5, 10], [1, 0, 0]], [[5, 4, 10], [1, 0, 0]]])
+// let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
 let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
+
 
 /**
  * Animations
@@ -736,12 +740,12 @@ function recordUserMoveStartingParameters() {
 /**
  * Update Path2D objects color
  */
-function updatePath2DColor(path2DObject, color) {
-    ctx.fillStyle = color
-    ctx.strokeStyle = 'black'
-    ctx.stroke(path2DObject)
-    ctx.fill(path2DObject)
-}
+// function updatePath2DColor(path2DObject, color) {
+//     ctx.fillStyle = color
+//     ctx.strokeStyle = 'black'
+//     ctx.stroke(path2DObject)
+//     ctx.fill(path2DObject)
+// }
 
 /**
  * 
