@@ -59,6 +59,7 @@ import Arena from './modules/display/arena'
 import StarsDisplay from './modules/display/stars'
 import ArmyDisplay from './modules/display/army'
 import UserMove from './modules/transfer/move'
+import UserRaycaster from './modules/transfer/raycaster'
 
 /**
  * Axes helper
@@ -142,6 +143,7 @@ let testArmy = new ArmyDisplay(scene, 0, [[[5, 5, 10], [1, 0, 0]], [[5, 4, 10], 
 // let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
 // let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
 let testMove = new UserMove()
+let testRaycaster = new UserRaycaster()
 
 /**
  * Animations
