@@ -14,6 +14,24 @@ export default class UserRaycaster {
         return this.selectedSoldier
     }
 
+    isHoveredSoldier () {
+        if (this.hoveredSoldier !== -1) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    isSelectedSoldier () {
+        if (this.selectedSoldier !== -1) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
     setHoveredSoldier (index) {
         this.hoveredSoldier = index
     }

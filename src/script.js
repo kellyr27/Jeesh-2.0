@@ -258,40 +258,52 @@ let userMove = {
  *
  */
 canvas.addEventListener('click', (evt) => {
-    if (userRayCaster.hoveredSoldier !== -1) {
-        if (userRayCaster.selectedSoldier !== -1) {
-            testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+    // if (userRayCaster.hoveredSoldier !== -1) {
+    //     if (userRayCaster.selectedSoldier !== -1) {
+    //         testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+    //     }
+    //     userRayCaster.selectedSoldier = userRayCaster.hoveredSoldier
+    //     testArmy.setSelectedColor(userRayCaster.selectedSoldier)
+    // }
+    // else if (userRayCaster.selectedSoldier !== -1) {
+    //     testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+    //     userRayCaster.selectedSoldier = -1
+    // }
+
+    if (testRaycaster.isHoveredSoldier()) {
+        if (testRaycaster.isSelectedSoldier()) {
+            testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
         }
-        userRayCaster.selectedSoldier = userRayCaster.hoveredSoldier
-        testArmy.setSelectedColor(userRayCaster.selectedSoldier)
+        testRaycaster.setSelectedSoldier(testRaycaster.getHoveredSoldier())
+        testArmy.setSelectedColor(testRaycaster.getSelectedSoldier())
     }
-    else if (userRayCaster.selectedSoldier !== -1) {
-        testArmy.setDefaultColor(userRayCaster.selectedSoldier)
-        userRayCaster.selectedSoldier = -1
+    else if (testRaycaster.isSelectedSoldier()) {
+        testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
+        testRaycaster.resetSelectedSoldier()
     }
 })
 
 canvas.addEventListener('contextmenu', (evt) => {
-    if (userRayCaster.selectedSoldier !== -1) {
-        if (userRayCaster.hoveredSoldier === userRayCaster.selectedSoldier) {
-            testArmy.setHoveredColor(userRayCaster.selectedSoldier)
+
+    if (testRaycaster.isSelectedSoldier()) {
+        if (testRaycaster.getHoveredSoldier() === testRaycaster.getSelectedSoldier()) {
+            testArmy.setHoveredColor(testRaycaster.getSelectedSoldier())
         }
         else {
-            testArmy.setDefaultColor(userRayCaster.selectedSoldier)
+            testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
         }
 
-        userRayCaster.selectedSoldier = -1
+        testRaycaster.resetSelectedSoldier()
     }
 })
 
 const tick = () => {
 
     const elapsedTime = clock.getElapsedTime()
-    console.log(`Hovered: ${userRayCaster.hoveredSoldier}\tSelected: ${userRayCaster.selectedSoldier}`)
+    console.log(`Hovered: ${testRaycaster.getHoveredSoldier()}\tSelected: ${testRaycaster.getSelectedSoldier()}`)
 
     // Draw
     // testPanel.drawPanel()
-    // console.log(userRayCaster.hoveredScrollTile + '\t' + userRayCaster.hoveredSelectionTile)
 
     /**
      *
@@ -306,7 +318,7 @@ const tick = () => {
 
         // Cast a raycaster and check if it intersects any of the Soldiers from Army 1
         let intersectedSoldier = raycaster.intersectObjects(testArmy.getSoldiers())
-        const previousIntersectedSoldierIndex = userRayCaster.hoveredSoldier
+        const previousIntersectedSoldierIndex = testRaycaster.getHoveredSoldier()
 
         // If the cursor is currently hovering over an Soldier
         if (intersectedSoldier.length !== 0) {
@@ -315,24 +327,24 @@ const tick = () => {
             // If the Soldier is being hovered over for the first time
             if (currentIntersectedSoldierIndex !== previousIntersectedSoldierIndex) {
 
-                if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRayCaster.selectedSoldier)) {
+                if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier())) {
                     testArmy.setDefaultColor(previousIntersectedSoldierIndex)
                 }
 
-                if (currentIntersectedSoldierIndex !== userRayCaster.selectedSoldier) {
+                if (currentIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier()) {
                     testArmy.setHoveredColor(currentIntersectedSoldierIndex)
                 }
             }
 
-            userRayCaster.hoveredSoldier = currentIntersectedSoldierIndex
+            testRaycaster.setHoveredSoldier(currentIntersectedSoldierIndex)
         }
 
         else {
-            if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRayCaster.selectedSoldier)) {
+            if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier())) {
                 testArmy.setDefaultColor(previousIntersectedSoldierIndex)
             }
 
-            userRayCaster.hoveredSoldier = -1
+            testRaycaster.resetHoveredSoldier()
         }
     }
 
