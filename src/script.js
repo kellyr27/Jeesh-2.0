@@ -827,8 +827,8 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
     // Draw 
-    testPanel.drawSelectionPanel()
-    console.log(userRayCaster.hoveredScrollTile + '\t' + userRayCaster.hoveredSelectionTile)
+    testPanel.drawPanel()
+    // console.log(userRayCaster.hoveredScrollTile + '\t' + userRayCaster.hoveredSelectionTile)
 
     /**
      * 

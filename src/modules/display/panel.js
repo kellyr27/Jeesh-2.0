@@ -9,6 +9,31 @@
 
 import { arrayEquals, arrayInArray } from "../globals.js"
 
+/**
+ * Adds coordinates together and returns the sum
+ */
+function addCoordinates(...coords) {
+    let sum = [0, 0, 0]
+    for (let coord of coords) {
+        sum[0] += coord[0]
+        sum[1] += coord[1]
+        sum[2] += coord[2]
+    }
+    return sum
+}
+
+/**
+ * Inverse the direction.
+ * For example +z becomes -z
+ */
+function inverseDirection(direction) {
+    let inverse = [0, 0, 0]
+    for (let el of inverse) {
+        inverse += (el * -1)
+    }
+    return inverse
+}
+
 class Tile {
 
     constructor(ctx, color, edges, relativeAxis) {
@@ -17,7 +42,7 @@ class Tile {
         this.edges = edges
 
         // For Selection Tiles only
-        if (relativeAxis === undefined) {
+        if (relativeAxis !== undefined) {
             this.relativeAxis = relativeAxis
         }
     }
@@ -96,8 +121,8 @@ export default class SelectionPanel {
                 selected: -1
             },
             selection: {
-                hovered: [-1,-1],
-                selected: [-1,-1]
+                hovered: [-1, -1],
+                selected: [-1, -1]
             }
         }
 
@@ -105,8 +130,45 @@ export default class SelectionPanel {
         this.selectionTiles = this.#createSelectionTiles()
     }
 
-    drawSelectionPanel() {
+    drawPanel() {
         this.drawScrollTiles()
+        this.drawSelectionTiles()
+        this.drawText()
+    }
+
+    /**
+     * When a scroll tile has been clicked
+     *      0 - up
+     *      1 - left
+     *      2 - down
+     *      3 - right
+     * 
+     */
+    updateDirections(scrollTilesNum) {
+        if (scrollTilesNum === 0) {
+            let tempFace = structuredClone(this.currentDirections.face)
+            this.currentDirections.face = this.currentDirections.up
+            this.currentDirections.up = inverseDirection(tempFace)
+            this.currentDirections.down = tempFace
+        }
+        else if (scrollTilesNum === 1) {
+            let tempFace = structuredClone(this.currentDirections.face)
+            this.currentDirections.face = this.currentDirections.left
+            this.currentDirections.left = inverseDirection(tempFace)
+            this.currentDirections.right = tempFace
+        }
+        else if (scrollTilesNum === 2) {
+            let tempFace = structuredClone(this.currentDirections.face)
+            this.currentDirections.face = this.currentDirections.down
+            this.currentDirections.down = inverseDirection(tempFace)
+            this.currentDirections.up = tempFace
+        }
+        else if (scrollTilesNum === 3) {
+            let tempFace = structuredClone(this.currentDirections.face)
+            this.currentDirections.face = this.currentDirections.right
+            this.currentDirections.right = inverseDirection(tempFace)
+            this.currentDirections.left = tempFace
+        }
     }
 
     createScrollTileCoordinates() {
@@ -138,9 +200,15 @@ export default class SelectionPanel {
         }
     }
 
-    drawScrollTiles () {
+    drawScrollTiles() {
         for (const scrollTile of this.scrollTiles) {
             scrollTile.drawTile()
+        }
+    }
+
+    drawSelectionTiles() {
+        for (const selectionTile of this.selectionTiles) {
+            selectionTile.drawTile()
         }
     }
 
@@ -148,7 +216,6 @@ export default class SelectionPanel {
      * 
      */
     updateScrollTiles() {
-        console.log(this.scrollTiles)
 
         for (let i = 0; i < this.scrollTiles.length; i++) {
 
@@ -171,12 +238,13 @@ export default class SelectionPanel {
         const scrollTiles = []
 
         for (let scrollTileCoord in this.scrollTileCoordinates) {
-
+            console.log(scrollTileCoord)
             const scroll = new Tile(
                 this.ctx,
                 this.tileColorPalette['scroll']['default'],
                 this.scrollTileCoordinates[scrollTileCoord]
             )
+
             scrollTiles.push(scroll)
         }
 
@@ -201,15 +269,28 @@ export default class SelectionPanel {
      */
     getAbsoluteCoordinate(tile) {
 
-        if (this.currentDirections.face[0] !== 0) {
-            return addCoordinates(this.currentPosition[0], [this.currentDirections.face[0], tile.axis1, tile.axis2])
+        const relativeRow = tile.getRelativeAxis()[0]
+        const relativeCol = tile.getRelativeAxis()[1]
+
+        let absCoordinate = addCoordinates(this.currentPosition[0], this.currentDirections['face'])
+
+
+        if (relativeRow === -1) {
+            absCoordinate = addCoordinates(absCoordinate, this.currentDirections['left'])
         }
-        else if (this.currentDirections.face[1] !== 0) {
-            return addCoordinates(this.currentPosition[0], [tile.axis1, this.currentDirections.face[1], tile.axis2])
+        else if (relativeRow === 1) {
+            absCoordinate = addCoordinates(absCoordinate, this.currentDirections['right'])
         }
-        else if (this.currentDirections.face[2] !== 0) {
-            return addCoordinates(this.currentPosition[0], [tile.axis1, tile.axis2, this.currentDirections.face[2]])
+
+        if (relativeCol === -1) {
+            absCoordinate = addCoordinates(absCoordinate, this.currentDirections['up'])
         }
+        else if (relativeCol === 1) {
+            absCoordinate = addCoordinates(absCoordinate, this.currentDirections['down'])
+        }
+
+        return absCoordinate
+
     }
 
     /**
@@ -244,17 +325,19 @@ export default class SelectionPanel {
 
         for (let i = -1; i <= 1; i++) {
             for (let j = -1; j <= 1; j++) {
+
                 const tile = new Tile(
                     this.ctx,
-                    this.tileColorPalette['selection']['default']
+                    this.tileColorPalette['selection']['default'],
                     [
-                    [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                    [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                    [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                    [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height]
+                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height]
                     ],
                     [i, j]
                 )
+                selectionTiles.push(tile)
             }
         }
 
