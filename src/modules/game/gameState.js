@@ -456,7 +456,7 @@ export default class GameState {
      *      1 - Win by Army 2
      *      2 - Draw
      */
-    getResult() {
+    getResult () {
         if (this.gameStatus[0] === -1) {
             console.error('Requesting the result and the game has not finished!')
         }

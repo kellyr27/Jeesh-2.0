@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { arrayEquals, adjustToDisplayCoordinate } from "../globals.js"
 
 /**
@@ -92,10 +93,10 @@ export default class ArmyDisplay {
     #createSoldiers(positions) {
         const soldiers = []
 
-        for (const [index, position] of positions.entries()) {
-            const soldier = this.#createSoldier(position, index)
+        for (let i = 0; i < positions.length; i++) {
+            const soldier = this.#createSoldier(positions[i], i)
             soldiers.push(soldier)
-            this.#orientateSoldier(soldier, position[1])
+            this.#orientateSoldier(soldier, positions[i][1])
         }
 
         return soldiers

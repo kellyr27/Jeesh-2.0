@@ -36,7 +36,7 @@ export function jeeshGetNextState(state, action) {
 /**
  * Select random action from a list of possible actions
  */
-function selectRandomAction(possibleActions) {
+export function selectRandomAction(possibleActions) {
     const randomActionNum = generateRandomInt(possibleActions.length)
     return possibleActions[randomActionNum]
 }

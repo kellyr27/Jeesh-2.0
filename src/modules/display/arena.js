@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { CUBE_SIZE, ARENA_SIZE, adjustToDisplayCoordinate } from "../globals.js"
 
 /**
