@@ -7,12 +7,20 @@
  * - SCROLL TILE - Used to move between directions for displaying coordinates
  */
 
+import { arrayEquals } from "../globals.js"
+
 class Tile {
 
-    constructor(ctx, color, edges) {
+    constructor(ctx, color, edges, axis1, axis2) {
         this.ctx = ctx
         this.color = color
         this.edges = edges
+
+        // For Selection Tiles only
+        if (axis1 === undefined) {
+            this.axis1 = axis1
+            this.axis2 = axis2
+        }
     }
 
     drawTile() {
@@ -33,18 +41,45 @@ class Tile {
         return scroll
     }
 
-    setColor (color) {
+    setColor(color) {
         this.color = color
     }
 }
 
-class SelectionPanel {
+export default class SelectionPanel {
 
     /**
      * Percentage splits for the tiling of the Selection Panel
      */
     panelSplit = [0.15, 0.25, 0.2, 0.25, 0.15]
     panelSplitCumulative = this.panelSplit.map((sum => value => sum += value)(0))
+
+    scrollTileCoordinates = {
+        up: [
+            [0, 0],
+            [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+            [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+            [this.canvas.width, 0]
+        ],
+        left: [
+            [0, 0],
+            [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+            [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+            [0, this.canvas.height]
+        ],
+        down: [
+            [0, this.canvas.height],
+            [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+            [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+            [this.canvas.width, this.canvas.height]
+        ],
+        right: [
+            [this.canvas.width, this.canvas.height],
+            [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
+            [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
+            [this.canvas.width, 0]
+        ]
+    }
 
     tileColorPalette = {
         scroll: {
@@ -61,31 +96,40 @@ class SelectionPanel {
         }
     }
 
+    /**
+     * NOTE: Current directions is initially set up for Army 1
+     */
     constructor(canvas, currentPosition, initialLegalMoves) {
         this.canvas = canvas
         this.ctx = this.canvas.getContext('2d')
-        this.currentDirections = this.setInitialCurrentDirections()
-        this.scrollTilePositions = this.setScrollTilePositions()
-        this.currentHoveredTitle = [-1, -1, -1]
+
         this.currentPosition = currentPosition
         this.legalMoves = initialLegalMoves
+
+        this.currentDirections = {
+            face: [0, 0, -1],
+            up: [0, 1, 0],
+            down: [0, -1, 0],
+            left: [-1, 0, 0],
+            right: [1, 0, 0]
+        }
+
+        this.scrollTiles = this.#createScrollTiles()
+        this.selectionTiles = this.#createSelectionTiles()
     }
 
     /**
-     * Draw the four scroll tiles
+     * Create the four Scroll Tiles (up, down, left and right)
      */
-    drawScrollTiles() {
+    #createScrollTiles() {
         const scrollTiles = []
 
-        for (let scrollTilePosition in this.scrollTilePositions) {
+        for (let scrollTileCoord in this.scrollTileCoordinates) {
 
-            const scroll = this.#drawTile(
-                this.scrollTilePositions[scrollTilePosition][0],
-                this.scrollTilePositions[scrollTilePosition][1],
-                this.scrollTilePositions[scrollTilePosition][2],
-                this.scrollTilePositions[scrollTilePosition][3],
+            const scroll = new Tile(
+                this.ctx,
                 this.tileColorPalette['scroll']['default'],
-                false
+                this.scrollTileCoordinates[scrollTileCoord]
             )
             scrollTiles.push(scroll)
         }
@@ -93,9 +137,68 @@ class SelectionPanel {
         return scrollTiles
     }
 
+    /**
+     * From the Legal Moves, get the coordinates from a the current facing direction
+     */
+    #getCurrentFaceCoordinates() {
+        return this.legalMoves
+            .filter((el) => {
+                return arrayEquals(el[1], this.currentDirections.face)
+            })
+            .map((el) => {
+                return el[0]
+            })
+    }
 
-    drawSelectionTile() {
+    /**
+     * 
+     */
+    getAbsoluteCoordinate() {
+        let currentCoordinate = this.currentPosition[0]
+        if (this.currentDirections.face[0] !== 0) {
+            currentCoordinate = addCoordinates(currentCoordinate, [this.currentDirections.face[0], i, j])
+        }
+        else if (this.currentDirections.face[1] !== 0) {
+            currentCoordinate = addCoordinates(currentCoordinate, [i, this.currentDirections.face[1], j])
+        }
+        else if (this.currentDirections.face[2] !== 0) {
+            currentCoordinate = addCoordinates(currentCoordinate, [i, j, this.currentDirections.face[2]])
+        }
+    }
 
+    /**
+     * 
+     */
+    updateSelectionTiles() {
+        const faceSelectionCoordinates = this.#getCurrentFaceCoordinates()
+
+
+    }
+
+    /**
+     * 
+     */
+    #createSelectionTiles() {
+        const selectionTiles = []
+
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                const tile = new Tile(
+                    this.ctx,
+                    this.tileColorPalette['selection']['default']
+                    [
+                    [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+                    [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                    [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                    [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height]
+                    ],
+                    i,
+                    j
+                )
+            }
+        }
+
+        return selectionTiles
     }
 
     /**
@@ -104,17 +207,14 @@ class SelectionPanel {
     drawSelectionTiles() {
         const selectionTiles = []
 
-        const faceSelectionCoordinates = this.legalMoves
-            .filter((el) => {
-                return arrayEquals(el[1], this.currentDirections.face)
-            })
-            .map((el) => {
-                return el[0]
-            })
-
+        const faceSelectionCoordinates = this.#getCurrentFaceCoordinates()
 
         for (let i = -1; i <= 1; i++) {
             for (let j = -1; j <= 1; j++) {
+
+                /**
+                 * Determine the co-ordinate of the tile
+                 */
                 let currentCoordinate = this.currentPosition[0]
                 if (this.currentDirections.face[0] !== 0) {
                     currentCoordinate = addCoordinates(currentCoordinate, [this.currentDirections.face[0], i, j])
@@ -131,14 +231,17 @@ class SelectionPanel {
                  * 
                  */
                 if (arrayInArray(currentCoordinate, faceSelectionCoordinates)) {
-                    const tile = this.#drawTile(
-                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
-                        [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+                    const tile = new Tile(
+                        this.ctx,
                         this.tileColorPalette['selection']['default'],
-                        false
+                        [
+                            [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height],
+                            [this.panelSplitCumulative[i + 1] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                            [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 2] * this.canvas.height],
+                            [this.panelSplitCumulative[i + 2] * this.canvas.width, this.panelSplitCumulative[j + 1] * this.canvas.height]
+                        ]
                     )
+
                     selectionTiles.push(tile)
                 }
                 else {
@@ -158,13 +261,10 @@ class SelectionPanel {
         return selectionTiles
     }
 
-    drawSelectionPanel() {
-        this.scrollTiles = this.drawScrollTiles()
-        this.selectionTiles = this.drawSelectionTiles()
-        this.drawText()
-    }
-
-    getDirectionText(direction) {
+    /**
+     * Returns the Display text from a Direction input
+     */
+    #getDirectionText(direction) {
         if (arrayEquals(direction, [1, 0, 0])) {
             return '+x'
         }
@@ -189,78 +289,33 @@ class SelectionPanel {
      * Draws the Text
      */
     drawText() {
-        ctx.font = "1em Helvetica"
+        this.ctx.font = "1em Helvetica"
 
         const textWidthOffset = (txt) => {
-            return ctx.measureText(txt).width
+            return this.ctx.measureText(txt).width
         }
         const textHeightOffset = (txt) => {
-            const metrics = ctx.measureText(txt)
+            const metrics = this.ctx.measureText(txt)
             // const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
             const actualHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
             return actualHeight
         }
 
-        ctx.strokeText(this.getDirectionText(this.currentDirections['up']),
-            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['up'])),
-            this.panelSplit[0] * 0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['up'])) / 2)
-        ctx.strokeText(this.getDirectionText(this.currentDirections['down']),
-            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['down'])),
-            (1 - 0.5 * this.panelSplit[4]) * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['down'])) / 2)
-        ctx.strokeText(this.getDirectionText(this.currentDirections['left']),
-            0.5 * this.panelSplit[0] * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['left'])),
-            0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['left'])) / 2)
-        ctx.strokeText(this.getDirectionText(this.currentDirections['right']),
-            (1 - 0.5 * this.panelSplit[4]) * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['right'])),
-            0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['right'])) / 2)
-        ctx.strokeText(this.getDirectionText(this.currentDirections['face']),
-            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.getDirectionText(this.currentDirections['face'])),
-            0.5 * this.canvas.height + textHeightOffset(this.getDirectionText(this.currentDirections['face'])) / 2)
-    }
-
-    /**
-     * Set scroll tile positions
-     */
-    setScrollTilePositions() {
-        return {
-            up: [
-                [0, 0],
-                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-                [this.canvas.width, 0]
-            ],
-            left: [
-                [0, 0],
-                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-                [0, this.canvas.height]
-            ],
-            down: [
-                [0, this.canvas.height],
-                [this.panelSplitCumulative[0] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-                [this.canvas.width, this.canvas.height]
-            ],
-            right: [
-                [this.canvas.width, this.canvas.height],
-                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[3] * this.canvas.height],
-                [this.panelSplitCumulative[3] * this.canvas.width, this.panelSplitCumulative[0] * this.canvas.height],
-                [this.canvas.width, 0]
-            ]
-        }
-    }
-
-    /**
-     * Sets the initial directions to Army 1
-     */
-    setInitialCurrentDirections() {
-        return {
-            face: [0, 0, -1],
-            up: [0, 1, 0],
-            down: [0, -1, 0],
-            left: [-1, 0, 0],
-            right: [1, 0, 0]
-        }
+        this.ctx.strokeText(this.#getDirectionText(this.currentDirections['up']),
+            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.#getDirectionText(this.currentDirections['up'])),
+            this.panelSplit[0] * 0.5 * this.canvas.height + textHeightOffset(this.#getDirectionText(this.currentDirections['up'])) / 2)
+        this.ctx.strokeText(this.#getDirectionText(this.currentDirections['down']),
+            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.#getDirectionText(this.currentDirections['down'])),
+            (1 - 0.5 * this.panelSplit[4]) * this.canvas.height + textHeightOffset(this.#getDirectionText(this.currentDirections['down'])) / 2)
+        this.ctx.strokeText(this.#getDirectionText(this.currentDirections['left']),
+            0.5 * this.panelSplit[0] * this.canvas.width - 0.5 * textWidthOffset(this.#getDirectionText(this.currentDirections['left'])),
+            0.5 * this.canvas.height + textHeightOffset(this.#getDirectionText(this.currentDirections['left'])) / 2)
+        this.ctx.strokeText(this.#getDirectionText(this.currentDirections['right']),
+            (1 - 0.5 * this.panelSplit[4]) * this.canvas.width - 0.5 * textWidthOffset(this.#getDirectionText(this.currentDirections['right'])),
+            0.5 * this.canvas.height + textHeightOffset(this.#getDirectionText(this.currentDirections['right'])) / 2)
+        this.ctx.strokeText(this.#getDirectionText(this.currentDirections['face']),
+            0.5 * this.canvas.width - 0.5 * textWidthOffset(this.#getDirectionText(this.currentDirections['face'])),
+            0.5 * this.canvas.height + textHeightOffset(this.#getDirectionText(this.currentDirections['face'])) / 2)
     }
 
     /**
@@ -270,8 +325,4 @@ class SelectionPanel {
         this.legalMoves = legalMoves
     }
 
-    /**
-     * 
-     */
-    setTile
 }
