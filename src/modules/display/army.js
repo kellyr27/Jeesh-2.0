@@ -138,14 +138,14 @@ export default class ArmyDisplay {
     }
 
     setSelectedColor(soldierNum) {
-        this.soldiers[soldierNum][0].material.color.setHex(this.colorPalette[this.armyNum].selected)
+        this.soldiers[soldierNum][0].material.color.set(this.colorPalette[this.armyNum]['selected'])
     }
 
     setHoveredColor(soldierNum) {
-        this.soldiers[soldierNum][0].material.color.setHex(this.colorPalette[this.armyNum].hovered)
+        this.soldiers[soldierNum][0].material.color.set(this.colorPalette[this.armyNum]['hovered'])
     }
 
     setDefaultColor(soldierNum) {
-        this.soldiers[soldierNum][0].material.color.setHex(this.colorPalette[this.armyNum].default)
+        this.soldiers[soldierNum][0].material.color.set(this.colorPalette[this.armyNum]['default'])
     }
 }
