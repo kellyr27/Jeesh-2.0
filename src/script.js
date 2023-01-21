@@ -3,63 +3,23 @@ import * as THREE from 'three'
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js'
 import GameState from './modules/game/gameState'
 import SelectionPanel from './modules/display/panel'
-
-const CUBE_SIZE = 1
-const ARENA_SIZE = 11
-
-/**
- * Checks if two arrays are equal (COPY TO REMOVE)
- */
-function arrayEquals(a, b) {
-    return Array.isArray(a) &&
-        Array.isArray(b) &&
-        a.length === b.length &&
-        a.every((val, index) => val === b[index])
-}
-
-/**
- *
- */
-function arrayInArray(innerArr, outerArr) {
-    for (const arr of outerArr) {
-        if (arrayEquals(arr, innerArr)) {
-            return true
-        }
-    }
-    return false
-}
-
-/**
-     * Adds positions together and returns the sum
-     */
-function addCoordinates(...positions) {
-    let sum = [0, 0, 0]
-    for (let position of positions) {
-        sum[0] += position[0]
-        sum[1] += position[1]
-        sum[2] += position[2]
-    }
-    return sum
-}
-
-/**
- * Canvas
- */
-const canvas = document.querySelector('canvas.webgl')
-const scene = new THREE.Scene()
-
-/**
- * Panel
- */
-const canvas2 = document.getElementById('panel')
-const ctx = canvas2.getContext('2d')
-
-
 import Arena from './modules/display/arena'
 import StarsDisplay from './modules/display/stars'
 import ArmyDisplay from './modules/display/army'
 import UserMove from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
+import { ARENA_SIZE, MOVE_TIME_SECS } from './modules/globals'
+
+/**
+ * Canvas for Arena
+ */
+const canvas = document.querySelector('canvas.webgl')
+const scene = new THREE.Scene()
+
+/**
+ * Cavas for Selection Panel
+ */
+const canvas2 = document.getElementById('panel')
 
 /**
  * Axes helper
@@ -94,7 +54,10 @@ window.addEventListener('resize', () => {
  */
 const raycaster = new THREE.Raycaster()
 
-// Does not work on Safari browser
+/**
+ * Double click to expand to full screen
+ * NOTE: Does not work on Safari browser
+ */
 window.addEventListener('dblclick', () => {
     if (!document.fullscreenElement) {
         canvas.requestFullscreen()
@@ -141,7 +104,7 @@ let testArena = new Arena(scene)
 let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
 let testArmy = new ArmyDisplay(scene, 0, [[[5, 5, 10], [1, 0, 0]], [[5, 4, 10], [1, 0, 0]]])
 // let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
-// let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
+let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
 let testMove = new UserMove()
 let testRaycaster = new UserRaycaster()
 
@@ -300,7 +263,6 @@ canvas.addEventListener('contextmenu', (evt) => {
 const tick = () => {
 
     const elapsedTime = clock.getElapsedTime()
-    console.log(`Hovered: ${testRaycaster.getHoveredSoldier()}\tSelected: ${testRaycaster.getSelectedSoldier()}`)
 
     // Draw
     // testPanel.drawPanel()

@@ -128,6 +128,8 @@ export default class SelectionPanel {
 
         this.scrollTiles = this.#createScrollTiles()
         this.selectionTiles = this.#createSelectionTiles()
+
+        this.drawPanel()
     }
 
     drawPanel() {
@@ -238,7 +240,6 @@ export default class SelectionPanel {
         const scrollTiles = []
 
         for (let scrollTileCoord in this.scrollTileCoordinates) {
-            console.log(scrollTileCoord)
             const scroll = new Tile(
                 this.ctx,
                 this.tileColorPalette['scroll']['default'],
