@@ -47,22 +47,31 @@ class Tile {
         }
     }
 
-    drawTile() {
-        let scroll = new Path2D()
+    #createPath () {
+        let path = new Path2D()
 
-        scroll.moveTo(this.edges[0][0], this.edges[0][1])
+        path.moveTo(this.edges[0][0], this.edges[0][1])
         for (const edge of this.edges.slice(1)) {
-            scroll.lineTo(edge[0], edge[1])
+            path.lineTo(edge[0], edge[1])
         }
-        scroll.closePath()
+        path.closePath()
+
+        return path
+    }
+
+    drawTile() {
+        this.path = this.#createPath()
 
         this.ctx.fillStyle = this.color
         this.ctx.strokeStyle = 'black'
 
-        this.ctx.stroke(scroll)
-        this.ctx.fill(scroll)
+        this.ctx.stroke(this.path)
+        this.ctx.fill(this.path)
 
-        // return scroll
+    }
+
+    getPath () {
+        return this.path
     }
 
     setColor(color) {
@@ -407,6 +416,18 @@ export default class SelectionPanel {
      */
     setLegalMoves(legalMoves) {
         this.legalMoves = legalMoves
+    }
+
+    getScrollTilePaths () {
+        return this.scrollTiles.map((tile) => {
+            return tile.getPath()
+        })
+    }
+
+    getSelectionTilePaths () {
+        return this.selectionTiles.map((tile) => {
+            return tile.getPath()
+        })
     }
 
 }
