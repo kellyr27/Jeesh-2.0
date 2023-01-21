@@ -141,6 +141,30 @@ export default class SelectionPanel {
         this.drawPanel()
     }
 
+    setCurrentScrollHovered (index) {
+        this.currentTiles.scroll.hovered = index
+    }
+
+    resetCurrentScrollHovered () {
+        this.currentTiles.scroll.hovered = -1
+    }
+
+    setCurrentScrollSelected (index) {
+        this.currentTiles.scroll.selected = index
+    }
+
+    setCurrentSelectionHovered (index) {
+        this.currentTiles.scroll.hovered = index
+    }
+
+    resetCurrentSelectionHovered () {
+        this.currentTiles.scroll.hovered = -1
+    }
+
+    setCurrentSelectionSelected (index) {
+        this.currentTiles.scroll.selected = index
+    }
+
     drawPanel() {
         this.drawScrollTiles()
         this.drawSelectionTiles()

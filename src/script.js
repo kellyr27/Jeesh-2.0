@@ -20,6 +20,7 @@ const scene = new THREE.Scene()
  * Cavas for Selection Panel
  */
 const canvas2 = document.getElementById('panel')
+const ctx = canvas2.getContext('2d')
 
 /**
  * Axes helper
@@ -162,60 +163,42 @@ let userMove = {
 }
 
 /**
- * Update Path2D objects color
- */
-// function updatePath2DColor(path2DObject, color) {
-//     ctx.fillStyle = color
-//     ctx.strokeStyle = 'black'
-//     ctx.stroke(path2DObject)
-//     ctx.fill(path2DObject)
-// }
-
-/**
  *
  */
 canvas2.addEventListener('mousemove', (evt) => {
     evt = evt || window.event
 
     // Update the Scroll tiles
-    for (let i = testPanel.scrollTiles.length - 1; i >= 0; i--) {
+    const scrollTiles = testPanel.getScrollTilePaths()
+    for (let i = scrollTiles.length - 1; i >= 0; i--) {
 
-        if (testPanel.scrollTiles[i] && ctx.isPointInPath(testPanel.scrollTiles[i], evt.offsetX, evt.offsetY) && !testPanel.scrollTiles[i].blocked) {
+        if (scrollTiles[i] && ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
             canvas2.style.cursor = 'pointer'
-            // updatePath2DColor(testPanel.scrollTiles[i], testPanel.tileColorPalette['scroll']['hover'])
-            userRayCaster.hoveredScrollTile = i
-            userRayCaster.hoveredSelectionTile = -1
+            testPanel.setCurrentScrollHovered(i)
         } else {
-            // updatePath2DColor(testPanel.scrollTiles[i], testPanel.tileColorPalette['scroll']['default'])
 
         }
     }
 
-    for (let i = testPanel.selectionTiles.length - 1; i >= 0; i--) {
-        if (testPanel.selectionTiles[i] && ctx.isPointInPath(testPanel.selectionTiles[i], evt.offsetX, event.offsetY) && !testPanel.selectionTiles[i].blocked) {
-            isHoveredOverSelectionTiles = true
-            testPanel.setCurrentHoveredSquare(i)
+    const selectionTiles = testPanel.getSelectionTilePaths()
+    for (let i = selectionTiles.length - 1; i >= 0; i--) {
+        if (selectionTiles[i] && ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
+            testPanel.setCurrentSelectionHovered(i)
             canvas.style.cursor = 'pointer'
-            updatePath2DColor(testPanel.selectionTiles[i], testPanel.tileColorPalette['selection']['hover'])
         }
-        else if (ctx.isPointInPath(testPanel.selectionTiles[i], evt.offsetX, evt.offsetY) && testPanel.selectionTiles[i].blocked) {
-            isHoveredOverSelectionTiles = true
-            testPanel.setCurrentHoveredSquare(-1)
+        else if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
+            testPanel.resetCurrentSelectionHovered()
             canvas.style.cursor = 'default'
-            updatePath2DColor(testPanel.selectionTiles[i], testPanel.tileColorPalette['selection']['blocked'])
-        }
-        else if (testPanel.selectionTiles[i].blocked) {
-            updatePath2DColor(testPanel.selectionTiles[i], testPanel.tileColorPalette['selection']['blocked'])
-        }
-        else {
-            updatePath2DColor(testPanel.selectionTiles[i], testPanel.tileColorPalette['selection']['default'])
+            // updatePath2DColor(testPanel.selectionTiles[i], testPanel.tileColorPalette['selection']['blocked'])
         }
     }
 })
 
-// canvas2.addEventListener('mouseleave', (evt) => {
-//     userRayCaster.hoveredScrollTile = -1
-// })
+canvas2.addEventListener('mouseleave', (evt) => {
+    // userRayCaster.hoveredScrollTile = -1
+    testPanel.resetCurrentScrollHovered()
+    canvas.style.cursor = 'default'
+})
 
 /**
  *
