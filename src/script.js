@@ -104,7 +104,6 @@ renderer.render(scene, camera)
 let testArena = new Arena(scene)
 let stars = new StarsDisplay(scene, [[1, 1, 1], [2, 1, 1]])
 let testArmy = new ArmyDisplay(scene, 0, [[[5, 5, 10], [1, 0, 0]], [[5, 4, 10], [1, 0, 0]]])
-// let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
 let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
 let testMove = new UserMove()
 let testRaycaster = new UserRaycaster()
@@ -221,17 +220,6 @@ canvas2.addEventListener('mouseleave', (evt) => {
  *
  */
 canvas.addEventListener('click', (evt) => {
-    // if (userRayCaster.hoveredSoldier !== -1) {
-    //     if (userRayCaster.selectedSoldier !== -1) {
-    //         testArmy.setDefaultColor(userRayCaster.selectedSoldier)
-    //     }
-    //     userRayCaster.selectedSoldier = userRayCaster.hoveredSoldier
-    //     testArmy.setSelectedColor(userRayCaster.selectedSoldier)
-    // }
-    // else if (userRayCaster.selectedSoldier !== -1) {
-    //     testArmy.setDefaultColor(userRayCaster.selectedSoldier)
-    //     userRayCaster.selectedSoldier = -1
-    // }
 
     if (testRaycaster.isHoveredSoldier()) {
         if (testRaycaster.isSelectedSoldier()) {
@@ -260,6 +248,41 @@ canvas.addEventListener('contextmenu', (evt) => {
     }
 })
 
+canvas.addEventListener('mousemove', (evt) => {
+
+    // Cast a raycaster and check if it intersects any of the Soldiers from Army 1
+    let intersectedSoldier = raycaster.intersectObjects(testArmy.getSoldiers())
+    const previousIntersectedSoldierIndex = testRaycaster.getHoveredSoldier()
+
+    // If the cursor is currently hovering over an Soldier
+    if (intersectedSoldier.length !== 0) {
+        const currentIntersectedSoldierIndex = intersectedSoldier[0].object.index
+
+        // If the Soldier is being hovered over for the first time
+        if (currentIntersectedSoldierIndex !== previousIntersectedSoldierIndex) {
+
+            if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier())) {
+                testArmy.setDefaultColor(previousIntersectedSoldierIndex)
+            }
+
+            if (currentIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier()) {
+                testArmy.setHoveredColor(currentIntersectedSoldierIndex)
+            }
+        }
+
+        testRaycaster.setHoveredSoldier(currentIntersectedSoldierIndex)
+    }
+
+    else {
+        if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier())) {
+            testArmy.setDefaultColor(previousIntersectedSoldierIndex)
+        }
+
+        testRaycaster.resetHoveredSoldier()
+    }
+
+})
+
 const tick = () => {
 
     const elapsedTime = clock.getElapsedTime()
@@ -271,43 +294,7 @@ const tick = () => {
      *
      */
     raycaster.setFromCamera(mouse, camera)
-    
-    /**
-     * Updates the UserMove parameters
-     */
-    if (!inMotion) {
 
-        // Cast a raycaster and check if it intersects any of the Soldiers from Army 1
-        let intersectedSoldier = raycaster.intersectObjects(testArmy.getSoldiers())
-        const previousIntersectedSoldierIndex = testRaycaster.getHoveredSoldier()
-
-        // If the cursor is currently hovering over an Soldier
-        if (intersectedSoldier.length !== 0) {
-            const currentIntersectedSoldierIndex = intersectedSoldier[0].object.index
-
-            // If the Soldier is being hovered over for the first time
-            if (currentIntersectedSoldierIndex !== previousIntersectedSoldierIndex) {
-
-                if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier())) {
-                    testArmy.setDefaultColor(previousIntersectedSoldierIndex)
-                }
-
-                if (currentIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier()) {
-                    testArmy.setHoveredColor(currentIntersectedSoldierIndex)
-                }
-            }
-
-            testRaycaster.setHoveredSoldier(currentIntersectedSoldierIndex)
-        }
-
-        else {
-            if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier())) {
-                testArmy.setDefaultColor(previousIntersectedSoldierIndex)
-            }
-
-            testRaycaster.resetHoveredSoldier()
-        }
-    }
 
     // Check whether motion time has finished
     // if (inMotion) {
