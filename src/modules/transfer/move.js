@@ -27,8 +27,12 @@ export default class UserMove {
         this.startingFlag = true
     }
 
+    getTimeInMotion (elapsedTime) {
+        return elapsedTime - this.startTime
+    }
+
     getMovingPosition (elapsedTime) {
-        const timeInMotion = elapsedTime - this.startTime
+        const timeInMotion = this.getTimeInMotion(elapsedTime)
 
         if ((timeInMotion < 0) || (timeInMotion > MOVE_TIME_SECS)) {
             console.error('Time in motion out of bounds!')

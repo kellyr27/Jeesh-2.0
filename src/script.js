@@ -112,54 +112,7 @@ let testRaycaster = new UserRaycaster()
  * Animations
  */
 const clock = new THREE.Clock()
-const MOVE_TIME = 3
-let mouseStart = false
 let inMotion = false
-let userRayCaster = {
-    hoveredSoldier: -1,
-    selectedSoldier: -1,
-    // hoveredSelectionTile: -1,
-    // selectedSelectionTile: -1,
-    // hoveredScrollTile: -1,
-    // selectedScrollTile: -1
-}
-let userMove = {
-    startingFlag: true,
-    startTime: -1,
-    soldierNum: -1,
-    startXPosition: -1,
-    startYPosition: -1,
-    startZPosition: -1,
-    startXRotation: -1,
-    startYRotation: -1,
-    startZRotation: -1,
-    finishX: -1,
-    finishY: -1,
-    finishZ: -1,
-    finishXRotation: -1,
-    finishYRotation: -1,
-    finishZRotation: -1,
-    setStartingParameters: (startTime, startXPosition, startYPosition, startZPosition, startXRotation, startYRotation, startZRotation) => {
-        this.startTime = startTime
-        this.startXPosition = startXPosition
-        this.startYPosition = startYPosition
-        this.startZPosition = startZPosition
-        this.startXRotation = startXRotation
-        this.startYRotation = startYRotation
-        this.startZRotation = startZRotation
-        this.startingFlag = false
-    },
-    resetStartingFlag: () => {
-        this.startingFlag = true
-    },
-    getStartingFlag: () => {
-        return this.startingFlag
-    },
-    getCurrentPositions: () => {
-
-    },
-
-}
 
 /**
  *
@@ -191,12 +144,15 @@ canvas2.addEventListener('mousemove', (evt) => {
 canvas2.addEventListener('click', (evt) => {
     evt = evt || window.event
 
+    inMotion = true
+
     // Update the Scroll tiles
     const scrollTiles = testPanel.getScrollTilePaths()
     for (let i = scrollTiles.length - 1; i >= 0; i--) {
 
         if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentScrollSelected(i)
+            // testMove.setStartingParameters()
             return
         }
     }
@@ -327,6 +283,16 @@ const tick = () => {
     //         inMotion = false
     //     }
     // }
+
+    if (inMotion) {
+
+
+
+
+        if (testMove.getTimeInMotion() >= MOVE_TIME_SECS) {
+            inMotion = false
+        }
+    }
 
     // Update controls
     controls.update()
