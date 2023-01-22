@@ -130,8 +130,8 @@ export default class SelectionPanel {
                 selected: -1
             },
             selection: {
-                hovered: [-1, -1],
-                selected: [-1, -1]
+                hovered: -1,
+                selected: -1
             }
         }
 
@@ -145,25 +145,37 @@ export default class SelectionPanel {
         this.currentTiles.scroll.hovered = index
     }
 
-    resetCurrentScrollHovered () {
-        this.currentTiles.scroll.hovered = -1
-    }
-
     setCurrentScrollSelected (index) {
         this.currentTiles.scroll.selected = index
     }
 
     setCurrentSelectionHovered (index) {
-        this.currentTiles.scroll.hovered = index
-    }
-
-    resetCurrentSelectionHovered () {
-        this.currentTiles.scroll.hovered = -1
+        this.currentTiles.selection.hovered = index
     }
 
     setCurrentSelectionSelected (index) {
-        this.currentTiles.scroll.selected = index
+        this.currentTiles.selection.selected = index
     }
+
+    resetCurrentScrollHovered () {
+        this.currentTiles.scroll.hovered = -1
+    }
+
+    resetCurrentScrollSelected () {
+        this.currentTiles.scroll.selected = -1
+    }
+
+    resetCurrentSelectionHovered () {
+        this.currentTiles.selection.hovered = -1
+    }
+
+    resetCurrentSelectionSelected () {
+        this.currentTiles.selection.selected = -1
+    }
+
+    /**
+     * 
+     */
 
     drawPanel() {
         this.drawScrollTiles()
@@ -289,6 +301,7 @@ export default class SelectionPanel {
      * From the Legal Moves, get the coordinates from a the current facing direction
      */
     #getCurrentFaceCoordinates() {
+
         return this.legalMoves
             .filter((el) => {
                 return arrayEquals(el[1], this.currentDirections.face)

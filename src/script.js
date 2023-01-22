@@ -172,24 +172,41 @@ canvas2.addEventListener('mousemove', (evt) => {
     const scrollTiles = testPanel.getScrollTilePaths()
     for (let i = scrollTiles.length - 1; i >= 0; i--) {
 
-        if (scrollTiles[i] && ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
-            canvas2.style.cursor = 'pointer'
+        if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentScrollHovered(i)
-        } else {
-
+            testPanel.resetCurrentSelectionHovered()
+            return
         }
     }
 
     const selectionTiles = testPanel.getSelectionTilePaths()
     for (let i = selectionTiles.length - 1; i >= 0; i--) {
-        if (selectionTiles[i] && ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
+        if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentSelectionHovered(i)
-            canvas.style.cursor = 'pointer'
+            testPanel.resetCurrentScrollHovered()
+            return
         }
-        else if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
-            testPanel.resetCurrentSelectionHovered()
-            canvas.style.cursor = 'default'
-            // updatePath2DColor(testPanel.selectionTiles[i], testPanel.tileColorPalette['selection']['blocked'])
+    }
+})
+
+canvas2.addEventListener('click', (evt) => {
+    evt = evt || window.event
+
+    // Update the Scroll tiles
+    const scrollTiles = testPanel.getScrollTilePaths()
+    for (let i = scrollTiles.length - 1; i >= 0; i--) {
+
+        if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
+            testPanel.setCurrentScrollSelected(i)
+            return
+        }
+    }
+
+    const selectionTiles = testPanel.getSelectionTilePaths()
+    for (let i = selectionTiles.length - 1; i >= 0; i--) {
+        if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
+            testPanel.setCurrentSelectionSelected(i)
+            return
         }
     }
 })
@@ -254,8 +271,7 @@ const tick = () => {
      *
      */
     raycaster.setFromCamera(mouse, camera)
-
-
+    
     /**
      * Updates the UserMove parameters
      */
