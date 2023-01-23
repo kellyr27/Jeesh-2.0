@@ -120,6 +120,9 @@ let inMotion = false
 canvas2.addEventListener('mousemove', (evt) => {
     evt = evt || window.event
 
+    testPanel.resetCurrentScrollSelected()
+    testPanel.resetCurrentSelectionSelected()
+
     // Update the Scroll tiles
     const scrollTiles = testPanel.getScrollTilePaths()
     for (let i = scrollTiles.length - 1; i >= 0; i--) {
