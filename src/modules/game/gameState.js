@@ -473,15 +473,19 @@ export default class GameState {
     }
 
     /**
-     * Returns the current Positions of Army 1
+     * Returns the current Positions for a selected Army
      */
     getArmyCurrentPositions (armyNum) {
         return this.armies[armyNum].getPositions(this.currentMoveNum)
     }
 
     /**
-     * Returns the current Positions of Army 2
+     * Returns a list of current Attacked Coordinates for a selected Army
+     * NOTE: Includes duplicates
      */
+    getArmyCurrentAttackedCoordinates(armyNum) {
+        return this.getArmyAttackedCoordinates(this.currentMoveNum, armyNum)
+    }
 
     /**
      * ----------- DESIGNED FOR TESTING PURPOSES -----------

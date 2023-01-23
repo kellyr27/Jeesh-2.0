@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { CUBE_SIZE, ARENA_SIZE, adjustToDisplayCoordinate } from "../globals.js"
+import { CUBE_SIZE, ARENA_SIZE, adjustToDisplayCoordinate, arrayInArray } from "../globals.js"
 
 /**
  * Arena Threejs Display (or Battle Room)
@@ -10,10 +10,12 @@ export default class Arena {
     cubeEdgesGeometry = new THREE.EdgesGeometry(this.cubeGeometry)
     cubeLineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
 
+    doorCoords = [[5, 5, 0], [5, 5, 10]]
+
     constructor(scene) {
         this.scene = scene
         this.cubes = this.#createArena()
-        this.#setDoors([5,5,0],[5,5,10])
+        this.#setDoors(this.doorCoords)
     }
 
     /**
@@ -77,42 +79,71 @@ export default class Arena {
     /**
      * Sets the Material of a Cube to be transparent
      */
-    setCubeMaterialDefault (coord) {
+    #setCubeMaterialDefault(coord) {
         this.#setCubeMaterial(coord, 0xffff00, 0.03)
     }
 
     /**
      * Sets the Material of a Cube to be in the Attacked Zone of Army 1
      */
-    setCubeMaterialArmy1AttackedZone (coord) {
+    #setCubeMaterialArmy1AttackedZone(coord) {
         this.#setCubeMaterial(coord, 0x00ff00, 0.5)
     }
 
     /**
      * Sets the Material of a Cube to be in the Attacked Zone of Army 2
      */
-    setCubeMaterialArmy2AttackedZone (coord) {
+    #setCubeMaterialArmy2AttackedZone(coord) {
         this.#setCubeMaterial(coord, 0xff0000, 0.5)
     }
 
     /**
      * Sets the Material of a Cube to be the in the Attacked Zone of both Armies
      */
-    setCubeMaterialDuelAttackedZone (coord) {
+    #setCubeMaterialDuelAttackedZone(coord) {
         this.#setCubeMaterial(coord, 0xff00ff, 0.2)
+    }
+
+    /**
+     * Sets the arena coloring at each position
+     */
+    setArena(army1AttackedZone, army2AttackedZone) {
+        for (let x = 0; x < ARENA_SIZE; x++) {
+            for (let y = 0; y < ARENA_SIZE; y++) {
+                for (let z = 0; z < ARENA_SIZE; z++) {
+                    const isInArmy1AttackedZone = arrayInArray([x, y, z], army1AttackedZone)
+                    const isInArmy2AttackedZone = arrayInArray([x, y, z], army2AttackedZone)
+
+                    if (isInArmy1AttackedZone && isInArmy2AttackedZone) {
+                        this.#setCubeMaterialDuelAttackedZone([x, y, z])
+                    }
+                    else if (isInArmy1AttackedZone) {
+                        this.#setCubeMaterialArmy1AttackedZone([x, y, z])
+                    }
+                    else if (isInArmy2AttackedZone) {
+                        this.#setCubeMaterialArmy2AttackedZone([x, y, z])
+                    }
+                    else {
+                        this.#setCubeMaterialDefault([x, y, z])
+                    }
+                }
+            }
+        }
+
+        this.#setDoors(this.doorCoords)
     }
 
     /**
      * Sets the Material of a Cube to show the Door for both Armies
      */
-    #setCubeMaterialDoor (coord) {
+    #setCubeMaterialDoor(coord) {
         this.#setCubeMaterial(coord, 0xffff00, 0.5)
     }
 
     /**
      * Sets the Door Materials when creating the Arena
      */
-    #setDoors (...coords) {
+    #setDoors(coords) {
         for (const coord of coords) {
             this.#setCubeMaterialDoor(coord)
         }
