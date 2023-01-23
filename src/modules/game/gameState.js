@@ -217,6 +217,17 @@ export default class GameState {
         return soldierPossibleActions
     }
 
+    getSoldierCurrentPosition(armyNum, soldierNum) {
+        return this.armies[armyNum].soldiers[soldierNum].getPosition(this.currentMoveNum)
+    }
+
+    /**
+     * Gets a list of possible moves for a Soldier at the current move
+     */
+    getSoldierCurrentPossibleMoves(armyNum, soldierNum) {
+        return this.getSoldierPossibleMoves(this.currentMoveNum, armyNum, soldierNum)
+    }
+
     /**
      * Returns a list of possible moves for an given Army at an given move
      * a MOVE is in the form of [Soldier index, POSITION]

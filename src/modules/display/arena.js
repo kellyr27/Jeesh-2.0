@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { CUBE_SIZE, ARENA_SIZE, adjustToDisplayCoordinate, arrayInArray } from "../globals.js"
+import { CUBE_SIZE, ARENA_SIZE, adjustToDisplayCoordinate, arrayInArray, arrayEquals } from "../globals.js"
 
 /**
  * Arena Threejs Display (or Battle Room)
@@ -15,6 +15,7 @@ export default class Arena {
     constructor(scene) {
         this.scene = scene
         this.cubes = this.#createArena()
+        this.currentHoveredCoordinate = [-1, -1, -1]
         this.#setDoors(this.doorCoords)
     }
 
@@ -105,6 +106,28 @@ export default class Arena {
     }
 
     /**
+     * Sets the Material of a Cube to be a possible move (from the Selection Panel)
+     */
+    #setCubeMaterialPossibleMove(coord) {
+        this.#setCubeMaterial(coord, 0xa000c8, 0.3)
+    }
+
+    setHovered(coord) {
+        // Check whether there is currently an hovered coordinate
+        if (!arrayEquals(this.currentHoveredCoordinate, [-1, -1, -1])) {
+            this.#setCubeMaterialDefault(this.currentHoveredCoordinate)
+        }
+
+        // Check whether the new coord is valid
+        if (!arrayEquals(coord, [-1, -1, -1])) {
+            this.#setCubeMaterialPossibleMove(coord)
+        }
+
+        
+        this.currentHoveredCoordinate = coord
+    }
+
+    /**
      * Sets the arena coloring at each position
      */
     setArena(army1AttackedZone, army2AttackedZone) {
@@ -132,6 +155,8 @@ export default class Arena {
 
         this.#setDoors(this.doorCoords)
     }
+
+
 
     /**
      * Sets the Material of a Cube to show the Door for both Armies

@@ -100,13 +100,12 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.render(scene, camera)
 
-let game = new GameState([[[5,5,10],[0,0,-1]],[[5,4,10],[0,0,-1]],[[4,5,10],[0,0,-1]]],[[[5,5,5],[0,0,1]]])
+let game = new GameState([[[5,5,10],[0,0,-1]],[[5,4,10],[0,0,-1]],[[4,5,10],[0,0,-1]]],[[[5,5,0],[0,0,1]]])
 let testArena = new Arena(scene)
 testArena.setArena(game.getArmyCurrentAttackedCoordinates(0), game.getArmyCurrentAttackedCoordinates(1))
 let stars = new StarsDisplay(scene, game.getStars())
-console.log(game.getArmyCurrentAttackedCoordinates(0))
 let testArmy = new ArmyDisplay(scene, 0, game.getArmyCurrentPositions(0))
-let testPanel = new SelectionPanel(canvas2, [[5, 5, 10], [0, 0, -1]], [[[5, 5, 9], [0, 0, -1]], [[5, 4, 9], [0, 0, -1]]])
+let testPanel = new SelectionPanel(canvas2, game.getSoldierCurrentPosition(0,0), game.getSoldierCurrentPossibleMoves(0,0))
 let testMove = new UserMove()
 let testRaycaster = new UserRaycaster()
 
@@ -140,9 +139,11 @@ canvas2.addEventListener('mousemove', (evt) => {
     const selectionTiles = testPanel.getSelectionTilePaths()
     for (let i = selectionTiles.length - 1; i >= 0; i--) {
         if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
+            console.log(i)
             testPanel.setCurrentSelectionHovered(i)
             testPanel.resetCurrentScrollHovered()
             testPanel.drawPanel()
+            testArena.setHovered(testPanel.getHoveredPosition())
             return
         }
     }
@@ -150,7 +151,6 @@ canvas2.addEventListener('mousemove', (evt) => {
 
 canvas2.addEventListener('click', (evt) => {
     evt = evt || window.event
-
 
     // Update the Scroll tiles
     const scrollTiles = testPanel.getScrollTilePaths()

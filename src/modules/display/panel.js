@@ -198,7 +198,6 @@ export default class SelectionPanel {
         if (scrollTilesNum === 0) {
             let tempFace = structuredClone(this.currentDirections.face)
             this.currentDirections.face = this.currentDirections.up
-            console.log(inverseDirection(tempFace), tempFace)
             this.currentDirections.up = inverseDirection(tempFace)
             this.currentDirections.down = tempFace
         }
@@ -350,22 +349,6 @@ export default class SelectionPanel {
     updateSelectionTiles() {
         const faceSelectionCoordinates = this.#getCurrentFaceCoordinates()
 
-        // for (const selectionTile of this.selectionTiles) {
-
-        //     // If the tile is not a possible Move
-        //     if (!arrayInArray(this.getAbsoluteCoordinate(selectionTile), faceSelectionCoordinates)) {
-        //         selectionTile.setColor(this.tileColorPalette['selection']['blocked'])
-        //     }
-        //     else if (arrayEquals(selectionTile.getRelativeAxis(), this.currentTiles['selection']['selected'])) {
-        //         selectionTile.setColor(this.tileColorPalette['selection']['selected'])
-        //     }
-        //     else if (arrayEquals(selectionTile.getRelativeAxis(), this.currentTiles['selection']['hovered'])) {
-        //         selectionTile.setColor(this.tileColorPalette['selection']['hovered'])
-        //     }
-        //     else {
-        //         selectionTile.setColor(this.tileColorPalette['selection']['default'])
-        //     }
-        // }
         for (let i = 0; i < this.selectionTiles.length; i++) {
             // If the tile is not a possible Move
             if (!arrayInArray(this.getAbsoluteCoordinate(this.selectionTiles[i]), faceSelectionCoordinates)) {
@@ -486,8 +469,25 @@ export default class SelectionPanel {
         })
     }
 
+    /**
+     * NOTE: May need to make a deep clone
+     */
     getCurrentPosition () {
         return this.currentPosition
+    }
+
+    /**
+     * 
+     */
+    getHoveredPosition () {
+        const hoveredPosition = this.getAbsoluteCoordinate(this.selectionTiles[this.currentTiles.selection.hovered])
+        // Check if the position is a legal move
+        if (!arrayInArray(hoveredPosition, this.#getCurrentFaceCoordinates())) {
+            return [-1, -1, -1]
+        }
+        else {
+            return hoveredPosition
+        }
     }
 
 }
