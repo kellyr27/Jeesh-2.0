@@ -132,6 +132,7 @@ canvas2.addEventListener('mousemove', (evt) => {
             testPanel.setCurrentScrollHovered(i)
             testPanel.resetCurrentSelectionHovered()
             testPanel.drawPanel()
+            testArena.resetHovered()
             return
         }
     }
@@ -139,7 +140,6 @@ canvas2.addEventListener('mousemove', (evt) => {
     const selectionTiles = testPanel.getSelectionTilePaths()
     for (let i = selectionTiles.length - 1; i >= 0; i--) {
         if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
-            console.log(i)
             testPanel.setCurrentSelectionHovered(i)
             testPanel.resetCurrentScrollHovered()
             testPanel.drawPanel()
@@ -187,13 +187,21 @@ canvas2.addEventListener('mouseleave', (evt) => {
  */
 canvas1.addEventListener('click', (evt) => {
 
+    // If we are currently hovering over a Soldier
     if (testRaycaster.isHoveredSoldier()) {
+
+        // And there is a previously selected Soldier, set that Soldier back to default
         if (testRaycaster.isSelectedSoldier()) {
             testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
         }
+
+        // Now set the newly Selected Soldier and color
         testRaycaster.setSelectedSoldier(testRaycaster.getHoveredSoldier())
         testArmy.setSelectedColor(testRaycaster.getSelectedSoldier())
+        testPanel.setSoldier(game.getSoldierCurrentPosition(0, testRaycaster.getSelectedSoldier()), game.getSoldierCurrentPossibleMoves(0,testRaycaster.getSelectedSoldier()))
     }
+
+    // Check if we are not currently hovering but there is a selected Soldier
     else if (testRaycaster.isSelectedSoldier()) {
         testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
         testRaycaster.resetSelectedSoldier()

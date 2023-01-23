@@ -117,13 +117,8 @@ export default class SelectionPanel {
         this.legalMoves = initialLegalMoves
 
         this.scrollTileCoordinates = this.createScrollTileCoordinates()
-        this.currentDirections = {
-            face: [0, 0, -1],
-            up: [0, 1, 0],
-            down: [0, -1, 0],
-            left: [-1, 0, 0],
-            right: [1, 0, 0]
-        }
+        this.#setCurrentDirectionsDefault()
+
         this.currentTiles = {
             scroll: {
                 hovered: -1,
@@ -139,6 +134,16 @@ export default class SelectionPanel {
         this.selectionTiles = this.#createSelectionTiles()
 
         this.drawPanel()
+    }
+
+    #setCurrentDirectionsDefault () {
+        this.currentDirections = {
+            face: [0, 0, -1],
+            up: [0, 1, 0],
+            down: [0, -1, 0],
+            left: [-1, 0, 0],
+            right: [1, 0, 0]
+        }
     }
 
     setCurrentScrollHovered (index) {
@@ -453,8 +458,11 @@ export default class SelectionPanel {
     /**
      * Sets the legal moves for the currently selected Soldier
      */
-    setLegalMoves(legalMoves) {
+    setSoldier(currentPosition, legalMoves) {
+        this.currentPosition = currentPosition
         this.legalMoves = legalMoves
+        this.#setCurrentDirectionsDefault()
+        this.drawPanel()
     }
 
     getScrollTilePaths () {

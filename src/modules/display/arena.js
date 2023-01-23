@@ -112,6 +112,13 @@ export default class Arena {
         this.#setCubeMaterial(coord, 0xa000c8, 0.3)
     }
 
+    resetHovered() {
+        if (!arrayEquals(this.currentHoveredCoordinate, [-1, -1, -1])) {
+            this.#setCubeMaterialDefault(this.currentHoveredCoordinate)
+        }
+        this.currentHoveredCoordinate = [-1, -1, -1]
+    }
+
     setHovered(coord) {
         // Check whether there is currently an hovered coordinate
         if (!arrayEquals(this.currentHoveredCoordinate, [-1, -1, -1])) {
