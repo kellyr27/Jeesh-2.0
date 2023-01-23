@@ -49,20 +49,29 @@ export default class Army {
     }
 
     /**
-     * Gets an array of Soldier coordinates at an given move.
+     * Gets an array of Soldier Positions at an given move
      */
-    getCoordinates(moveNum) {
+    getPositions(moveNum) {
         const positions = []
 
         for (const soldier of this.soldiers) {
             if (soldier.isAlive(moveNum)) {
-                positions.push(soldier.getPosition(moveNum)[0])
+                positions.push(soldier.getPosition(moveNum))
             }
         }
 
         return positions
     }
 
+    /**
+     * Gets an array of Soldier coordinates at an given move.
+     */
+    getCoordinates(moveNum) {
+        return this.getPositions(moveNum).map((pos) => {
+            return pos[0]
+        })
+    }
+
 }
 
-let a = new Army([[[1,1,1],[0,0,1]]])
+let a = new Army([[[1, 1, 1], [0, 0, 1]]])

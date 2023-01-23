@@ -5,7 +5,7 @@
  */
 
 import Army from "./army.js"
-import { arrayEquals, arrayInArray, isNumBetween } from "../globals.js"
+import { arrayEquals, arrayInArray, isNumBetween, generateRandomInt, MAX_NUM_STARS, ARENA_SIZE } from "../globals.js"
 
 export default class GameState {
 
@@ -38,7 +38,7 @@ export default class GameState {
      * Stars cannot be touching the edge of the ARENA
      */
     #createStars() {
-        const numStars = generateRandomInt(MAX_STARS)
+        const numStars = generateRandomInt(MAX_NUM_STARS)
         const starCoordinates = []
 
         for (let i = 0; i < numStars; i++) {
@@ -50,6 +50,13 @@ export default class GameState {
         }
 
         return starCoordinates
+    }
+
+    /**
+     * Get a list of coordinates of the stars for display
+     */
+    getStars () {
+        return this.starCoordinates
     }
 
     /**
@@ -464,6 +471,17 @@ export default class GameState {
             return this.gameStatus[0]
         }
     }
+
+    /**
+     * Returns the current Positions of Army 1
+     */
+    getArmyCurrentPositions (armyNum) {
+        return this.armies[armyNum].getPositions(this.currentMoveNum)
+    }
+
+    /**
+     * Returns the current Positions of Army 2
+     */
 
     /**
      * ----------- DESIGNED FOR TESTING PURPOSES -----------
