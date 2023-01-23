@@ -1,9 +1,12 @@
 import { MOVE_TIME_SECS } from "../globals"
+/**
+ * Change Rotation to Direction and figure out the math
+ */
 
 export default class UserMove {
 
     constructor () {
-        this.inMotion = false
+        // this.inMotion = false
         this.startingFlag = true,
         this.startTime = -1
         this.soldierNum = -1
@@ -15,13 +18,25 @@ export default class UserMove {
 
     setInMotion (startTime) {
         this.startTime = startTime
-        this.inMotion = true
+        // this.inMotion = true
     }
 
-    setStartingParameters (startTime, startingPosition, startingRotation) {
-        this.startTime = startTime
+    setSoldierNum (soldierNum) {
+        this.soldierNum = soldierNum
+    }
+
+    getSoldierNum() {
+        return this.soldierNum
+    }
+
+    setStartingParameters (startingPosition, startingRotation) {
+        // this.startTime = startTime
         this.startingPosition = startingPosition
         this.startingRotation = startingRotation
+    }
+
+    setStartTime (startTime) {
+        this.startTime = startTime
         this.startingFlag = false
     }
 

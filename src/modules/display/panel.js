@@ -486,4 +486,8 @@ export default class SelectionPanel {
         })
     }
 
+    getCurrentPosition () {
+        return this.currentPosition
+    }
+
 }

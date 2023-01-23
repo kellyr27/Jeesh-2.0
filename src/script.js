@@ -112,7 +112,7 @@ let testRaycaster = new UserRaycaster()
  * Animations
  */
 const clock = new THREE.Clock()
-let inMotion = false
+let inMotionLock = false
 
 /**
  *
@@ -149,7 +149,6 @@ canvas2.addEventListener('mousemove', (evt) => {
 canvas2.addEventListener('click', (evt) => {
     evt = evt || window.event
 
-    inMotion = true
 
     // Update the Scroll tiles
     const scrollTiles = testPanel.getScrollTilePaths()
@@ -158,7 +157,8 @@ canvas2.addEventListener('click', (evt) => {
         if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentScrollSelected(i)
             testPanel.drawPanel()
-            // testMove.setStartingParameters()
+            const [startingPosition, startingDirection] = testPanel.getCurrentPosition()
+            testMove.setStartingParameters(startingPosition, startingDirection)
             return
         }
     }
@@ -167,6 +167,8 @@ canvas2.addEventListener('click', (evt) => {
     for (let i = selectionTiles.length - 1; i >= 0; i--) {
         if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentSelectionSelected(i)
+            inMotionLock = true
+            // testMove.setStartingParameters()
             return
         }
     }
@@ -289,14 +291,20 @@ const tick = () => {
     //         inMotion = false
     //     }
     // }
+    if (inMotionLock) {
 
-    if (inMotion) {
+        if (testMove.getStartingFlag()) {
+            testMove.setStartTime(elapsedTime)
+            testMove.setSoldierNum(testRaycaster.getSelectedSoldier())
+        }
 
-        
+        const [currentPositionX, currentPositionY, currentPositionZ] = testMove.getMovingPosition(elapsedTime)
+        testArmy.setSoldierPosition(testMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
 
-
-        if (testMove.getTimeInMotion() >= MOVE_TIME_SECS) {
-            inMotion = false
+        if (testMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
+            
+            inMotionLock = false
+            testMove.resetStartingFlag()
         }
     }
 
