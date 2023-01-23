@@ -13,7 +13,7 @@ import { ARENA_SIZE, MOVE_TIME_SECS } from './modules/globals'
 /**
  * Canvas for Arena
  */
-const canvas = document.querySelector('canvas.webgl')
+const canvas1 = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 /**
@@ -61,7 +61,7 @@ const raycaster = new THREE.Raycaster()
  */
 window.addEventListener('dblclick', () => {
     if (!document.fullscreenElement) {
-        canvas.requestFullscreen()
+        canvas1.requestFullscreen()
     }
     else {
         document.exitFullscreen()
@@ -88,13 +88,13 @@ scene.add(camera)
 /**
  * Controls
  */
-const controls = new TrackballControls(camera, canvas)
+const controls = new TrackballControls(camera, canvas1)
 
 /**
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas: canvas1
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -127,6 +127,7 @@ canvas2.addEventListener('mousemove', (evt) => {
         if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentScrollHovered(i)
             testPanel.resetCurrentSelectionHovered()
+            testPanel.drawPanel()
             return
         }
     }
@@ -136,6 +137,7 @@ canvas2.addEventListener('mousemove', (evt) => {
         if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentSelectionHovered(i)
             testPanel.resetCurrentScrollHovered()
+            testPanel.drawPanel()
             return
         }
     }
@@ -152,6 +154,7 @@ canvas2.addEventListener('click', (evt) => {
 
         if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentScrollSelected(i)
+            testPanel.drawPanel()
             // testMove.setStartingParameters()
             return
         }
@@ -169,13 +172,13 @@ canvas2.addEventListener('click', (evt) => {
 canvas2.addEventListener('mouseleave', (evt) => {
     // userRayCaster.hoveredScrollTile = -1
     testPanel.resetCurrentScrollHovered()
-    canvas.style.cursor = 'default'
+    canvas1.style.cursor = 'default'
 })
 
 /**
  *
  */
-canvas.addEventListener('click', (evt) => {
+canvas1.addEventListener('click', (evt) => {
 
     if (testRaycaster.isHoveredSoldier()) {
         if (testRaycaster.isSelectedSoldier()) {
@@ -190,7 +193,7 @@ canvas.addEventListener('click', (evt) => {
     }
 })
 
-canvas.addEventListener('contextmenu', (evt) => {
+canvas1.addEventListener('contextmenu', (evt) => {
 
     if (testRaycaster.isSelectedSoldier()) {
         if (testRaycaster.getHoveredSoldier() === testRaycaster.getSelectedSoldier()) {
@@ -204,7 +207,7 @@ canvas.addEventListener('contextmenu', (evt) => {
     }
 })
 
-canvas.addEventListener('mousemove', (evt) => {
+canvas1.addEventListener('mousemove', (evt) => {
 
     // Cast a raycaster and check if it intersects any of the Soldiers from Army 1
     let intersectedSoldier = raycaster.intersectObjects(testArmy.getSoldiers())
@@ -286,7 +289,7 @@ const tick = () => {
 
     if (inMotion) {
 
-
+        
 
 
         if (testMove.getTimeInMotion() >= MOVE_TIME_SECS) {

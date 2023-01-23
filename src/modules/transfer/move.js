@@ -3,6 +3,7 @@ import { MOVE_TIME_SECS } from "../globals"
 export default class UserMove {
 
     constructor () {
+        this.inMotion = false
         this.startingFlag = true,
         this.startTime = -1
         this.soldierNum = -1
@@ -10,6 +11,11 @@ export default class UserMove {
         this.startingRotation = [-1, -1, -1]
         this.finishPosition = [-1, -1, -1]
         this.finishRotation = [-1, -1, -1]
+    }
+
+    setInMotion (startTime) {
+        this.startTime = startTime
+        this.inMotion = true
     }
 
     setStartingParameters (startTime, startingPosition, startingRotation) {

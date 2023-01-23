@@ -28,8 +28,8 @@ function addCoordinates(...coords) {
  */
 function inverseDirection(direction) {
     let inverse = [0, 0, 0]
-    for (let el of inverse) {
-        inverse += (el * -1)
+    for (let i = 0; i < direction.length; i++) {
+        inverse[i] += (- direction[i])
     }
     return inverse
 }
@@ -147,6 +147,7 @@ export default class SelectionPanel {
 
     setCurrentScrollSelected (index) {
         this.currentTiles.scroll.selected = index
+        this.updateDirections(index)
     }
 
     setCurrentSelectionHovered (index) {
@@ -178,6 +179,8 @@ export default class SelectionPanel {
      */
 
     drawPanel() {
+        this.updateScrollTiles()
+        this.updateSelectionTiles()
         this.drawScrollTiles()
         this.drawSelectionTiles()
         this.drawText()
@@ -195,6 +198,7 @@ export default class SelectionPanel {
         if (scrollTilesNum === 0) {
             let tempFace = structuredClone(this.currentDirections.face)
             this.currentDirections.face = this.currentDirections.up
+            console.log(inverseDirection(tempFace), tempFace)
             this.currentDirections.up = inverseDirection(tempFace)
             this.currentDirections.down = tempFace
         }
@@ -265,15 +269,15 @@ export default class SelectionPanel {
     updateScrollTiles() {
 
         for (let i = 0; i < this.scrollTiles.length; i++) {
-
+            
             if (this.currentTiles['scroll']['selected'] === i) {
-                this.currentTiles[i].setColor(this.tileColorPalette['scroll']['blocked'])
+                this.scrollTiles[i].setColor(this.tileColorPalette['scroll']['selected'])
             }
             else if (this.currentTiles['scroll']['hovered'] === i) {
-                this.currentTiles[i].setColor(this.tileColorPalette['scroll']['hovered'])
+                this.scrollTiles[i].setColor(this.tileColorPalette['scroll']['hovered'])
             }
             else {
-                this.currentTiles[i].setColor(this.tileColorPalette['scroll']['default'])
+                this.scrollTiles[i].setColor(this.tileColorPalette['scroll']['default'])
             }
         }
     }
@@ -346,20 +350,35 @@ export default class SelectionPanel {
     updateSelectionTiles() {
         const faceSelectionCoordinates = this.#getCurrentFaceCoordinates()
 
-        for (const selectionTile of this.selectionTiles) {
+        // for (const selectionTile of this.selectionTiles) {
 
+        //     // If the tile is not a possible Move
+        //     if (!arrayInArray(this.getAbsoluteCoordinate(selectionTile), faceSelectionCoordinates)) {
+        //         selectionTile.setColor(this.tileColorPalette['selection']['blocked'])
+        //     }
+        //     else if (arrayEquals(selectionTile.getRelativeAxis(), this.currentTiles['selection']['selected'])) {
+        //         selectionTile.setColor(this.tileColorPalette['selection']['selected'])
+        //     }
+        //     else if (arrayEquals(selectionTile.getRelativeAxis(), this.currentTiles['selection']['hovered'])) {
+        //         selectionTile.setColor(this.tileColorPalette['selection']['hovered'])
+        //     }
+        //     else {
+        //         selectionTile.setColor(this.tileColorPalette['selection']['default'])
+        //     }
+        // }
+        for (let i = 0; i < this.selectionTiles.length; i++) {
             // If the tile is not a possible Move
-            if (!arrayInArray(this.getAbsoluteCoordinate(selectionTile), faceSelectionCoordinates)) {
-                selectionTile.setColor(this.tileColorPalette['selection']['blocked'])
+            if (!arrayInArray(this.getAbsoluteCoordinate(this.selectionTiles[i]), faceSelectionCoordinates)) {
+                this.selectionTiles[i].setColor(this.tileColorPalette['selection']['blocked'])
             }
-            else if (arrayEquals(selectionTile.getRelativeAxis(), this.currentTiles['selection']['selected'])) {
-                selectionTile.setColor(this.tileColorPalette['selection']['selected'])
+            else if (this.currentTiles['selection']['selected'] === i) {
+                this.selectionTiles[i].setColor(this.tileColorPalette['selection']['selected'])
             }
-            else if (arrayEquals(selectionTile.getRelativeAxis(), this.currentTiles['selection']['hovered'])) {
-                selectionTile.setColor(this.tileColorPalette['selection']['hovered'])
+            else if (this.currentTiles['selection']['hovered'] === i) {
+                this.selectionTiles[i].setColor(this.tileColorPalette['selection']['hovered'])
             }
             else {
-                selectionTile.setColor(this.tileColorPalette['selection']['default'])
+                this.selectionTiles[i].setColor(this.tileColorPalette['selection']['default'])
             }
         }
     }
