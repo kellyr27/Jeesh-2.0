@@ -29,10 +29,12 @@ export default class UserMove {
         return this.soldierNum
     }
 
-    setStartingParameters (startingPosition, startingRotation) {
+    setStartingParameters (startingPosition, finishPosition) {
         // this.startTime = startTime
-        this.startingPosition = startingPosition
-        this.startingRotation = startingRotation
+        this.startingPosition = startingPosition[0]
+        this.startingRotation = startingPosition[1]
+        this.finishPosition = finishPosition[0]
+        this.finishRotation = finishPosition[1]
     }
 
     setStartTime (startTime) {
@@ -52,7 +54,7 @@ export default class UserMove {
         return elapsedTime - this.startTime
     }
 
-    getMovingPosition (elapsedTime) {
+    getMovingRotation (elapsedTime) {
         const timeInMotion = this.getTimeInMotion(elapsedTime)
 
         if ((timeInMotion < 0) || (timeInMotion > MOVE_TIME_SECS)) {
@@ -66,7 +68,7 @@ export default class UserMove {
         ]
     }
 
-    getMovingRotation (elapsedTime) {
+    getMovingPosition (elapsedTime) {
         const timeInMotion = elapsedTime - this.startTime
 
         if ((timeInMotion < 0) || (timeInMotion > MOVE_TIME_SECS)) {

@@ -498,4 +498,22 @@ export default class SelectionPanel {
         }
     }
 
+    isValidPosition () {
+        const hoveredPosition = this.getAbsoluteCoordinate(this.selectionTiles[this.currentTiles.selection.hovered])
+        // Check if the position is a legal move
+        if (!arrayInArray(hoveredPosition, this.#getCurrentFaceCoordinates())) {
+            return false
+        }
+        else {
+            return true
+        }
+    }
+
+    /**
+     * 
+     */
+    getHoveredMove () {
+        return [this.getHoveredPosition(), this.currentDirections.face]
+    }
+
 }

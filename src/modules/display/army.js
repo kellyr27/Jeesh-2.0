@@ -49,12 +49,12 @@ export default class ArmyDisplay {
             soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, 0))
         }
         else if (arrayEquals(direction, [0, 0, 1])) {
-            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
-            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, - Math.PI / 2))
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(- Math.PI / 2, 0, 0))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(- Math.PI / 2, 0, 0))
         }
         else if (arrayEquals(direction, [0, 0, -1])) {
-            soldier[0].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
-            soldier[1].rotation.setFromVector3(new THREE.Vector3(0, 0, Math.PI / 2))
+            soldier[0].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, 0, 0))
+            soldier[1].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, 0, 0))
         }
         else {
             console.error('Direction inputted incorrectly.')
@@ -123,7 +123,9 @@ export default class ArmyDisplay {
 
     setSoldierPosition(soldierNum, x, y, z) {
 
-        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate([x, y, z])
+
+        console.log(xOffset, yOffset, zOffset)
 
         this.soldiers[soldierNum][0].position.set(xOffset, yOffset, zOffset)
         this.soldiers[soldierNum][1].position.set(xOffset, yOffset, zOffset)
@@ -131,7 +133,7 @@ export default class ArmyDisplay {
 
     setSoldierRotation(soldierNum, x, y, z) {
 
-        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(x, y, z)
+        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate([x, y, z])
 
         this.soldiers[soldierNum][0].rotation.set(xOffset, yOffset, zOffset)
         this.soldiers[soldierNum][1].rotation.set(xOffset, yOffset, zOffset)

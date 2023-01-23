@@ -8,7 +8,7 @@ import StarsDisplay from './modules/display/stars'
 import ArmyDisplay from './modules/display/army'
 import UserMove from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
-import { ARENA_SIZE, MOVE_TIME_SECS } from './modules/globals'
+import { ARENA_SIZE, arrayEquals, MOVE_TIME_SECS } from './modules/globals'
 
 /**
  * Canvas for Arena
@@ -169,7 +169,14 @@ canvas2.addEventListener('click', (evt) => {
     for (let i = selectionTiles.length - 1; i >= 0; i--) {
         if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
             testPanel.setCurrentSelectionSelected(i)
-            inMotionLock = true
+
+    
+            // Check if valid position
+            if (testPanel.isValidPosition()) {
+                inMotionLock = true
+                testMove.setStartingParameters(testPanel.getCurrentPosition(), testPanel.getHoveredMove())
+                console.log(testPanel.getHoveredMove(), testPanel.getCurrentPosition())
+            }
             // testMove.setStartingParameters()
             return
         }
@@ -202,10 +209,11 @@ canvas1.addEventListener('click', (evt) => {
     }
 
     // Check if we are not currently hovering but there is a selected Soldier
-    else if (testRaycaster.isSelectedSoldier()) {
-        testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
-        testRaycaster.resetSelectedSoldier()
-    }
+    // else if (testRaycaster.isSelectedSoldier()) {
+    //     testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
+    //     testRaycaster.resetSelectedSoldier()
+    //     testPanel.setSoldier(game.getSoldierCurrentPosition(0, 0), game.getSoldierCurrentPossibleMoves(0,0))
+    // }
 })
 
 canvas1.addEventListener('contextmenu', (evt) => {
@@ -220,6 +228,7 @@ canvas1.addEventListener('contextmenu', (evt) => {
 
         testRaycaster.resetSelectedSoldier()
     }
+    testPanel.setSoldier(game.getSoldierCurrentPosition(0, 0), game.getSoldierCurrentPossibleMoves(0,0))
 })
 
 canvas1.addEventListener('mousemove', (evt) => {
@@ -307,8 +316,8 @@ const tick = () => {
             testMove.setStartTime(elapsedTime)
             testMove.setSoldierNum(testRaycaster.getSelectedSoldier())
         }
-
         const [currentPositionX, currentPositionY, currentPositionZ] = testMove.getMovingPosition(elapsedTime)
+        console.log(currentPositionX, currentPositionY, currentPositionZ)
         testArmy.setSoldierPosition(testMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
 
         if (testMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
