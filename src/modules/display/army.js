@@ -125,8 +125,6 @@ export default class ArmyDisplay {
 
         const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate([x, y, z])
 
-        console.log(xOffset, yOffset, zOffset)
-
         this.soldiers[soldierNum][0].position.set(xOffset, yOffset, zOffset)
         this.soldiers[soldierNum][1].position.set(xOffset, yOffset, zOffset)
     }

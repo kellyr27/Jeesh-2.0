@@ -3,6 +3,7 @@
  */
 
 import {jeeshSimulateGame, jeeshGetNextState, jeeshGetGain, jeeshGetPossibleActions} from './transfer.js'
+import Node from './node.js'
 
 /**
  * Selection Phase

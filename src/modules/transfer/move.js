@@ -16,6 +16,10 @@ export default class UserMove {
         this.finishRotation = [-1, -1, -1]
     }
 
+    getMove () {
+        return [this.finishPosition, this.finishRotation]
+    }
+
     setInMotion (startTime) {
         this.startTime = startTime
         // this.inMotion = true

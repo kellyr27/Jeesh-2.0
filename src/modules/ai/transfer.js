@@ -52,7 +52,7 @@ export function jeeshSimulateGame(state) {
 
     // Simulate a random game of Jeesh
     while (!simulationState.isGameOver()) {
-        const possibleActions = simulationState.#getCurrentArmyPossibleMoves()
+        const possibleActions = simulationState.getCurrentArmyPossibleMoves()
         const [soldierNumToMove, actionSelected] = selectRandomAction(possibleActions)
         simulationState.updateGameState(soldierNumToMove, actionSelected)
     }

@@ -9,6 +9,7 @@ import ArmyDisplay from './modules/display/army'
 import UserMove from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
 import { ARENA_SIZE, arrayEquals, MOVE_TIME_SECS } from './modules/globals'
+import { mctsBot1 } from './modules/ai/mcts'
 
 /**
  * Canvas for Arena
@@ -100,11 +101,12 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.render(scene, camera)
 
-let game = new GameState([[[5,5,10],[0,0,-1]],[[5,4,10],[0,0,-1]],[[4,5,10],[0,0,-1]]],[[[5,5,0],[0,0,1]]])
+let game = new GameState([[[5,5,10],[0,0,-1]],[[5,4,10],[0,0,-1]],[[4,5,10],[0,0,-1]]],[[[5,5,6],[0,0,1]],[[5,4,6],[0,0,1]]])
 let testArena = new Arena(scene)
 testArena.setArena(game.getArmyCurrentAttackedCoordinates(0), game.getArmyCurrentAttackedCoordinates(1))
 let stars = new StarsDisplay(scene, game.getStars())
 let testArmy = new ArmyDisplay(scene, 0, game.getArmyCurrentPositions(0))
+let testOppArmy = new ArmyDisplay(scene, 1, game.getArmyCurrentPositions(1))
 let testPanel = new SelectionPanel(canvas2, game.getSoldierCurrentPosition(0,0), game.getSoldierCurrentPossibleMoves(0,0))
 let testMove = new UserMove()
 let testRaycaster = new UserRaycaster()
@@ -114,6 +116,7 @@ let testRaycaster = new UserRaycaster()
  */
 const clock = new THREE.Clock()
 let inMotionLock = false
+let aiLock = false
 
 /**
  *
@@ -175,7 +178,7 @@ canvas2.addEventListener('click', (evt) => {
             if (testPanel.isValidPosition()) {
                 inMotionLock = true
                 testMove.setStartingParameters(testPanel.getCurrentPosition(), testPanel.getHoveredMove())
-                console.log(testPanel.getHoveredMove(), testPanel.getCurrentPosition())
+                // console.log(testPanel.getHoveredMove(), testPanel.getCurrentPosition())
             }
             // testMove.setStartingParameters()
             return
@@ -315,16 +318,22 @@ const tick = () => {
         if (testMove.getStartingFlag()) {
             testMove.setStartTime(elapsedTime)
             testMove.setSoldierNum(testRaycaster.getSelectedSoldier())
+            game.updateGameState(testMove.getSoldierNum(), testMove.getMove())
         }
         const [currentPositionX, currentPositionY, currentPositionZ] = testMove.getMovingPosition(elapsedTime)
-        console.log(currentPositionX, currentPositionY, currentPositionZ)
         testArmy.setSoldierPosition(testMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
 
         if (testMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
             
             inMotionLock = false
             testMove.resetStartingFlag()
+            aiLock = true
         }
+    }
+
+    if (aiLock) {
+        console.log(mctsBot1(game))
+        aiLock = false
     }
 
     // Update controls

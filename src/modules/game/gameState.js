@@ -459,7 +459,7 @@ export default class GameState {
 
         // When the game is over, the result will print to the console
         if (this.isGameOver()) {
-            this.printEndOfGameStatus()
+            // this.printEndOfGameStatus()
             return
         }
 

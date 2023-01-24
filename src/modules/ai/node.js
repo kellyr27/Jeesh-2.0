@@ -21,7 +21,7 @@ function getRandomSubarray(arr, size) {
 /**
  * Node for the Search Tree
  */
-class Node {
+export default class Node {
 
     constructor(state, action) {
 
