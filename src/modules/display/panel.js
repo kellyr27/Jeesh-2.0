@@ -191,6 +191,14 @@ export default class SelectionPanel {
         this.drawText()
     }
 
+    drawPanelBlocked() {
+        this.updateScrollTilesBlocked()
+        this.updateSelectionTilesBlocked()
+        this.drawScrollTiles()
+        this.drawSelectionTiles()
+        this.drawText()
+    }
+
     /**
      * When a scroll tile has been clicked
      *      0 - up
@@ -287,6 +295,16 @@ export default class SelectionPanel {
     }
 
     /**
+     * 
+     */
+    updateScrollTilesBlocked() {
+
+        for (let i = 0; i < this.scrollTiles.length; i++) {
+            this.scrollTiles[i].setColor(this.tileColorPalette['scroll']['blocked'])
+        }
+    }
+
+    /**
      * Create the four Scroll Tiles (up, down, left and right)
      */
     #createScrollTiles() {
@@ -368,6 +386,15 @@ export default class SelectionPanel {
             else {
                 this.selectionTiles[i].setColor(this.tileColorPalette['selection']['default'])
             }
+        }
+    }
+
+    /**
+     * 
+     */
+    updateSelectionTilesBlocked() {
+        for (let i = 0; i < this.selectionTiles.length; i++) {
+            this.selectionTiles[i].setColor(this.tileColorPalette['selection']['blocked'])
         }
     }
 

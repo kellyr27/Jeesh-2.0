@@ -104,14 +104,14 @@ renderer.render(scene, camera)
 /**
  * Game Variables
  */
-let gameState = new GameState([[[5,5,10],[0,0,-1]],[[5,4,10],[0,0,-1]],[[4,5,10],[0,0,-1]]],[[[5,5,6],[0,0,1]],[[5,4,6],[0,0,1]]])
+let gameState = new GameState([[[5, 5, 10], [0, 0, -1]], [[5, 4, 10], [0, 0, -1]], [[4, 5, 10], [0, 0, -1]]], [[[5, 5, 6], [0, 0, 1]], [[5, 4, 6], [0, 0, 1]]])
 gameState.removeStars()
-let testArena = new Arena(scene)
-testArena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
+let arena = new Arena(scene)
+arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
 let starDisplay = new StarsDisplay(scene, gameState.getStars())
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
-let selectionPanel = new SelectionPanel(canvas2, gameState.getSoldierCurrentPosition(0,0), gameState.getSoldierCurrentPossibleMoves(0,0))
+let selectionPanel = new SelectionPanel(canvas2, gameState.getSoldierCurrentPosition(0, 0), gameState.getSoldierCurrentPossibleMoves(0, 0))
 let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
@@ -130,30 +130,32 @@ const clock = new THREE.Clock()
 canvas2.addEventListener('mousemove', (evt) => {
     evt = evt || window.event
 
-    selectionPanel.resetCurrentScrollSelected()
-    selectionPanel.resetCurrentSelectionSelected()
+    if (!userMove.getMotionLock() && !aiMove.getMotionLock()) {
+        selectionPanel.resetCurrentScrollSelected()
+        selectionPanel.resetCurrentSelectionSelected()
 
-    // Update the Scroll tiles
-    const scrollTiles = selectionPanel.getScrollTilePaths()
-    for (let i = scrollTiles.length - 1; i >= 0; i--) {
+        // Update the Scroll tiles
+        const scrollTiles = selectionPanel.getScrollTilePaths()
+        for (let i = scrollTiles.length - 1; i >= 0; i--) {
 
-        if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
-            selectionPanel.setCurrentScrollHovered(i)
-            selectionPanel.resetCurrentSelectionHovered()
-            selectionPanel.drawPanel()
-            testArena.resetHovered()
-            return
+            if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
+                selectionPanel.setCurrentScrollHovered(i)
+                selectionPanel.resetCurrentSelectionHovered()
+                selectionPanel.drawPanel()
+                arena.resetHovered()
+                return
+            }
         }
-    }
 
-    const selectionTiles = selectionPanel.getSelectionTilePaths()
-    for (let i = selectionTiles.length - 1; i >= 0; i--) {
-        if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
-            selectionPanel.setCurrentSelectionHovered(i)
-            selectionPanel.resetCurrentScrollHovered()
-            selectionPanel.drawPanel()
-            testArena.setHovered(selectionPanel.getHoveredPosition())
-            return
+        const selectionTiles = selectionPanel.getSelectionTilePaths()
+        for (let i = selectionTiles.length - 1; i >= 0; i--) {
+            if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
+                selectionPanel.setCurrentSelectionHovered(i)
+                selectionPanel.resetCurrentScrollHovered()
+                selectionPanel.drawPanel()
+                arena.setHovered(selectionPanel.getHoveredPosition())
+                return
+            }
         }
     }
 })
@@ -161,41 +163,45 @@ canvas2.addEventListener('mousemove', (evt) => {
 canvas2.addEventListener('click', (evt) => {
     evt = evt || window.event
 
-    // Update the Scroll tiles
-    const scrollTiles = selectionPanel.getScrollTilePaths()
-    for (let i = scrollTiles.length - 1; i >= 0; i--) {
+    if (!userMove.getMotionLock() && !aiMove.getMotionLock()) {
+        // Update the Scroll tiles
+        const scrollTiles = selectionPanel.getScrollTilePaths()
+        for (let i = scrollTiles.length - 1; i >= 0; i--) {
 
-        if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
-            selectionPanel.setCurrentScrollSelected(i)
-            selectionPanel.drawPanel()
-            const [startingPosition, startingDirection] = selectionPanel.getCurrentPosition()
-            userMove.setStartingParameters(startingPosition, startingDirection)
-            return
-        }
-    }
-
-    const selectionTiles = selectionPanel.getSelectionTilePaths()
-    for (let i = selectionTiles.length - 1; i >= 0; i--) {
-        if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
-            selectionPanel.setCurrentSelectionSelected(i)
-
-    
-            // Check if valid position
-            if (selectionPanel.isValidPosition()) {
-                userMove.setMotionLock()
-                userMove.setStartingParameters(selectionPanel.getCurrentPosition(), selectionPanel.getHoveredMove())
-                // console.log(selectionPanel.getHoveredMove(), selectionPanel.getCurrentPosition())
+            if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
+                selectionPanel.setCurrentScrollSelected(i)
+                selectionPanel.drawPanel()
+                const [startingPosition, startingDirection] = selectionPanel.getCurrentPosition()
+                userMove.setStartingParameters(startingPosition, startingDirection)
+                return
             }
-            // userMove.setStartingParameters()
-            return
+        }
+
+        const selectionTiles = selectionPanel.getSelectionTilePaths()
+        for (let i = selectionTiles.length - 1; i >= 0; i--) {
+            if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
+                selectionPanel.setCurrentSelectionSelected(i)
+
+
+                // Check if valid position
+                if (selectionPanel.isValidPosition()) {
+                    userMove.setMotionLock()
+                    userMove.setStartingParameters(selectionPanel.getCurrentPosition(), selectionPanel.getHoveredMove())
+                    // console.log(selectionPanel.getHoveredMove(), selectionPanel.getCurrentPosition())
+                }
+                // userMove.setStartingParameters()
+                return
+            }
         }
     }
 })
 
 canvas2.addEventListener('mouseleave', (evt) => {
-    selectionPanel.resetCurrentScrollHovered()
-    selectionPanel.drawPanel()
-    canvas1.style.cursor = 'default'
+    if (!userMove.getMotionLock() && !aiMove.getMotionLock()) {
+        selectionPanel.resetCurrentScrollHovered()
+        selectionPanel.drawPanel()
+        canvas1.style.cursor = 'default'
+    }
 })
 
 /**
@@ -214,7 +220,7 @@ canvas1.addEventListener('click', (evt) => {
         // Now set the newly Selected Soldier and color
         userRaycaster.setSelectedSoldier(userRaycaster.getHoveredSoldier())
         armyDisplay1.setSelectedColor(userRaycaster.getSelectedSoldier())
-        selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, userRaycaster.getSelectedSoldier()), gameState.getSoldierCurrentPossibleMoves(0,userRaycaster.getSelectedSoldier()))
+        selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, userRaycaster.getSelectedSoldier()), gameState.getSoldierCurrentPossibleMoves(0, userRaycaster.getSelectedSoldier()))
     }
 
     // Check if we are not currently hovering but there is a selected Soldier
@@ -237,7 +243,7 @@ canvas1.addEventListener('contextmenu', (evt) => {
 
         userRaycaster.resetSelectedSoldier()
     }
-    selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, 0), gameState.getSoldierCurrentPossibleMoves(0,0))
+    selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, 0), gameState.getSoldierCurrentPossibleMoves(0, 0))
 })
 
 canvas1.addEventListener('mousemove', (evt) => {
@@ -287,6 +293,7 @@ const tick = () => {
     if (userMove.getMotionLock()) {
 
         if (userMove.getStartingFlag()) {
+            selectionPanel.drawPanelBlocked()
             userMove.setStartTime(elapsedTime)
             userMove.setSoldierNum(userRaycaster.getSelectedSoldier())
             gameState.updateGameState(userMove.getSoldierNum(), userMove.getMove())
@@ -295,7 +302,7 @@ const tick = () => {
         armyDisplay1.setSoldierPosition(userMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
 
         if (userMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
-            
+            arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             userMove.resetStartingFlag()
             userMove.resetMotionLock()
             aiLock = true
@@ -306,22 +313,22 @@ const tick = () => {
         const [AISoldierNum, AIMove] = mctsBot1(gameState)
         aiMove.setSoldierNum(AISoldierNum)
         aiMove.setStartingParameters(gameState.getSoldierCurrentPosition(1, AISoldierNum), AIMove)
-        
+
         aiLock = false
         aiMove.setMotionLock()
     }
 
-    if (aiMove.getMotionLock()) {
+    if ((aiMove.getMotionLock()) && (elapsedTime - 10 > userMove.getStartTime())) {
         if (aiMove.getStartingFlag()) {
             aiMove.setStartTime(elapsedTime)
             gameState.updateGameState(aiMove.getSoldierNum(), aiMove.getMove())
         }
 
         const [currentPositionX, currentPositionY, currentPositionZ] = aiMove.getMovingPosition(elapsedTime)
-        armyDisplay1.setSoldierPosition(aiMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
+        armyDisplay2.setSoldierPosition(aiMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
 
         if (aiMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
-            
+            arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             aiMove.resetStartingFlag()
             aiMove.resetMotionLock()
         }

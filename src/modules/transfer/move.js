@@ -32,6 +32,10 @@ export default class Move {
         return this.motionLock
     }
 
+    getStartTime() {
+        return this.startTime
+    }
+
     setSoldierNum (soldierNum) {
         this.soldierNum = soldierNum
     }
