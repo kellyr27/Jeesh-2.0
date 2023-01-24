@@ -500,6 +500,15 @@ export default class GameState {
 
     /**
      * ----------- DESIGNED FOR TESTING PURPOSES -----------
+     * Removes stars
+     */
+    removeStars () {
+        this.numStars = 0
+        this.starCoordinates = []
+    }
+
+    /**
+     * ----------- DESIGNED FOR TESTING PURPOSES -----------
      * Prints a 2D Representation of the Game in the command line for visual testing purposes
      */
     printConsole() {

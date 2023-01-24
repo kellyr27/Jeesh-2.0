@@ -6,7 +6,7 @@ import SelectionPanel from './modules/display/panel'
 import Arena from './modules/display/arena'
 import StarsDisplay from './modules/display/stars'
 import ArmyDisplay from './modules/display/army'
-import UserMove from './modules/transfer/move'
+import Move from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
 import { ARENA_SIZE, arrayEquals, MOVE_TIME_SECS } from './modules/globals'
 import { mctsBot1 } from './modules/ai/mcts'
@@ -26,7 +26,7 @@ const ctx = canvas2.getContext('2d')
 /**
  * Axes helper
  */
-const axesHelper = new THREE.AxesHelper(10);
+const axesHelper = new THREE.AxesHelper(20);
 scene.add(axesHelper)
 
 /**
@@ -101,15 +101,20 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.render(scene, camera)
 
-let game = new GameState([[[5,5,10],[0,0,-1]],[[5,4,10],[0,0,-1]],[[4,5,10],[0,0,-1]]],[[[5,5,6],[0,0,1]],[[5,4,6],[0,0,1]]])
+/**
+ * Game Variables
+ */
+let gameState = new GameState([[[5,5,10],[0,0,-1]],[[5,4,10],[0,0,-1]],[[4,5,10],[0,0,-1]]],[[[5,5,6],[0,0,1]],[[5,4,6],[0,0,1]]])
+gameState.removeStars()
 let testArena = new Arena(scene)
-testArena.setArena(game.getArmyCurrentAttackedCoordinates(0), game.getArmyCurrentAttackedCoordinates(1))
-let stars = new StarsDisplay(scene, game.getStars())
-let testArmy = new ArmyDisplay(scene, 0, game.getArmyCurrentPositions(0))
-let testOppArmy = new ArmyDisplay(scene, 1, game.getArmyCurrentPositions(1))
-let testPanel = new SelectionPanel(canvas2, game.getSoldierCurrentPosition(0,0), game.getSoldierCurrentPossibleMoves(0,0))
-let testMove = new UserMove()
-let testRaycaster = new UserRaycaster()
+testArena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
+let starDisplay = new StarsDisplay(scene, gameState.getStars())
+let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
+let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
+let selectionPanel = new SelectionPanel(canvas2, gameState.getSoldierCurrentPosition(0,0), gameState.getSoldierCurrentPossibleMoves(0,0))
+let userMove = new Move()
+let aiMove = new Move()
+let userRaycaster = new UserRaycaster()
 
 /**
  * Animations
@@ -117,6 +122,7 @@ let testRaycaster = new UserRaycaster()
 const clock = new THREE.Clock()
 let inMotionLock = false
 let aiLock = false
+let aiMotionLock = false
 
 /**
  *
@@ -124,29 +130,29 @@ let aiLock = false
 canvas2.addEventListener('mousemove', (evt) => {
     evt = evt || window.event
 
-    testPanel.resetCurrentScrollSelected()
-    testPanel.resetCurrentSelectionSelected()
+    selectionPanel.resetCurrentScrollSelected()
+    selectionPanel.resetCurrentSelectionSelected()
 
     // Update the Scroll tiles
-    const scrollTiles = testPanel.getScrollTilePaths()
+    const scrollTiles = selectionPanel.getScrollTilePaths()
     for (let i = scrollTiles.length - 1; i >= 0; i--) {
 
         if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
-            testPanel.setCurrentScrollHovered(i)
-            testPanel.resetCurrentSelectionHovered()
-            testPanel.drawPanel()
+            selectionPanel.setCurrentScrollHovered(i)
+            selectionPanel.resetCurrentSelectionHovered()
+            selectionPanel.drawPanel()
             testArena.resetHovered()
             return
         }
     }
 
-    const selectionTiles = testPanel.getSelectionTilePaths()
+    const selectionTiles = selectionPanel.getSelectionTilePaths()
     for (let i = selectionTiles.length - 1; i >= 0; i--) {
         if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
-            testPanel.setCurrentSelectionHovered(i)
-            testPanel.resetCurrentScrollHovered()
-            testPanel.drawPanel()
-            testArena.setHovered(testPanel.getHoveredPosition())
+            selectionPanel.setCurrentSelectionHovered(i)
+            selectionPanel.resetCurrentScrollHovered()
+            selectionPanel.drawPanel()
+            testArena.setHovered(selectionPanel.getHoveredPosition())
             return
         }
     }
@@ -156,31 +162,31 @@ canvas2.addEventListener('click', (evt) => {
     evt = evt || window.event
 
     // Update the Scroll tiles
-    const scrollTiles = testPanel.getScrollTilePaths()
+    const scrollTiles = selectionPanel.getScrollTilePaths()
     for (let i = scrollTiles.length - 1; i >= 0; i--) {
 
         if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
-            testPanel.setCurrentScrollSelected(i)
-            testPanel.drawPanel()
-            const [startingPosition, startingDirection] = testPanel.getCurrentPosition()
-            testMove.setStartingParameters(startingPosition, startingDirection)
+            selectionPanel.setCurrentScrollSelected(i)
+            selectionPanel.drawPanel()
+            const [startingPosition, startingDirection] = selectionPanel.getCurrentPosition()
+            userMove.setStartingParameters(startingPosition, startingDirection)
             return
         }
     }
 
-    const selectionTiles = testPanel.getSelectionTilePaths()
+    const selectionTiles = selectionPanel.getSelectionTilePaths()
     for (let i = selectionTiles.length - 1; i >= 0; i--) {
         if (ctx.isPointInPath(selectionTiles[i], evt.offsetX, evt.offsetY)) {
-            testPanel.setCurrentSelectionSelected(i)
+            selectionPanel.setCurrentSelectionSelected(i)
 
     
             // Check if valid position
-            if (testPanel.isValidPosition()) {
+            if (selectionPanel.isValidPosition()) {
                 inMotionLock = true
-                testMove.setStartingParameters(testPanel.getCurrentPosition(), testPanel.getHoveredMove())
-                // console.log(testPanel.getHoveredMove(), testPanel.getCurrentPosition())
+                userMove.setStartingParameters(selectionPanel.getCurrentPosition(), selectionPanel.getHoveredMove())
+                // console.log(selectionPanel.getHoveredMove(), selectionPanel.getCurrentPosition())
             }
-            // testMove.setStartingParameters()
+            // userMove.setStartingParameters()
             return
         }
     }
@@ -188,7 +194,7 @@ canvas2.addEventListener('click', (evt) => {
 
 canvas2.addEventListener('mouseleave', (evt) => {
     // userRayCaster.hoveredScrollTile = -1
-    testPanel.resetCurrentScrollHovered()
+    selectionPanel.resetCurrentScrollHovered()
     canvas1.style.cursor = 'default'
 })
 
@@ -198,47 +204,47 @@ canvas2.addEventListener('mouseleave', (evt) => {
 canvas1.addEventListener('click', (evt) => {
 
     // If we are currently hovering over a Soldier
-    if (testRaycaster.isHoveredSoldier()) {
+    if (userRaycaster.isHoveredSoldier()) {
 
         // And there is a previously selected Soldier, set that Soldier back to default
-        if (testRaycaster.isSelectedSoldier()) {
-            testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
+        if (userRaycaster.isSelectedSoldier()) {
+            armyDisplay1.setDefaultColor(userRaycaster.getSelectedSoldier())
         }
 
         // Now set the newly Selected Soldier and color
-        testRaycaster.setSelectedSoldier(testRaycaster.getHoveredSoldier())
-        testArmy.setSelectedColor(testRaycaster.getSelectedSoldier())
-        testPanel.setSoldier(game.getSoldierCurrentPosition(0, testRaycaster.getSelectedSoldier()), game.getSoldierCurrentPossibleMoves(0,testRaycaster.getSelectedSoldier()))
+        userRaycaster.setSelectedSoldier(userRaycaster.getHoveredSoldier())
+        armyDisplay1.setSelectedColor(userRaycaster.getSelectedSoldier())
+        selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, userRaycaster.getSelectedSoldier()), gameState.getSoldierCurrentPossibleMoves(0,userRaycaster.getSelectedSoldier()))
     }
 
     // Check if we are not currently hovering but there is a selected Soldier
-    // else if (testRaycaster.isSelectedSoldier()) {
-    //     testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
-    //     testRaycaster.resetSelectedSoldier()
-    //     testPanel.setSoldier(game.getSoldierCurrentPosition(0, 0), game.getSoldierCurrentPossibleMoves(0,0))
+    // else if (userRaycaster.isSelectedSoldier()) {
+    //     armyDisplay1.setDefaultColor(userRaycaster.getSelectedSoldier())
+    //     userRaycaster.resetSelectedSoldier()
+    //     selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, 0), gameState.getSoldierCurrentPossibleMoves(0,0))
     // }
 })
 
 canvas1.addEventListener('contextmenu', (evt) => {
 
-    if (testRaycaster.isSelectedSoldier()) {
-        if (testRaycaster.getHoveredSoldier() === testRaycaster.getSelectedSoldier()) {
-            testArmy.setHoveredColor(testRaycaster.getSelectedSoldier())
+    if (userRaycaster.isSelectedSoldier()) {
+        if (userRaycaster.getHoveredSoldier() === userRaycaster.getSelectedSoldier()) {
+            armyDisplay1.setHoveredColor(userRaycaster.getSelectedSoldier())
         }
         else {
-            testArmy.setDefaultColor(testRaycaster.getSelectedSoldier())
+            armyDisplay1.setDefaultColor(userRaycaster.getSelectedSoldier())
         }
 
-        testRaycaster.resetSelectedSoldier()
+        userRaycaster.resetSelectedSoldier()
     }
-    testPanel.setSoldier(game.getSoldierCurrentPosition(0, 0), game.getSoldierCurrentPossibleMoves(0,0))
+    selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, 0), gameState.getSoldierCurrentPossibleMoves(0,0))
 })
 
 canvas1.addEventListener('mousemove', (evt) => {
 
     // Cast a raycaster and check if it intersects any of the Soldiers from Army 1
-    let intersectedSoldier = raycaster.intersectObjects(testArmy.getSoldiers())
-    const previousIntersectedSoldierIndex = testRaycaster.getHoveredSoldier()
+    let intersectedSoldier = raycaster.intersectObjects(armyDisplay1.getSoldiers())
+    const previousIntersectedSoldierIndex = userRaycaster.getHoveredSoldier()
 
     // If the cursor is currently hovering over an Soldier
     if (intersectedSoldier.length !== 0) {
@@ -247,24 +253,24 @@ canvas1.addEventListener('mousemove', (evt) => {
         // If the Soldier is being hovered over for the first time
         if (currentIntersectedSoldierIndex !== previousIntersectedSoldierIndex) {
 
-            if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier())) {
-                testArmy.setDefaultColor(previousIntersectedSoldierIndex)
+            if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRaycaster.getSelectedSoldier())) {
+                armyDisplay1.setDefaultColor(previousIntersectedSoldierIndex)
             }
 
-            if (currentIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier()) {
-                testArmy.setHoveredColor(currentIntersectedSoldierIndex)
+            if (currentIntersectedSoldierIndex !== userRaycaster.getSelectedSoldier()) {
+                armyDisplay1.setHoveredColor(currentIntersectedSoldierIndex)
             }
         }
 
-        testRaycaster.setHoveredSoldier(currentIntersectedSoldierIndex)
+        userRaycaster.setHoveredSoldier(currentIntersectedSoldierIndex)
     }
 
     else {
-        if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== testRaycaster.getSelectedSoldier())) {
-            testArmy.setDefaultColor(previousIntersectedSoldierIndex)
+        if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRaycaster.getSelectedSoldier())) {
+            armyDisplay1.setDefaultColor(previousIntersectedSoldierIndex)
         }
 
-        testRaycaster.resetHoveredSoldier()
+        userRaycaster.resetHoveredSoldier()
     }
 
 })
@@ -274,7 +280,7 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
     // Draw
-    // testPanel.drawPanel()
+    // selectionPanel.drawPanel()
 
     /**
      *
@@ -287,22 +293,22 @@ const tick = () => {
 
     //     if (userMove.getStartingFlag()) {
 
-    //         const [xPosition, yPosition, zPosition] = testArmy.getSoldierPosition(userMove.soldierNum)
-    //         const [xRotation, yRotation, zRotation] = testArmy.getSoldierRotation(userMove.soldierNum)
+    //         const [xPosition, yPosition, zPosition] = armyDisplay1.getSoldierPosition(userMove.soldierNum)
+    //         const [xRotation, yRotation, zRotation] = armyDisplay1.getSoldierRotation(userMove.soldierNum)
 
     //         userMove.setStartingParameters(elapsedTime, xPosition, yPosition, zPosition, xRotation, yRotation, zRotation)
     //     }
 
     //     const elapsedTimeInMotion = elapsedTime - userMove.startTime
 
-    //     testArmy.updateSoldierPosition(
+    //     armyDisplay1.updateSoldierPosition(
     //         userMove.soldierNum,
     //         userMove.startXPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishX - userMove.startX),
     //         userMove.startYPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishY - userMove.startY),
     //         userMove.startZPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishZ - userMove.startZ)
     //     )
 
-    //     testArmy.updateSoldierRotation(
+    //     armyDisplay1.updateSoldierRotation(
     //         userMove.soldierNum,
     //         userMove.startXRotation + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishXRotation - userMove.startXRotation),
     //         userMove.startYRotation + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishYRotation - userMove.startYRotation),
@@ -315,25 +321,45 @@ const tick = () => {
     // }
     if (inMotionLock) {
 
-        if (testMove.getStartingFlag()) {
-            testMove.setStartTime(elapsedTime)
-            testMove.setSoldierNum(testRaycaster.getSelectedSoldier())
-            game.updateGameState(testMove.getSoldierNum(), testMove.getMove())
+        if (userMove.getStartingFlag()) {
+            userMove.setStartTime(elapsedTime)
+            userMove.setSoldierNum(userRaycaster.getSelectedSoldier())
+            gameState.updateGameState(userMove.getSoldierNum(), userMove.getMove())
         }
-        const [currentPositionX, currentPositionY, currentPositionZ] = testMove.getMovingPosition(elapsedTime)
-        testArmy.setSoldierPosition(testMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
+        const [currentPositionX, currentPositionY, currentPositionZ] = userMove.getMovingPosition(elapsedTime)
+        armyDisplay1.setSoldierPosition(userMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
 
-        if (testMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
+        if (userMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
             
             inMotionLock = false
-            testMove.resetStartingFlag()
+            userMove.resetStartingFlag()
             aiLock = true
         }
     }
 
     if (aiLock) {
-        console.log(mctsBot1(game))
+        const [AISoldierNum, AIMove] = mctsBot1(gameState)
+        aiMove.setSoldierNum(AISoldierNum)
+        aiMove.setStartingParameters(gameState.getSoldierCurrentPosition(1, AISoldierNum), AIMove)
+        
         aiLock = false
+        aiMotionLock = true
+    }
+
+    if (aiMotionLock) {
+        if (aiMove.getStartingFlag()) {
+            aiMove.setStartTime(elapsedTime)
+            gameState.updateGameState(aiMove.getSoldierNum(), aiMove.getMove())
+        }
+
+        const [currentPositionX, currentPositionY, currentPositionZ] = aiMove.getMovingPosition(elapsedTime)
+        armyDisplay1.setSoldierPosition(aiMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
+
+        if (aiMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
+            
+            aiMove.resetStartingFlag()
+            aiMotionLock = false
+        }
     }
 
     // Update controls

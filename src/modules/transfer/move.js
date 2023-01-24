@@ -3,7 +3,7 @@ import { MOVE_TIME_SECS } from "../globals"
  * Change Rotation to Direction and figure out the math
  */
 
-export default class UserMove {
+export default class Move {
 
     constructor () {
         // this.inMotion = false
