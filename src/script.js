@@ -116,13 +116,13 @@ let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
 
+let aiLock = false
+
+
 /**
  * Animations
  */
 const clock = new THREE.Clock()
-let inMotionLock = false
-let aiLock = false
-let aiMotionLock = false
 
 /**
  *
@@ -182,7 +182,7 @@ canvas2.addEventListener('click', (evt) => {
     
             // Check if valid position
             if (selectionPanel.isValidPosition()) {
-                inMotionLock = true
+                userMove.setMotionLock()
                 userMove.setStartingParameters(selectionPanel.getCurrentPosition(), selectionPanel.getHoveredMove())
                 // console.log(selectionPanel.getHoveredMove(), selectionPanel.getCurrentPosition())
             }
@@ -193,8 +193,8 @@ canvas2.addEventListener('click', (evt) => {
 })
 
 canvas2.addEventListener('mouseleave', (evt) => {
-    // userRayCaster.hoveredScrollTile = -1
     selectionPanel.resetCurrentScrollHovered()
+    selectionPanel.drawPanel()
     canvas1.style.cursor = 'default'
 })
 
@@ -277,49 +277,14 @@ canvas1.addEventListener('mousemove', (evt) => {
 
 const tick = () => {
 
-    const elapsedTime = clock.getElapsedTime()
+    raycaster.setFromCamera(mouse, camera)
 
-    // Draw
-    // selectionPanel.drawPanel()
+    const elapsedTime = clock.getElapsedTime()
 
     /**
      *
      */
-    raycaster.setFromCamera(mouse, camera)
-
-
-    // Check whether motion time has finished
-    // if (inMotion) {
-
-    //     if (userMove.getStartingFlag()) {
-
-    //         const [xPosition, yPosition, zPosition] = armyDisplay1.getSoldierPosition(userMove.soldierNum)
-    //         const [xRotation, yRotation, zRotation] = armyDisplay1.getSoldierRotation(userMove.soldierNum)
-
-    //         userMove.setStartingParameters(elapsedTime, xPosition, yPosition, zPosition, xRotation, yRotation, zRotation)
-    //     }
-
-    //     const elapsedTimeInMotion = elapsedTime - userMove.startTime
-
-    //     armyDisplay1.updateSoldierPosition(
-    //         userMove.soldierNum,
-    //         userMove.startXPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishX - userMove.startX),
-    //         userMove.startYPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishY - userMove.startY),
-    //         userMove.startZPosition + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishZ - userMove.startZ)
-    //     )
-
-    //     armyDisplay1.updateSoldierRotation(
-    //         userMove.soldierNum,
-    //         userMove.startXRotation + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishXRotation - userMove.startXRotation),
-    //         userMove.startYRotation + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishYRotation - userMove.startYRotation),
-    //         userMove.startZRotation + (elapsedTimeInMotion / MOVE_TIME) * (userMove.finishZRotation - userMove.startZRotation)
-    //     )
-
-    //     if (elapsedTimeInMotion >= MOVE_TIME) {
-    //         inMotion = false
-    //     }
-    // }
-    if (inMotionLock) {
+    if (userMove.getMotionLock()) {
 
         if (userMove.getStartingFlag()) {
             userMove.setStartTime(elapsedTime)
@@ -331,8 +296,8 @@ const tick = () => {
 
         if (userMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
             
-            inMotionLock = false
             userMove.resetStartingFlag()
+            userMove.resetMotionLock()
             aiLock = true
         }
     }
@@ -343,10 +308,10 @@ const tick = () => {
         aiMove.setStartingParameters(gameState.getSoldierCurrentPosition(1, AISoldierNum), AIMove)
         
         aiLock = false
-        aiMotionLock = true
+        aiMove.setMotionLock()
     }
 
-    if (aiMotionLock) {
+    if (aiMove.getMotionLock()) {
         if (aiMove.getStartingFlag()) {
             aiMove.setStartTime(elapsedTime)
             gameState.updateGameState(aiMove.getSoldierNum(), aiMove.getMove())
@@ -358,7 +323,7 @@ const tick = () => {
         if (aiMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
             
             aiMove.resetStartingFlag()
-            aiMotionLock = false
+            aiMove.resetMotionLock()
         }
     }
 

@@ -6,7 +6,7 @@ import { MOVE_TIME_SECS } from "../globals"
 export default class Move {
 
     constructor () {
-        // this.inMotion = false
+        this.motionLock = false
         this.startingFlag = true,
         this.startTime = -1
         this.soldierNum = -1
@@ -20,9 +20,16 @@ export default class Move {
         return [this.finishPosition, this.finishRotation]
     }
 
-    setInMotion (startTime) {
-        this.startTime = startTime
-        // this.inMotion = true
+    setMotionLock () {
+        this.motionLock = true
+    }
+
+    resetMotionLock () {
+        this.motionLock = false
+    }
+
+    getMotionLock () {
+        return this.motionLock
     }
 
     setSoldierNum (soldierNum) {
@@ -34,7 +41,6 @@ export default class Move {
     }
 
     setStartingParameters (startingPosition, finishPosition) {
-        // this.startTime = startTime
         this.startingPosition = startingPosition[0]
         this.startingRotation = startingPosition[1]
         this.finishPosition = finishPosition[0]
