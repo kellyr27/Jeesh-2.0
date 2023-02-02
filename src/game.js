@@ -91,7 +91,7 @@ class Soldier {
     /**
      * Sets the move number at which the Soldier died.
      */
-    setDeath(moveNum) {
+    setDead(moveNum) {
         this.deathIndex = moveNum
     }
 
@@ -533,14 +533,14 @@ class GameState {
 
         // Check whether the Soldier has moved into the opposing Armies attacked Zone
         if (this.#isCoordinateInArray(position[0], this.getArmyAttackedCoordinates(moveNum, this.#opposingArmyNum()))) {
-            this.armies[armyNum].soldiers[soldierNum].setDeath(moveNum)
+            this.armies[armyNum].soldiers[soldierNum].setDead(moveNum)
         }
 
         // Check whether any opposing Soldier is in the new attacked Zone
         const newAttackedZone = this.#getAttackedCoordinates(position)
         for (const soldier of this.armies[this.#opposingArmyNum(armyNum)].soldiers) {
             if (this.#isCoordinateInArray(soldier.getPosition(moveNum)[0], newAttackedZone)) {
-                soldier.setDeath(moveNum)
+                soldier.setDead(moveNum)
             }
         }
     }

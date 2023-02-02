@@ -11,13 +11,13 @@ export default class ArmyDisplay {
      */
     colorPalette = {
         0: {
-            default: 'red', 
-            hovered: 'blue', 
+            default: 'red',
+            hovered: 'blue',
             selected: 'green'
         },
         1: {
-            default: 'purple', 
-            hovered: 'blue', 
+            default: 'purple',
+            hovered: 'blue',
             selected: 'green'
         }
     }
@@ -79,6 +79,7 @@ export default class ArmyDisplay {
             coneEdgeMaterial
         )
         coneMesh.index = index
+        // coneMesh.isDead = false
 
         const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate(position[0])
 
@@ -106,9 +107,13 @@ export default class ArmyDisplay {
      * Returns a list of the Soldiers (only the Threejs Mesh - not the Outline)
      */
     getSoldiers() {
-        return this.soldiers.map((el) => {
-            return el[0]
-        })
+        return this.soldiers
+            .map((el) => {
+                return el[0]
+            })
+            .filter((el) => {
+                return el.visible
+            })
     }
 
     getSoldierPosition(soldierNum) {
@@ -147,5 +152,12 @@ export default class ArmyDisplay {
 
     setDefaultColor(soldierNum) {
         this.soldiers[soldierNum][0].material.color.set(this.colorPalette[this.armyNum]['default'])
+    }
+
+    setNoVisibility(soldierNums) {
+        for (const soldierNum of soldierNums) {
+            this.soldiers[soldierNum][0].visible = false
+            // this.soldiers[soldierNum][1].visible = false
+        }
     }
 }

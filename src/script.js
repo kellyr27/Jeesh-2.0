@@ -21,7 +21,7 @@ import randomJeeshAI from './modules/ai/random'
  * Finds the index of the first Soldier for Army 1
  */
 function findAliveSoldierIndex(gameState) {
-    
+
 }
 
 
@@ -118,16 +118,19 @@ renderer.render(scene, camera)
 /**
  * Game Variables
  */
-let gameState = new GameState([[[5, 5, 10], [0, 0, -1]], [[5, 4, 10], [0, 0, -1]], [[4, 5, 10], [0, 0, -1]]], [[[5, 5, 6], [0, 0, 1]], [[5, 4, 6], [0, 0, 1]]])
+let gameState = new GameState(
+    [[[5, 5, 10], [0, 0, -1]], [[5, 4, 10], [0, 0, -1]], [[4, 5, 10], [0, 0, -1]], [[5, 10, 10], [0, 0, -1]]],
+    [[[5, 5, 6], [0, 0, 1]], [[5, 4, 6], [0, 0, 1]], [[5, 4, 1], [0, 0, 1]]])
 gameState.removeStars()
 let arena = new Arena(scene)
 arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
 let starDisplay = new StarsDisplay(scene, gameState.getStars())
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
+console.log(armyDisplay1)
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
 let selectionPanel = new SelectionPanel(
-    canvas2, 
-    gameState.getSoldierCurrentPosition(0, 0), 
+    canvas2,
+    gameState.getSoldierCurrentPosition(0, 0),
     gameState.getSoldierCurrentPossibleMoves(0, 0))
 let userMove = new Move()
 let aiMove = new Move()
@@ -237,7 +240,10 @@ canvas1.addEventListener('click', (evt) => {
         // Now set the newly Selected Soldier and color
         userRaycaster.setSelectedSoldier(userRaycaster.getHoveredSoldier())
         armyDisplay1.setSelectedColor(userRaycaster.getSelectedSoldier())
-        selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, userRaycaster.getSelectedSoldier()), gameState.getSoldierCurrentPossibleMoves(0, userRaycaster.getSelectedSoldier()))
+        selectionPanel.setSoldier(
+            gameState.getSoldierCurrentPosition(0, userRaycaster.getSelectedSoldier()),
+            gameState.getSoldierCurrentPossibleMoves(0, userRaycaster.getSelectedSoldier())
+        )
     }
 
     // Check if we are not currently hovering but there is a selected Soldier
@@ -261,8 +267,9 @@ canvas1.addEventListener('contextmenu', (evt) => {
         userRaycaster.resetSelectedSoldier()
     }
     selectionPanel.setSoldier(
-        gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]), 
-        gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0]))
+        gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]),
+        gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0])
+    )
 })
 
 canvas1.addEventListener('mousemove', (evt) => {
@@ -324,6 +331,8 @@ const tick = () => {
             arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             userMove.resetStartingFlag()
             userMove.resetMotionLock()
+            armyDisplay1.setNoVisibility([1,2])
+            console.log('Alive count ', gameState.armies[0].getAliveCount(), gameState.armies[1].getAliveCount())
             aiLock = true
         }
     }
@@ -360,8 +369,10 @@ const tick = () => {
             selectionPanel.resetCurrentSelectionHovered()
             selectionPanel.resetCurrentSelectionSelected()
             selectionPanel.setSoldier(
-                gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]), 
-                gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0]))
+                gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]),
+                gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0])
+            )
+            console.log('Alive count ', gameState.armies[0].getAliveCount(), gameState.armies[1].getAliveCount())
         }
     }
 

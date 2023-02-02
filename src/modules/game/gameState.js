@@ -238,8 +238,11 @@ export default class GameState {
 
         for (let i = 0; i < this.armies[armyNum].soldiers.length; i++) {
 
-            for (const possibleMove of this.getSoldierPossibleMoves(moveNum, armyNum, i)) {
-                armyPossibleMoves.push([i, possibleMove])
+            // Check that Soldier is alive
+            if (this.armies[armyNum].soldiers[i].isAlive(moveNum)) {
+                for (const possibleMove of this.getSoldierPossibleMoves(moveNum, armyNum, i)) {
+                    armyPossibleMoves.push([i, possibleMove])
+                }
             }
         }
 
@@ -438,6 +441,26 @@ export default class GameState {
     }
 
     /**
+     * Get current index numbers of Soldiers alive for a given Army
+     */
+    getCurrentIndexDeadSoldiers(armyNum) {
+        return this.#getIndexDeadSoldiers(this.currentMoveNum, armyNum)
+    }
+
+    /**
+     * Get index numbers of Soldiers alive at a given move in a given Army
+     */
+    #getIndexDeadSoldiers(moveNum, armyNum) {
+        return this.armies[armyNum].soldiers
+            .filter((soldier) => {
+                return !soldier.isAlive(moveNum)
+            })
+            .map((soldier, index) => {
+                return index
+            })
+    }
+
+    /**
      * Updates the Soldier's position when a move has been played
      */
     playMove(moveNum, armyNum, soldierNum, position) {
@@ -451,14 +474,14 @@ export default class GameState {
 
         // Check whether the Soldier has moved into the opposing Armies attacked Zone
         if (this.#isCoordinateInArray(position[0], this.getArmyAttackedCoordinates(moveNum, this.getOpposingArmyNum()))) {
-            this.armies[armyNum].soldiers[soldierNum].setDeath(moveNum)
+            this.armies[armyNum].soldiers[soldierNum].setDead(moveNum)
         }
 
         // Check whether any opposing Soldier is in the new attacked Zone
         const newAttackedZone = this.#getAttackedCoordinatesfromPosition(position)
         for (const soldier of this.armies[this.getOpposingArmyNum(armyNum)].soldiers) {
             if (this.#isCoordinateInArray(soldier.getPosition(moveNum)[0], newAttackedZone)) {
-                soldier.setDeath(moveNum)
+                soldier.setDead(moveNum)
             }
         }
     }

@@ -42,7 +42,7 @@ export default class Soldier {
     /**
      * Sets the move number at which the Soldier died.
      */
-    setDeath(moveNum) {
+    setDead(moveNum) {
         this.deathIndex = moveNum
     }
 
