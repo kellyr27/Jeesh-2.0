@@ -74,14 +74,14 @@ const raycaster = new THREE.Raycaster()
  * Double click to expand to full screen
  * NOTE: Does not work on Safari browser
  */
-window.addEventListener('dblclick', () => {
-    if (!document.fullscreenElement) {
-        canvas1.requestFullscreen()
-    }
-    else {
-        document.exitFullscreen()
-    }
-})
+// window.addEventListener('dblclick', () => {
+//     if (!document.fullscreenElement) {
+//         canvas1.requestFullscreen()
+//     }
+//     else {
+//         document.exitFullscreen()
+//     }
+// })
 
 /**
  * Cursor
@@ -190,8 +190,8 @@ canvas2.addEventListener('click', (evt) => {
             if (ctx.isPointInPath(scrollTiles[i], evt.offsetX, evt.offsetY)) {
                 selectionPanel.setCurrentScrollSelected(i)
                 selectionPanel.drawPanel()
-                const [startingPosition, startingDirection] = selectionPanel.getCurrentPosition()
-                userMove.setStartingParameters(startingPosition, startingDirection)
+                // const [startingPosition, startingDirection] = selectionPanel.getCurrentPosition()
+                // userMove.setStartingParameters(startingPosition, startingDirection)
                 return
             }
         }
@@ -325,6 +325,10 @@ const tick = () => {
         }
         const [currentPositionX, currentPositionY, currentPositionZ] = userMove.getMovingPosition(elapsedTime)
         armyDisplay1.setSoldierPosition(userMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
+
+        const rotationalAxis = userMove.getRotationalAxis()
+        const rotationalAngle = userMove.getMovingRotation(elapsedTime)
+        armyDisplay1.setSoldierRotation(userMove.getSoldierNum(), rotationalAxis, rotationalAngle)
 
         if (userMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
             arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))

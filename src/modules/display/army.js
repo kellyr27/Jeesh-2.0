@@ -125,10 +125,10 @@ export default class ArmyDisplay {
         return [x, y, z]
     }
 
-    getSoldierRotation(soldierNum) {
-        const { x, y, z } = this.soldiers[soldierNum][0].rotation
-        return [x, y, z]
-    }
+    // getSoldierRotation(soldierNum) {
+    //     const { x, y, z } = this.soldiers[soldierNum][0].rotation
+    //     return [x, y, z]
+    // }
 
     setSoldierPosition(soldierNum, x, y, z) {
 
@@ -138,13 +138,32 @@ export default class ArmyDisplay {
         this.soldiers[soldierNum][1].position.set(xOffset, yOffset, zOffset)
     }
 
-    setSoldierRotation(soldierNum, x, y, z) {
-
-        const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate([x, y, z])
-
-        this.soldiers[soldierNum][0].rotation.set(xOffset, yOffset, zOffset)
-        this.soldiers[soldierNum][1].rotation.set(xOffset, yOffset, zOffset)
+    setSoldierRotation(soldierNum, axis, magnitude) {
+        
+        if (axis === 0) {
+            console.log(this.soldiers[soldierNum][0].rotateX(1))
+            this.soldiers[soldierNum][0].rotateX(magnitude)
+            // this.soldiers[soldierNum][1].rotateX(magnitude)
+        }
+        else if (axis === 1) {
+            console.log(magnitude)
+            console.log(this.soldiers[soldierNum][0].rotation)
+            this.soldiers[soldierNum][0].rotateZ(magnitude)
+            // this.soldiers[soldierNum][1].rotateY(magnitude)
+        }
+        else if (axis === 2) {
+            this.soldiers[soldierNum][0].rotateZ(magnitude)
+            // this.soldiers[soldierNum][1].rotateZ(magnitude)
+        }
     }
+
+    // setSoldierRotation(soldierNum, x, y, z) {
+
+    //     const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate([x, y, z])
+
+    //     this.soldiers[soldierNum][0].rotation.set(xOffset, yOffset, zOffset)
+    //     this.soldiers[soldierNum][1].rotation.set(xOffset, yOffset, zOffset)
+    // }
 
     setSelectedColor(soldierNum) {
         this.soldiers[soldierNum][0].material.color.set(this.colorPalette[this.armyNum]['selected'])
