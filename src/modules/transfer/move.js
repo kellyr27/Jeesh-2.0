@@ -56,24 +56,29 @@ export default class Move {
                 return [0, -Math.PI / 2, 0]
             }
         }
+        // TESTING
         else if (arrayEquals(this.startingRotation, [0, 0, -1])) {
+            // Y
             if (arrayEquals(this.finishRotation, [0, 0, 1])) {
                 return [0, 0, Math.PI]
             }
+            // Y
             else if (arrayEquals(this.finishRotation, [0, 0, -1])) {
                 return [0, 0, 0]
             }
+            // Y
             else if (arrayEquals(this.finishRotation, [0, 1, 0])) {
-                return [-Math.PI / 2, 0, 0]
-            }
-            else if (arrayEquals(this.finishRotation, [0, -1, 0])) {
                 return [Math.PI / 2, 0, 0]
             }
+            // Y
+            else if (arrayEquals(this.finishRotation, [0, -1, 0])) {
+                return [-Math.PI / 2, 0, 0]
+            }
             else if (arrayEquals(this.finishRotation, [1, 0, 0])) {
-                return [0, -Math.PI / 2, 0]
+                return [0, 0, Math.PI / 2]
             }
             else if (arrayEquals(this.finishRotation, [-1, 0, 0])) {
-                return [0, Math.PI / 2, 0]
+                return [0, 0, -Math.PI / 2]
             }
         }
         else if (arrayEquals(this.startingRotation, [0, 1, 0])) {
@@ -226,6 +231,7 @@ export default class Move {
 
     getMovingRotation(elapsedTime) {
         const timeElapsedSinceLastRotation = elapsedTime - this.previousTimeInMotion
+        this.previousTimeInMotion = elapsedTime
 
         // if ((timeInMotion < 0) || (timeInMotion > MOVE_TIME_SECS)) {
         //     console.error('Time in motion out of bounds!')
@@ -234,7 +240,7 @@ export default class Move {
             return 0
         }
         else {
-            return this.rotationAngle / (timeElapsedSinceLastRotation / MOVE_TIME_SECS)
+            return this.rotationAngle * (timeElapsedSinceLastRotation / MOVE_TIME_SECS)
         }
     }
 

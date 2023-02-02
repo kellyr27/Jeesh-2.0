@@ -139,16 +139,13 @@ export default class ArmyDisplay {
     }
 
     setSoldierRotation(soldierNum, axis, magnitude) {
-        
+        console.log(axis, magnitude)
         if (axis === 0) {
-            console.log(this.soldiers[soldierNum][0].rotateX(1))
             this.soldiers[soldierNum][0].rotateX(magnitude)
             // this.soldiers[soldierNum][1].rotateX(magnitude)
         }
         else if (axis === 1) {
-            console.log(magnitude)
-            console.log(this.soldiers[soldierNum][0].rotation)
-            this.soldiers[soldierNum][0].rotateZ(magnitude)
+            this.soldiers[soldierNum][0].rotateY(magnitude)
             // this.soldiers[soldierNum][1].rotateY(magnitude)
         }
         else if (axis === 2) {
