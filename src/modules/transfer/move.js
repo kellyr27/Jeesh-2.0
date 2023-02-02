@@ -36,6 +36,7 @@ export default class Move {
     }
 
     #findRotation() {
+        // WORKING
         if (arrayEquals(this.startingRotation, [0, 0, 1])) {
             if (arrayEquals(this.finishRotation, [0, 0, 1])) {
                 return [0, 0, 0]
@@ -44,33 +45,29 @@ export default class Move {
                 return [0, 0, Math.PI]
             }
             else if (arrayEquals(this.finishRotation, [0, 1, 0])) {
-                return [Math.PI / 2, 0, 0]
-            }
-            else if (arrayEquals(this.finishRotation, [0, -1, 0])) {
                 return [-Math.PI / 2, 0, 0]
             }
+            else if (arrayEquals(this.finishRotation, [0, -1, 0])) {
+                return [Math.PI / 2, 0, 0]
+            }
             else if (arrayEquals(this.finishRotation, [1, 0, 0])) {
-                return [0, Math.PI / 2, 0]
+                return [0, 0, Math.PI / 2]
             }
             else if (arrayEquals(this.finishRotation, [-1, 0, 0])) {
-                return [0, -Math.PI / 2, 0]
+                return [0, 0, -Math.PI / 2]
             }
         }
-        // TESTING
+        // WORKING
         else if (arrayEquals(this.startingRotation, [0, 0, -1])) {
-            // Y
             if (arrayEquals(this.finishRotation, [0, 0, 1])) {
                 return [0, 0, Math.PI]
             }
-            // Y
             else if (arrayEquals(this.finishRotation, [0, 0, -1])) {
                 return [0, 0, 0]
             }
-            // Y
             else if (arrayEquals(this.finishRotation, [0, 1, 0])) {
                 return [Math.PI / 2, 0, 0]
             }
-            // Y
             else if (arrayEquals(this.finishRotation, [0, -1, 0])) {
                 return [-Math.PI / 2, 0, 0]
             }
