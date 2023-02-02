@@ -8,7 +8,7 @@ export default class Move {
     constructor() {
         this.motionLock = false
         this.startingFlag = true,
-        this.startTime = -1
+            this.startTime = -1
         this.previousTimeInMotion = -1
         this.soldierNum = -1
         this.startingPosition = [-1, -1, -1]
@@ -17,7 +17,7 @@ export default class Move {
         this.finishRotation = [-1, -1, -1]
     }
 
-    #setRotation () {
+    #setRotation() {
         const rotation = this.#findRotation()
         console.log('Rotation is ', rotation)
 
@@ -78,6 +78,7 @@ export default class Move {
                 return [0, 0, -Math.PI / 2]
             }
         }
+        // WORKING
         else if (arrayEquals(this.startingRotation, [0, 1, 0])) {
             if (arrayEquals(this.finishRotation, [0, 0, 1])) {
                 return [Math.PI / 2, 0, 0]
@@ -98,13 +99,14 @@ export default class Move {
                 return [0, 0, -Math.PI / 2]
             }
         }
+        // WORKING
         else if (arrayEquals(this.startingRotation, [0, -1, 0])) {
 
             if (arrayEquals(this.finishRotation, [0, 0, 1])) {
-                return [Math.PI / 2, 0, 0]
+                return [-Math.PI / 2, 0, 0]
             }
             else if (arrayEquals(this.finishRotation, [0, 0, -1])) {
-                return [- Math.PI / 2, 0, 0]
+                return [Math.PI / 2, 0, 0]
             }
             else if (arrayEquals(this.finishRotation, [0, 1, 0])) {
                 return [Math.PI, 0, 0]
@@ -222,7 +224,7 @@ export default class Move {
      * 1 if want to rotateY
      * 2 if want to rotateZ
      */
-    getRotationalAxis () {
+    getRotationalAxis() {
         return this.rotationAxis
     }
 
