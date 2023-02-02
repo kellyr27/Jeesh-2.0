@@ -80,10 +80,10 @@ export default class Move {
         }
         else if (arrayEquals(this.startingRotation, [0, 1, 0])) {
             if (arrayEquals(this.finishRotation, [0, 0, 1])) {
-                return [-Math.PI / 2, 0, 0]
+                return [Math.PI / 2, 0, 0]
             }
             else if (arrayEquals(this.finishRotation, [0, 0, -1])) {
-                return [Math.PI / 2, 0, 0]
+                return [-Math.PI / 2, 0, 0]
             }
             else if (arrayEquals(this.finishRotation, [0, 1, 0])) {
                 return [0, 0, 0]
@@ -92,10 +92,10 @@ export default class Move {
                 return [Math.PI, 0, 0]
             }
             else if (arrayEquals(this.finishRotation, [1, 0, 0])) {
-                return [0, 0, -Math.PI / 2]
+                return [0, 0, Math.PI / 2]
             }
             else if (arrayEquals(this.finishRotation, [-1, 0, 0])) {
-                return [0, 0, Math.PI / 2]
+                return [0, 0, -Math.PI / 2]
             }
         }
         else if (arrayEquals(this.startingRotation, [0, -1, 0])) {
