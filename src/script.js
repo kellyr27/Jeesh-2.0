@@ -18,7 +18,7 @@ import randomJeeshAI from './modules/ai/random'
  */
 
 /**
- * Finds the index of the first Soldier 
+ * Finds the index of the first Soldier for Army 1
  */
 function findAliveSoldierIndex(gameState) {
     
@@ -125,7 +125,10 @@ arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmy
 let starDisplay = new StarsDisplay(scene, gameState.getStars())
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
-let selectionPanel = new SelectionPanel(canvas2, gameState.getSoldierCurrentPosition(0, 0), gameState.getSoldierCurrentPossibleMoves(0, 0))
+let selectionPanel = new SelectionPanel(
+    canvas2, 
+    gameState.getSoldierCurrentPosition(0, 0), 
+    gameState.getSoldierCurrentPossibleMoves(0, 0))
 let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
@@ -257,7 +260,9 @@ canvas1.addEventListener('contextmenu', (evt) => {
 
         userRaycaster.resetSelectedSoldier()
     }
-    selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, 0), gameState.getSoldierCurrentPossibleMoves(0, 0))
+    selectionPanel.setSoldier(
+        gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]), 
+        gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0]))
 })
 
 canvas1.addEventListener('mousemove', (evt) => {
@@ -352,7 +357,11 @@ const tick = () => {
             arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             aiMove.resetStartingFlag()
             aiMove.resetMotionLock()
-            // selectionPanel.setSoldier()
+            selectionPanel.resetCurrentSelectionHovered()
+            selectionPanel.resetCurrentSelectionSelected()
+            selectionPanel.setSoldier(
+                gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]), 
+                gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0]))
         }
     }
 
