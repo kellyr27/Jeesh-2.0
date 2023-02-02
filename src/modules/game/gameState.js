@@ -55,7 +55,7 @@ export default class GameState {
     /**
      * Get a list of coordinates of the stars for display
      */
-    getStars () {
+    getStars() {
         return this.starCoordinates
     }
 
@@ -418,6 +418,26 @@ export default class GameState {
     }
 
     /**
+     * Get current index numbers of Soldiers alive for a given Army
+     */
+    getCurrentIndexAliveSoldiers(armyNum) {
+        return this.#getIndexAliveSoldiers(this.currentMoveNum, armyNum)
+    }
+
+    /**
+     * Get index numbers of Soldiers alive at a given move in a given Army
+     */
+    #getIndexAliveSoldiers(moveNum, armyNum) {
+        return this.armies[armyNum].soldiers
+            .filter((soldier) => {
+                return soldier.isAlive(moveNum)
+            })
+            .map((soldier, index) => {
+                return index
+            })
+    }
+
+    /**
      * Updates the Soldier's position when a move has been played
      */
     playMove(moveNum, armyNum, soldierNum, position) {
@@ -474,7 +494,7 @@ export default class GameState {
      *      1 - Win by Army 2
      *      2 - Draw
      */
-    getResult () {
+    getResult() {
         if (this.gameStatus[0] === -1) {
             console.error('Requesting the result and the game has not finished!')
         }
@@ -486,7 +506,7 @@ export default class GameState {
     /**
      * Returns the current Positions for a selected Army
      */
-    getArmyCurrentPositions (armyNum) {
+    getArmyCurrentPositions(armyNum) {
         return this.armies[armyNum].getPositions(this.currentMoveNum)
     }
 
@@ -502,7 +522,7 @@ export default class GameState {
      * ----------- DESIGNED FOR TESTING PURPOSES -----------
      * Removes stars
      */
-    removeStars () {
+    removeStars() {
         this.numStars = 0
         this.starCoordinates = []
     }

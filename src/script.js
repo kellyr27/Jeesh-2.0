@@ -10,6 +10,20 @@ import Move from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
 import { ARENA_SIZE, arrayEquals, MOVE_TIME_SECS } from './modules/globals'
 import { mctsBot1 } from './modules/ai/mcts'
+import randomJeeshAI from './modules/ai/random'
+
+/**
+ * Functions
+ * (TO MOVE)
+ */
+
+/**
+ * Finds the index of the first Soldier 
+ */
+function findAliveSoldierIndex(gameState) {
+    
+}
+
 
 /**
  * Canvas for Arena
@@ -288,7 +302,7 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
     /**
-     *
+     * Player 1 - User
      */
     if (userMove.getMotionLock()) {
 
@@ -309,8 +323,12 @@ const tick = () => {
         }
     }
 
+    /**
+     * Intermediate
+     * Calculates move for Player 2 - AI
+     */
     if (aiLock) {
-        const [AISoldierNum, AIMove] = mctsBot1(gameState)
+        const [AISoldierNum, AIMove] = randomJeeshAI(gameState)
         aiMove.setSoldierNum(AISoldierNum)
         aiMove.setStartingParameters(gameState.getSoldierCurrentPosition(1, AISoldierNum), AIMove)
 
@@ -318,6 +336,9 @@ const tick = () => {
         aiMove.setMotionLock()
     }
 
+    /**
+     * Player 2 - AI
+     */
     if ((aiMove.getMotionLock()) && (elapsedTime - 10 > userMove.getStartTime())) {
         if (aiMove.getStartingFlag()) {
             aiMove.setStartTime(elapsedTime)
@@ -331,6 +352,7 @@ const tick = () => {
             arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             aiMove.resetStartingFlag()
             aiMove.resetMotionLock()
+            // selectionPanel.setSoldier()
         }
     }
 

@@ -394,7 +394,12 @@ export default class SelectionPanel {
      */
     updateSelectionTilesBlocked() {
         for (let i = 0; i < this.selectionTiles.length; i++) {
-            this.selectionTiles[i].setColor(this.tileColorPalette['selection']['blocked'])
+            if (this.currentTiles['selection']['selected'] === i) {
+                this.selectionTiles[i].setColor(this.tileColorPalette['selection']['selected'])
+            }
+            else {
+                this.selectionTiles[i].setColor(this.tileColorPalette['selection']['blocked'])
+            }
         }
     }
 
