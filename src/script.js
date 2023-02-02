@@ -126,7 +126,6 @@ let arena = new Arena(scene)
 arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
 let starDisplay = new StarsDisplay(scene, gameState.getStars())
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
-console.log(armyDisplay1)
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
 let selectionPanel = new SelectionPanel(
     canvas2,
@@ -331,7 +330,9 @@ const tick = () => {
             arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             userMove.resetStartingFlag()
             userMove.resetMotionLock()
-            armyDisplay1.setNoVisibility([1,2])
+            armyDisplay1.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(0))
+            console.log('Dead soldiers from army 2 are ', gameState.getCurrentIndexDeadSoldiers(1))
+            armyDisplay2.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(1))
             console.log('Alive count ', gameState.armies[0].getAliveCount(), gameState.armies[1].getAliveCount())
             aiLock = true
         }
@@ -366,6 +367,9 @@ const tick = () => {
             arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             aiMove.resetStartingFlag()
             aiMove.resetMotionLock()
+            armyDisplay1.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(0))
+            armyDisplay2.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(1))
+
             selectionPanel.resetCurrentSelectionHovered()
             selectionPanel.resetCurrentSelectionSelected()
             selectionPanel.setSoldier(

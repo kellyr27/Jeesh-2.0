@@ -116,6 +116,10 @@ export default class ArmyDisplay {
             })
     }
 
+    getSoldierIndex(soldierMesh) {
+        return soldierMesh.index
+    }
+
     getSoldierPosition(soldierNum) {
         const { x, y, z } = this.soldiers[soldierNum][0].position
         return [x, y, z]

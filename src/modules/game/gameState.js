@@ -451,13 +451,16 @@ export default class GameState {
      * Get index numbers of Soldiers alive at a given move in a given Army
      */
     #getIndexDeadSoldiers(moveNum, armyNum) {
-        return this.armies[armyNum].soldiers
-            .filter((soldier) => {
-                return !soldier.isAlive(moveNum)
-            })
-            .map((soldier, index) => {
-                return index
-            })
+
+        const deadSoldiersIndexList = []
+
+        for (let i = 0; i < this.armies[armyNum].soldiers.length; i++) {
+            if (!this.armies[armyNum].soldiers[i].isAlive(moveNum)) {
+                deadSoldiersIndexList.push(i)
+            }
+        }
+
+        return deadSoldiersIndexList
     }
 
     /**
