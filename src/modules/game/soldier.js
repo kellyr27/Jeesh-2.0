@@ -56,6 +56,14 @@ export default class Soldier {
     }
 
     /**
+     * Gets a list of all the Soldiers previous positions
+     */
+    getAllPositions() {
+        return Object.values(this.positions)
+    }
+
+
+    /**
      * Sets the Soliders position at an given move.
      */
     setPosition(moveNum, position) {

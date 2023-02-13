@@ -115,7 +115,6 @@ export default class SelectionPanel {
 
         this.currentPosition = currentPosition
         this.legalMoves = initialLegalMoves
-        console.log(currentPosition)
         this.scrollTileCoordinates = this.createScrollTileCoordinates()
         // this.#setCurrentDirectionsDefault()
         this.setCurrentDirections()

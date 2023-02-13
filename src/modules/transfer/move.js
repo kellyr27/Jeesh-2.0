@@ -19,7 +19,6 @@ export default class Move {
 
     #setRotation() {
         const rotation = this.#findRotation()
-        console.log('Rotation is ', rotation)
 
         if (rotation[0] !== 0) {
             this.rotationAxis = 0
@@ -192,7 +191,6 @@ export default class Move {
         this.startingRotation = startingPosition[1]
         this.finishPosition = finishPosition[0]
         this.finishRotation = finishPosition[1]
-        console.log(this.startingRotation, this.finishRotation)
         this.#setRotation()
     }
 

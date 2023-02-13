@@ -545,6 +545,24 @@ export default class GameState {
     }
 
     /**
+     * 
+     */
+    getArmyAllPositions(armyNum) {
+        return this.armies[armyNum].getAllSoldiersPositions()
+    }
+
+    /**
+     * 
+     */
+    getArmyAllCoordinates (armyNum) {
+        return this.getArmyAllPositions(armyNum).map(soldierPositions => {
+            return soldierPositions.map(position => {
+                return position[0]
+            })
+        })
+    }
+
+    /**
      * ----------- DESIGNED FOR TESTING PURPOSES -----------
      * Removes stars
      */

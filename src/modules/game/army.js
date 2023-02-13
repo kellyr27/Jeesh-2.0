@@ -72,6 +72,15 @@ export default class Army {
         })
     }
 
+    /**
+     * Gets list of list of all Soldiers previous positions
+     */
+    getAllSoldiersPositions () {
+        return this.soldiers.map(soldier => {
+            return soldier.getAllPositions()
+        })
+    }
+
 }
 
 let a = new Army([[[1, 1, 1], [0, 0, 1]]])
