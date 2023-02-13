@@ -72,3 +72,12 @@ export function adjustToDisplayCoordinate(coord) {
         coord[2] + CUBE_SIZE / 2 - ARENA_SIZE / 2
     ]
 }
+
+/**
+ * 
+ */
+export function adjustListToDisplayCoordinate (coords) {
+    return coords.map(coord => {
+        return adjustToDisplayCoordinate(coord)
+    })
+}

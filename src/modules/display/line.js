@@ -1,12 +1,30 @@
 import * as THREE from 'three';
-import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline';
+import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline'
+import { adjustListToDisplayCoordinate } from '../globals';
 
-const bezier = require('bezier-curve');
+const bezier = require('bezier-curve')
+const BEZIER_ACCURACY = 20
+
+/**
+ * 
+ */
+function getLineMidPoints (coords) {
+    const newPoints = []
+
+    for (let i = 1; i < coords.length; i++) {
+        newPoints.push(
+            coords[i - 1],
+            ...getMidPoints(BEZIER_ACCURACY, coords[i - 1], coords[i])
+        )
+    }
+
+    return newPoints
+}
 
 /**
  * Takes two coorindates (in 3 dim), returns list of points evenly distributed between the two coordinates.
  */
-function calcMidPoints(numOfPoints, p1, p2) {
+function getMidPoints(numOfPoints, p1, p2) {
     let midPoints = []
     
     for (let i = 1; i < numOfPoints; i++) {
@@ -22,25 +40,27 @@ function calcMidPoints(numOfPoints, p1, p2) {
 
 export default class LineDisplay {
 
-    constructor(scene) {
+    constructor(scene, coords) {
         this.scene = scene
         console.log(bezier)
-        this.test()
+        this.test(coords)
     }
 
-    test() {
+    test(coords) {
         const points = [];
         // for (let j = 0.1; j < 10; j += 0.1) {
         //     points.push(new THREE.Vector3(j, j, j));
         // }
 
 
-        var points1 = [
-            [-1.0, 0.0, 0.0],
-            [-0.5, 0.5, 0.0],
-            [0.5, -0.5, 0.0],
-            [1.0, 0.0, 0.0]
-        ];
+        // var points1 = [
+        //     [-1.0, 0.0, 0.0],
+        //     [-0.5, 0.5, 0.0],
+        //     [0.5, -0.5, 0.0],
+        //     [1.0, 0.0, 0.0]
+        // ];
+
+        let points1 = adjustListToDisplayCoordinate(getLineMidPoints(coords))
 
         for (var t = 0; t < 1; t += 0.01) {
             var point = bezier(t, points1);
@@ -57,6 +77,7 @@ export default class LineDisplay {
             lineWidth: 0.1
         });
         const mesh = new THREE.Mesh(line, material);
+        console.log(mesh)
         this.scene.add(mesh);
     }
 }

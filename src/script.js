@@ -135,7 +135,7 @@ let selectionPanel = new SelectionPanel(
 let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
-let testLineDisplay = new LineDisplay(scene)
+let testLineDisplay = new LineDisplay(scene, [[0,0,0], [0,0,1], [1,1,1], [0, 1, 0], [0,2,0], [0, 3, 1]])
 
 let aiLock = false
 
