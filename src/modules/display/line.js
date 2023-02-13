@@ -12,7 +12,7 @@ export default class LineDisplay {
 
     test() {
         const points = [];
-        for (let j = 0.1; j < 5; j += 0.1) {
+        for (let j = 0.1; j < 10; j += 0.1) {
             points.push(new THREE.Vector3(j, j, j));
         }
         console.log(points)
@@ -23,7 +23,11 @@ export default class LineDisplay {
         // const line2 = new MeshLine();
         // line2.setPoints(points, p => 3);
 
-        const material = new MeshLineMaterial();
+        const material = new MeshLineMaterial({
+            color: 'blue',
+            opacity: 0.9,
+            lineWidth: 0.1
+        });
         const mesh = new THREE.Mesh(line, material);
         this.scene.add(mesh);
     }
