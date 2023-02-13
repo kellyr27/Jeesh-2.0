@@ -115,9 +115,10 @@ export default class SelectionPanel {
 
         this.currentPosition = currentPosition
         this.legalMoves = initialLegalMoves
-
+        console.log(currentPosition)
         this.scrollTileCoordinates = this.createScrollTileCoordinates()
-        this.#setCurrentDirectionsDefault()
+        // this.#setCurrentDirectionsDefault()
+        this.setCurrentDirections()
 
         this.currentTiles = {
             scroll: {
@@ -134,6 +135,66 @@ export default class SelectionPanel {
         this.selectionTiles = this.#createSelectionTiles()
 
         this.drawPanel()
+    }
+
+    setCurrentDirections () {
+        /**
+         * These directions are set ideally for Army 1 heading towards the -z direction
+         */
+        if (arrayEquals(this.currentPosition[1], [0, 0, 1])) {
+            this.currentDirections = {
+                face: [0, 0, 1],
+                up: [0, 1, 0],
+                down: [0, -1, 0],
+                left: [1, 0, 0],
+                right: [-1, 0, 0]
+            }
+        }
+        else if (arrayEquals(this.currentPosition[1], [0, 0, -1])) {
+            this.currentDirections = {
+                face: [0, 0, -1],
+                up: [0, 1, 0],
+                down: [0, -1, 0],
+                left: [-1, 0, 0],
+                right: [1, 0, 0]
+            }
+        }
+        else if (arrayEquals(this.currentPosition[1], [0, 1, 0])) {
+            this.currentDirections = {
+                face: [0, 1, 0],
+                up: [0, 0, -1],
+                down: [0, 0, 1],
+                left: [1, 0, 0],
+                right: [-1, 0, 0]
+            }
+        }
+        else if (arrayEquals(this.currentPosition[1], [0, -1, 0])) {
+            this.currentDirections = {
+                face: [0, -1, 0],
+                up: [0, 0, -1],
+                down: [0, 0, 1],
+                left: [-1, 0, 0],
+                right: [1, 0, 0]
+            }
+        }
+        else if (arrayEquals(this.currentPosition[1], [1, 0, 0])) {
+            this.currentDirections = {
+                face: [1, 0, 0],
+                up: [0, 0, -1],
+                down: [0, 0, 1],
+                left: [0, -1, 0],
+                right: [0, 1, 0]
+            }
+        }
+        else if (arrayEquals(this.currentPosition[1], [-1, 0, 0])) {
+            this.currentDirections = {
+                face: [-1, 0, 0],
+                up: [0, 0, -1],
+                down: [0, 0, 1],
+                left: [0, 1, 0],
+                right: [0, -1, 0]
+            }
+        }
     }
 
     #setCurrentDirectionsDefault () {
@@ -493,7 +554,8 @@ export default class SelectionPanel {
     setSoldier(currentPosition, legalMoves) {
         this.currentPosition = currentPosition
         this.legalMoves = legalMoves
-        this.#setCurrentDirectionsDefault()
+        // this.#setCurrentDirectionsDefault()
+        this.setCurrentDirections()
         this.drawPanel()
     }
 
