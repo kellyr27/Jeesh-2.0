@@ -142,15 +142,15 @@ export default class ArmyDisplay {
         console.log(axis, magnitude)
         if (axis === 0) {
             this.soldiers[soldierNum][0].rotateX(magnitude)
-            // this.soldiers[soldierNum][1].rotateX(magnitude)
+            this.soldiers[soldierNum][1].rotateX(magnitude)
         }
         else if (axis === 1) {
             this.soldiers[soldierNum][0].rotateY(magnitude)
-            // this.soldiers[soldierNum][1].rotateY(magnitude)
+            this.soldiers[soldierNum][1].rotateY(magnitude)
         }
         else if (axis === 2) {
             this.soldiers[soldierNum][0].rotateZ(magnitude)
-            // this.soldiers[soldierNum][1].rotateZ(magnitude)
+            this.soldiers[soldierNum][1].rotateZ(magnitude)
         }
     }
 
@@ -177,7 +177,7 @@ export default class ArmyDisplay {
     setNoVisibility(soldierNums) {
         for (const soldierNum of soldierNums) {
             this.soldiers[soldierNum][0].visible = false
-            // this.soldiers[soldierNum][1].visible = false
+            this.soldiers[soldierNum][1].visible = false
         }
     }
 }

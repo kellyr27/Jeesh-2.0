@@ -11,6 +11,7 @@ import UserRaycaster from './modules/transfer/raycaster'
 import { ARENA_SIZE, arrayEquals, MOVE_TIME_SECS } from './modules/globals'
 import { mctsBot1 } from './modules/ai/mcts'
 import randomJeeshAI from './modules/ai/random'
+import LineDisplay from './modules/display/line'
 
 /**
  * Functions
@@ -134,6 +135,7 @@ let selectionPanel = new SelectionPanel(
 let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
+let testLineDisplay = new LineDisplay(scene)
 
 let aiLock = false
 
@@ -366,6 +368,10 @@ const tick = () => {
 
         const [currentPositionX, currentPositionY, currentPositionZ] = aiMove.getMovingPosition(elapsedTime)
         armyDisplay2.setSoldierPosition(aiMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
+
+        const rotationalAxis = aiMove.getRotationalAxis()
+        const rotationalAngle = aiMove.getMovingRotation(elapsedTime)
+        armyDisplay2.setSoldierRotation(aiMove.getSoldierNum(), rotationalAxis, rotationalAngle)
 
         if (aiMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
             arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
