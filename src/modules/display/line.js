@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline'
-import { adjustListToDisplayCoordinate } from '../globals';
+import { adjustListToDisplayCoordinate, subtractArrays, addArrays, arrayEquals } from '../globals';
 
 const bezier = require('bezier-curve')
-const BEZIER_ACCURACY = 10
+const BEZIER_ACCURACY = 5
 
 /**
  * 
@@ -22,7 +22,7 @@ function getBezierPoints(points) {
 /**
  * 
  */
-function getLineMidPoints (coords) {
+function getLineMidPoints(coords) {
     const newPoints = []
 
     for (let i = 1; i < coords.length; i++) {
@@ -36,11 +36,47 @@ function getLineMidPoints (coords) {
 }
 
 /**
+ * TODO: Make Global???
+ */
+function checkIfFacingDirection(p1, p2, direction) {
+
+    const subArray = subtractArrays(p2, p1)
+
+    for (let i = 0; i < direction.length; i++) {
+        if (direction[i] !== 0) {
+            if (direction[i] === subArray[i]) {
+                return true
+            }
+            else {
+                return false
+            }
+        }
+    }
+}
+
+
+//
+function getSpecializedMidPoint(p1, p2, direction) {
+    console.log(subtractArrays(p2, p1), direction)
+    if (checkIfFacingDirection(p1, p2, direction)) {
+        console.log('here')
+        return [p1,
+            addArrays(subtractArrays(subtractArrays(p2, p1), direction), p1),
+            p2]
+    }
+    else {
+        return [p1,
+            addArrays(subtractArrays(p2, p1), p1),
+            p2]
+    }
+}
+
+/**
  * Takes two coorindates (in 3 dim), returns list of points evenly distributed between the two coordinates.
  */
 function getMidPoints(numOfPoints, p1, p2) {
     let midPoints = []
-    
+
     for (let i = 1; i < numOfPoints; i++) {
         midPoints.push([
             p1[0] + (i * (p2[0] - p1[0])) / numOfPoints,
@@ -54,9 +90,16 @@ function getMidPoints(numOfPoints, p1, p2) {
 
 export default class LineDisplay {
 
-    constructor(scene, coords) {
+    constructor(scene, armyCoords, deadIndex) {
         this.scene = scene
-        this.test(coords)
+        this.currentFacingDirection = [0, 0, 1]
+        // this.test(armyCoords)
+        this.test2(armyCoords)
+    }
+
+
+    create() {
+
     }
 
     test(coords) {
@@ -87,7 +130,23 @@ export default class LineDisplay {
         this.scene.add(this.mesh);
     }
 
-    setColor() {
+    test2(coords) {
+        let points = getBezierPoints(adjustListToDisplayCoordinate(getSpecializedMidPoint(coords[0], coords[1], this.currentFacingDirection)))
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new MeshLine();
+        line.setGeometry(geometry);
+
+        const material = new MeshLineMaterial({
+            color: 'blue',
+            opacity: 0.9,
+            lineWidth: 0.1
+        });
+        this.mesh = new THREE.Mesh(line, material);
+        this.scene.add(this.mesh);
+    }
+
+    setDead() {
         this.mesh.material.color.set('red')
         this.mesh.material.opacity = 0.5
         this.mesh.material.lineWidth = 0.5

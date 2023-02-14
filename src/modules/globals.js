@@ -30,16 +30,30 @@ export function arrayInArray(checkArr, arrOfArrs) {
 }
 
 /**
- * Adds arrays together and returns the sum
+ * Adds arrays together (A + B) and returns the sum
  */
 export function addArrays(a, b) {
     
-    if (!arrayEquals) {
+    if (a.length !== b.length) {
         return console.error(`Array ${a} and Array ${b} are of different length. They cannot be added.`)
     }
 
     return a.map((el, index) => {
         return el + b[index]
+    })
+}
+
+/**
+ * Returns the resulting array from A - B
+ */
+export function subtractArrays(a, b) {
+    
+    if (a.length !== b.length) {
+        return console.error(`Array ${a} and Array ${b} are of different length. They cannot be subtracted.`)
+    }
+
+    return a.map((el, index) => {
+        return el - b[index]
     })
 }
 

@@ -135,9 +135,35 @@ let selectionPanel = new SelectionPanel(
 let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
-let testLineDisplay = new LineDisplay(scene, [[0,0,0], [0,0,1], [1,1,1], [0, 1, 0], [0,2,0], [0, 3, 1]])
-testLineDisplay.setColor()
 
+let testLineDisplay0 = new LineDisplay(scene, [[1, 1, 1], [0, 0, 0]])
+let testLineDisplay1 = new LineDisplay(scene, [[1, 1, 1], [0, 0, 1]])
+let testLineDisplay2 = new LineDisplay(scene, [[1, 1, 1], [0, 0, 2]])
+let testLineDisplay3 = new LineDisplay(scene, [[1, 1, 1], [0, 1, 0]])
+let testLineDisplay4 = new LineDisplay(scene, [[1, 1, 1], [0, 1, 1]])
+let testLineDisplay5 = new LineDisplay(scene, [[1, 1, 1], [0, 1, 2]])
+let testLineDisplay6 = new LineDisplay(scene, [[1, 1, 1], [0, 2, 0]])
+let testLineDisplay7 = new LineDisplay(scene, [[1, 1, 1], [0, 2, 1]])
+let testLineDisplay8 = new LineDisplay(scene, [[1, 1, 1], [0, 2, 2]])
+
+let testLineDisplay9 = new LineDisplay(scene, [[1, 1, 1], [1, 0, 0]])
+let testLineDisplay10 = new LineDisplay(scene, [[1, 1, 1], [1, 0, 1]])
+let testLineDisplay11 = new LineDisplay(scene, [[1, 1, 1], [1, 0, 2]])
+let testLineDisplay12 = new LineDisplay(scene, [[1, 1, 1], [1, 1, 0]])
+let testLineDisplay13 = new LineDisplay(scene, [[1, 1, 1], [1, 1, 2]])
+let testLineDisplay14 = new LineDisplay(scene, [[1, 1, 1], [1, 2, 0]])
+let testLineDisplay15 = new LineDisplay(scene, [[1, 1, 1], [1, 2, 1]])
+let testLineDisplay16 = new LineDisplay(scene, [[1, 1, 1], [1, 2, 2]])
+
+let testLineDisplay17 = new LineDisplay(scene, [[1, 1, 1], [2, 0, 0]])
+let testLineDisplay18 = new LineDisplay(scene, [[1, 1, 1], [2, 0, 1]])
+let testLineDisplay19 = new LineDisplay(scene, [[1, 1, 1], [2, 0, 2]])
+let testLineDisplay20 = new LineDisplay(scene, [[1, 1, 1], [2, 1, 0]])
+let testLineDisplay21 = new LineDisplay(scene, [[1, 1, 1], [2, 1, 1]])
+let testLineDisplay22 = new LineDisplay(scene, [[1, 1, 1], [2, 1, 2]])
+let testLineDisplay23 = new LineDisplay(scene, [[1, 1, 1], [2, 2, 0]])
+let testLineDisplay24 = new LineDisplay(scene, [[1, 1, 1], [2, 2, 1]])
+let testLineDisplay25 = new LineDisplay(scene, [[1, 1, 1], [2, 2, 2]])
 
 let aiLock = false
 
