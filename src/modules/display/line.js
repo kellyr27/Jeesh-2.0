@@ -54,21 +54,49 @@ function checkIfFacingDirection(p1, p2, direction) {
     }
 }
 
+function checkIfFacingOpposingDirection(p1, p2, direction) {
+
+    const subArray = subtractArrays(p2, p1)
+
+    for (let i = 0; i < direction.length; i++) {
+        if (direction[i] !== 0) {
+            if (direction[i] === -subArray[i]) {
+                return true
+            }
+            else {
+                return false
+            }
+        }
+    }
+}
+
+
+
 
 //
-function getSpecializedMidPoint(p1, p2, direction) {
-    console.log(subtractArrays(p2, p1), direction)
-    if (checkIfFacingDirection(p1, p2, direction)) {
-        console.log('here')
-        return [p1,
-            addArrays(subtractArrays(subtractArrays(p2, p1), direction), p1),
-            p2]
-    }
-    else {
-        return [p1,
-            addArrays(subtractArrays(p2, p1), p1),
-            p2]
-    }
+function getSpecializedMidPoint(p1, p2) {
+
+    // if (checkIfFacingDirection(p1, p2, direction)) {
+    //     console.log('here')
+    //     return [p1,
+    //         addArrays(subtractArrays(subtractArrays(p2, p1), direction), p1),
+    //         p2]
+    // }
+    // else if (checkIfFacingOpposingDirection(p1, p2, direction)) {
+    //     return [p1,
+    //         addArrays(addArrays(subtractArrays(p2, p1), direction), p1),
+    //         p2]
+    // }
+    // else {
+    //     return [p1,
+    //         ,
+    //         p2]
+    // }
+    return [
+        p1[0],
+        addArrays(subtractArrays(subtractArrays(p2[0], p1[0]), p2[1]), p1[0]),
+        p2[0]
+    ]
 }
 
 /**
@@ -90,8 +118,9 @@ function getMidPoints(numOfPoints, p1, p2) {
 
 export default class LineDisplay {
 
-    constructor(scene, armyCoords, deadIndex) {
+    constructor(scene, armyCoords, color, deadIndex) {
         this.scene = scene
+        this.color = color
         this.currentFacingDirection = [0, 0, 1]
         // this.test(armyCoords)
         this.test2(armyCoords)
@@ -102,48 +131,57 @@ export default class LineDisplay {
 
     }
 
-    test(coords) {
-        // for (let j = 0.1; j < 10; j += 0.1) {
-        //     points.push(new THREE.Vector3(j, j, j));
-        // }
+    // test(coords) {
+    //     // for (let j = 0.1; j < 10; j += 0.1) {
+    //     //     points.push(new THREE.Vector3(j, j, j));
+    //     // }
 
 
-        // var points1 = [
+    //     var points = [
+    //         [-1.0, 0.0, 0.0],
+    //         [-0.5, 0.5, 0.0],
+    //         [0.5, -0.5, 0.0],
+    //         [1.0, 0.0, 0.0]
+    //     ];
+
+    //     // let points = getBezierPoints(adjustListToDisplayCoordinate(getLineMidPoints(coords)))
+
+    //     const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    //     const line = new MeshLine();
+    //     line.setGeometry(geometry);
+
+    //     const material = new MeshLineMaterial({
+    //         color: this.color,
+    //         opacity: 0.9,
+    //         lineWidth: 0.1
+    //     });
+    //     this.mesh = new THREE.Mesh(line, material);
+    //     this.scene.add(this.mesh);
+    // }
+
+    test2(coords) {
+        let points = getBezierPoints(adjustListToDisplayCoordinate(getSpecializedMidPoint(coords[0], coords[1])))
+
+        console.log(coords)
+
+        // var points = [
         //     [-1.0, 0.0, 0.0],
         //     [-0.5, 0.5, 0.0],
         //     [0.5, -0.5, 0.0],
         //     [1.0, 0.0, 0.0]
-        // ];
-
-        let points = getBezierPoints(adjustListToDisplayCoordinate(getLineMidPoints(coords)))
+        // ]
 
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const line = new MeshLine();
         line.setGeometry(geometry);
 
         const material = new MeshLineMaterial({
-            color: 'blue',
+            color: this.color,
             opacity: 0.9,
             lineWidth: 0.1
-        });
-        this.mesh = new THREE.Mesh(line, material);
-        this.scene.add(this.mesh);
-    }
-
-    test2(coords) {
-        let points = getBezierPoints(adjustListToDisplayCoordinate(getSpecializedMidPoint(coords[0], coords[1], this.currentFacingDirection)))
-
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const line = new MeshLine();
-        line.setGeometry(geometry);
-
-        const material = new MeshLineMaterial({
-            color: 'blue',
-            opacity: 0.9,
-            lineWidth: 0.1
-        });
-        this.mesh = new THREE.Mesh(line, material);
-        this.scene.add(this.mesh);
+        })
+        this.mesh = new THREE.Mesh(line, material)
+        this.scene.add(this.mesh)
     }
 
     setDead() {
