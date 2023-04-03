@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { arrayEquals, adjustToDisplayCoordinate } from "../globals.js"
+import { arrayEquals } from '../globals/array.js'
+import { adjustToDisplayCoordinate } from '../globals.js'
 
 /**
  * Army Display (Soldiers)
@@ -152,14 +153,6 @@ export default class ArmyDisplay {
             this.soldiers[soldierNum][1].rotateZ(magnitude)
         }
     }
-
-    // setSoldierRotation(soldierNum, x, y, z) {
-
-    //     const [xOffset, yOffset, zOffset] = adjustToDisplayCoordinate([x, y, z])
-
-    //     this.soldiers[soldierNum][0].rotation.set(xOffset, yOffset, zOffset)
-    //     this.soldiers[soldierNum][1].rotation.set(xOffset, yOffset, zOffset)
-    // }
 
     setSelectedColor(soldierNum) {
         this.soldiers[soldierNum][0].material.color.set(this.colorPalette[this.armyNum]['selected'])

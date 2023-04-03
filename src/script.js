@@ -14,19 +14,6 @@ import randomJeeshAI from './modules/ai/random'
 import LineDisplay from './modules/display/line'
 
 /**
- * Functions
- * (TO MOVE)
- */
-
-/**
- * Finds the index of the first Soldier for Army 1
- */
-function findAliveSoldierIndex(gameState) {
-
-}
-
-
-/**
  * Canvas for Arena
  */
 const canvas1 = document.querySelector('canvas.webgl')
@@ -70,19 +57,6 @@ window.addEventListener('resize', () => {
  * Raycaster
  */
 const raycaster = new THREE.Raycaster()
-
-/**
- * Double click to expand to full screen
- * NOTE: Does not work on Safari browser
- */
-// window.addEventListener('dblclick', () => {
-//     if (!document.fullscreenElement) {
-//         canvas1.requestFullscreen()
-//     }
-//     else {
-//         document.exitFullscreen()
-//     }
-// })
 
 /**
  * Cursor
@@ -135,66 +109,6 @@ let selectionPanel = new SelectionPanel(
 let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
-
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 0, 2], [0, 0, 1]]], 'red')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 1, 2], [0, 0, 1]]], 'red')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 2, 2], [0, 0, 1]]], 'red')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 0, 2], [0, 0, 1]]], 'red')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 1, 2], [0, 0, 1]]], 'red')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 2, 2], [0, 0, 1]]], 'red')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 0, 2], [0, 0, 1]]], 'red')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 1, 2], [0, 0, 1]]], 'red')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 2, 2], [0, 0, 1]]], 'red')
-
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 0, 0], [0, 0, -1]]], 'blue')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 1, 0], [0, 0, -1]]], 'blue')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 2, 0], [0, 0, -1]]], 'blue')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 0, 0], [0, 0, -1]]], 'blue')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 1, 0], [0, 0, -1]]], 'blue')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 2, 0], [0, 0, -1]]], 'blue')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 0, 0], [0, 0, -1]]], 'blue')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 1, 0], [0, 0, -1]]], 'blue')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 2, 0], [0, 0, -1]]], 'blue')
-
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 2, 0], [0, 1, 0]]], 'purple')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 2, 1], [0, 1, 0]]], 'purple')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 2, 2], [0, 1, 0]]], 'purple')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 2, 0], [0, 1, 0]]], 'purple')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 2, 1], [0, 1, 0]]], 'purple')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 2, 2], [0, 1, 0]]], 'purple')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 2, 0], [0, 1, 0]]], 'purple')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 2, 1], [0, 1, 0]]], 'purple')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 2, 2], [0, 1, 0]]], 'purple')
-
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 0, 0], [0, -1, 0]]], 'yellow')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 0, 1], [0, -1, 0]]], 'yellow')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 0, 2], [0, -1, 0]]], 'yellow')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 0, 0], [0, -1, 0]]], 'yellow')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 0, 1], [0, -1, 0]]], 'yellow')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[1, 0, 2], [0, -1, 0]]], 'yellow')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 0, 0], [0, -1, 0]]], 'yellow')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 0, 1], [0, -1, 0]]], 'yellow')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 0, 2], [0, -1, 0]]], 'yellow')
-
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 0, 0], [1, 0, 0]]], 'green')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 1, 0], [1, 0, 0]]], 'green')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 2, 0], [1, 0, 0]]], 'green')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 0, 1], [1, 0, 0]]], 'green')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 1, 1], [1, 0, 0]]], 'green')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 2, 1], [1, 0, 0]]], 'green')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 0, 2], [1, 0, 0]]], 'green')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 1, 2], [1, 0, 0]]], 'green')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[2, 2, 2], [1, 0, 0]]], 'green')
-
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 0, 0], [-1, 0, 0]]], 'black')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 1, 0], [-1, 0, 0]]], 'black')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 2, 0], [-1, 0, 0]]], 'black')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 0, 1], [-1, 0, 0]]], 'black')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 1, 1], [-1, 0, 0]]], 'black')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 2, 1], [-1, 0, 0]]], 'black')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 0, 2], [-1, 0, 0]]], 'black')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 1, 2], [-1, 0, 0]]], 'black')
-new LineDisplay(scene, [[[1, 1, 1], [0, 0, 1]], [[0, 2, 2], [-1, 0, 0]]], 'black')
 
 
 let aiLock = false

@@ -3,7 +3,7 @@
  */
 
 import {jeeshSimulateGame, jeeshGetNextState, jeeshGetGain, jeeshGetPossibleActions} from './transfer.js'
-import Node from './node.js'
+import NodeMCTS from './node.js'
 
 /**
  * Selection Phase
@@ -94,7 +94,7 @@ function chooseAction(rootState) {
 export function mcts(numOfIterations, initialState, getPossibleActionsFunc, getNextStateFunc, simulateGameFunc, getGainFunc, maxNumActions, explorationFactor) {
 
     // Create Root node
-    const root = new Node(initialState)
+    const root = new NodeMCTS(initialState)
 
     // Iterate over algorithm for pre selected number of iterations
     for (let iterNum = 0; iterNum < numOfIterations; iterNum++) {

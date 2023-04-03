@@ -3,7 +3,7 @@ import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline'
 import { adjustListToDisplayCoordinate, subtractArrays, addArrays, arrayEquals } from '../globals';
 
 const bezier = require('bezier-curve')
-const BEZIER_ACCURACY = 5
+// const BEZIER_ACCURACY = 20
 
 /**
  * 
@@ -73,25 +73,10 @@ function checkIfFacingOpposingDirection(p1, p2, direction) {
 
 
 
-//
+/**
+ * Takes two 
+ */
 function getSpecializedMidPoint(p1, p2) {
-
-    // if (checkIfFacingDirection(p1, p2, direction)) {
-    //     console.log('here')
-    //     return [p1,
-    //         addArrays(subtractArrays(subtractArrays(p2, p1), direction), p1),
-    //         p2]
-    // }
-    // else if (checkIfFacingOpposingDirection(p1, p2, direction)) {
-    //     return [p1,
-    //         addArrays(addArrays(subtractArrays(p2, p1), direction), p1),
-    //         p2]
-    // }
-    // else {
-    //     return [p1,
-    //         ,
-    //         p2]
-    // }
     return [
         p1[0],
         addArrays(subtractArrays(subtractArrays(p2[0], p1[0]), p2[1]), p1[0]),

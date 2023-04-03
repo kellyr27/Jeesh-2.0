@@ -2,26 +2,15 @@
  * Node for the Monte Carlo Tree Search Algorithm
  */
 
-import {generateRandomInt} from '../globals.js'
+import { generateRandomInt } from '../globals/number.js'
+import { getRandomSubarray } from '../globals/array.js'
 
-/**
- * Gets a random subarray from an array
- */
-function getRandomSubarray(arr, size) {
-    var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
-    while (i-- > min) {
-        index = Math.floor((i + 1) * Math.random());
-        temp = shuffled[index];
-        shuffled[index] = shuffled[i];
-        shuffled[i] = temp;
-    }
-    return shuffled.slice(min);
-}
+const MAX_UCB_SCORE = 1000000
 
 /**
  * Node for the Search Tree
  */
-export default class Node {
+export default class NodeMCTS {
 
     constructor(state, action) {
 
@@ -55,7 +44,7 @@ export default class Node {
         }
 
         for (const action of possibleActions) {
-            this.children.push(new Node(getNextState(this.state, action), action))
+            this.children.push(new NodeMCTS(getNextState(this.state, action), action))
         }
     }
 
@@ -104,7 +93,7 @@ export default class Node {
          * If the node has never been visited, to avoid div by 0 errors
          */
         if (this.n === 0) {
-            return 100000
+            return MAX_UCB_SCORE
         }
         else {
             return (this.s / this.n) + explorationFactor * Math.sqrt((2 * Math.log(parentNode.n)) / this.n)

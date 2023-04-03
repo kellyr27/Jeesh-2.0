@@ -5,7 +5,9 @@
  */
 
 import Army from "./army.js"
-import { arrayEquals, arrayInArray, isNumBetween, generateRandomInt, MAX_NUM_STARS, ARENA_SIZE } from "../globals.js"
+import { arrayEquals, arrayInArray } from "../globals/array.js"
+import { isNumBetween, generateRandomInt } from "../globals/number.js"
+import { MAX_NUM_STARS, ARENA_SIZE, DOOR_COORDINATES } from "../globals/game/constants.js"
 
 export default class GameState {
 
@@ -295,14 +297,14 @@ export default class GameState {
 
         if (armyNum === 0) {
             for (const soldier of this.armies[0].soldiers) {
-                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)[0], [5, 5, 0])) {
+                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)[0], DOOR_COORDINATES[0])) {
                     return true
                 }
             }
         }
         else if (armyNum === 1) {
             for (const soldier of this.armies[1].soldiers) {
-                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)[0], [5, 5, 10])) {
+                if (this.#isCoordinateEqual(soldier.getPosition(moveNum)[0], DOOR_COORDINATES[1])) {
                     return true
                 }
             }
