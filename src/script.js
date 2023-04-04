@@ -96,10 +96,9 @@ renderer.render(scene, camera)
 let gameState = new GameState(
     [[[5, 5, 10], [0, 0, -1]], [[5, 4, 10], [0, 0, -1]], [[4, 5, 10], [0, 0, -1]], [[5, 9, 9], [-1, 0, 0]]],
     [[[5, 5, 6], [0, 0, 1]], [[5, 4, 6], [0, 0, 1]], [[5, 4, 1], [0, 0, 1]]])
-gameState.removeStars()
-let arena = new Arena(scene)
+// gameState.removeStars()
+let arena = new Arena(scene, gameState.getStars())
 arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
-let starDisplay = new StarsDisplay(scene, gameState.getStars())
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
 let selectionPanel = new SelectionPanel(

@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { CUBE_SIZE, ARENA_SIZE, DOOR_COORDINATES } from '../globals/game/constants.js'
 import { adjustToDisplayCoordinate } from '../globals/game/coordinates.js'
 import { arrayInArray,arrayEquals } from '../globals/array.js'
+import StarsDisplay from './stars.js'
 
 /**
  * Arena Threejs Display (or Battle Room)
@@ -13,11 +14,12 @@ export default class Arena {
     cubeEdgesGeometry = new THREE.EdgesGeometry(this.cubeGeometry)
     cubeLineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
 
-    constructor(scene) {
+    constructor(scene, starCoordinates) {
         this.scene = scene
         this.cubes = this.#createArena()
         this.currentHoveredCoordinate = [-1, -1, -1]
         this.#setDoors(DOOR_COORDINATES)
+        this.stars = new StarsDisplay(scene, starCoordinates)
     }
 
     /**

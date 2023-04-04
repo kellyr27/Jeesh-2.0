@@ -9,12 +9,20 @@ import { arrayEquals, arrayInArray } from "../globals/array.js"
 import { isNumBetween, generateRandomInt } from "../globals/number.js"
 import { MAX_NUM_STARS, ARENA_SIZE, DOOR_COORDINATES } from "../globals/game/constants.js"
 
+function generateRandomCoordinate() {
+    return [
+        generateRandomInt(ARENA_SIZE - 2) + 1,
+        generateRandomInt(ARENA_SIZE - 2) + 1,
+        generateRandomInt(ARENA_SIZE - 2) + 1
+    ]
+}
+
 export default class GameState {
 
     constructor(army1StartingPositions, army2StartingPositions) {
         if (army2StartingPositions !== undefined) {
-            this.starCoordinates = this.#createStars()
             this.armies = this.#createArmies(army1StartingPositions, army2StartingPositions)
+            this.starCoordinates = this.#createStars()
             this.currentMoveNum = 1
             this.currentArmyNum = 0
             this.gameStatus = [-1, -1]
@@ -44,11 +52,16 @@ export default class GameState {
         const starCoordinates = []
 
         for (let i = 0; i < numStars; i++) {
-            starCoordinates.push([
-                generateRandomInt(ARENA_SIZE - 2) + 1,
-                generateRandomInt(ARENA_SIZE - 2) + 1,
-                generateRandomInt(ARENA_SIZE - 2) + 1
-            ])
+            
+            let newStarCoordinate = generateRandomCoordinate()
+
+            // Check that the coordinate does not intersect with a Soldier
+            while ((this.#isCoordinateInArray(newStarCoordinate, this.armies[0].getCoordinates(0))) || (this.#isCoordinateInArray(newStarCoordinate, this.armies[1].getCoordinates(0)))) {
+                console.log(newStarCoordinate)
+                newStarCoordinate = generateRandomCoordinate()
+            }
+
+            starCoordinates.push(newStarCoordinate)
         }
 
         return starCoordinates
