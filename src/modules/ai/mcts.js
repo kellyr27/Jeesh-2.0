@@ -9,7 +9,7 @@ import NodeMCTS from './node.js'
  * Selection Phase
  * Returns an list of nodes that connect the Root node to the Selected Node
  */
-function selectionPhase(root, explorationFactor) {
+export function selectionPhase(root, explorationFactor) {
     const nodeList = [root]
     let currentNode = root
     while (!currentNode.isLeaf()) {
@@ -35,7 +35,7 @@ function selectionPhase(root, explorationFactor) {
  * Expansion Phase
  * Returns an list of nodes that connect the Root node to the new Selected Node (expanded)
  */
-function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions) {
+export function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions) {
     let selectedNode = nodeList[nodeList.length - 1]
 
     // Check if the game is not in a decisive state
@@ -52,7 +52,7 @@ function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumAction
  * Simulation Phase
  * Returns the gain from an Simulated (random) game
  */
-function simulationPhase(nodeList, simulateGame, getGain) {
+export function simulationPhase(nodeList, simulateGame, getGain) {
     const simulatedGameState = simulateGame(nodeList[nodeList.length - 1].state)
     return getGain(simulatedGameState, nodeList[0].state)
 }
@@ -61,7 +61,7 @@ function simulationPhase(nodeList, simulateGame, getGain) {
  * Backpropagation Phase
  * Updates the node values from the Root to the Selected Node with the gain from the Simulation Phase
  */
-function backpropagationPhase(nodeList, gain) {
+export function backpropagationPhase(nodeList, gain) {
     for (const node of nodeList) {
         node.updateValues(gain)
     }

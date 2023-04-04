@@ -12,7 +12,7 @@ const EXPLORATION_FACTOR = 0.7
  * Selection Phase
  * Returns an list of nodes that connect the Root node to the Selected Node
  */
-export function selectionPhase(root, explorationFactor) {
+function selectionPhase(root, explorationFactor) {
     const nodeList = [root]
     let currentNode = root
     while (!currentNode.isLeaf()) {
@@ -38,7 +38,7 @@ export function selectionPhase(root, explorationFactor) {
  * Expansion Phase
  * Returns an list of nodes that connect the Root node to the new Selected Node (expanded)
  */
-export function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions) {
+function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions) {
     let selectedNode = nodeList[nodeList.length - 1]
 
     // Check if the game is not in a decisive state
@@ -55,7 +55,7 @@ export function expansionPhase(nodeList, getPossibleActions, getNextState, maxNu
  * Simulation Phase
  * Returns the gain from an Simulated (random) game
  */
-export function simulationPhase(nodeList, simulateGame, getGain) {
+function simulationPhase(nodeList, simulateGame, getGain) {
     const simulatedGameState = simulateGame(nodeList[nodeList.length - 1].state)
     return getGain(simulatedGameState, nodeList[0].state)
 }
@@ -64,7 +64,7 @@ export function simulationPhase(nodeList, simulateGame, getGain) {
  * Backpropagation Phase
  * Updates the node values from the Root to the Selected Node with the gain from the Simulation Phase
  */
-export function backpropagationPhase(nodeList, gain) {
+function backpropagationPhase(nodeList, gain) {
     for (const node of nodeList) {
         node.updateValues(gain)
     }
@@ -91,7 +91,9 @@ function chooseAction(rootState) {
     return childNodes[highestNumVisitsIndex]
 }
 
-class Mcts {
+const ITERATIONS_PER_TICK = 2
+
+export default class Mcts {
     getPossibleActionsFunc = jeeshGetPossibleActions
     getNextStateFunc = jeeshGetNextState
     simulateGameFunc = jeeshSimulateGame
@@ -99,6 +101,9 @@ class Mcts {
     
     constructor (maxNumActions, initialState) {
         this.maxNumActions = maxNumActions
+    }
+
+    create(initialState) {
         this.status = true
         this.currentIteration = 0
         this.currentStage = 0
@@ -117,6 +122,21 @@ class Mcts {
             this.status = false
             return
         }
+        
+        for (let i = 0; i < ITERATIONS_PER_TICK; i++) {
+            this.nodeList = selectionPhase(this.root, EXPLORATION_FACTOR)
+            this.nodeList = expansionPhase(this.nodeList, this.getPossibleActionsFunc, this.getNextStateFunc, this.maxNumActions)
+            this.gain = simulationPhase(this.nodeList, this.simulateGameFunc, this.getGainFunc)
+            backpropagationPhase(this.nodeList, this.gain)
+            this.currentIteration += 1
+        }
+    }
+
+    OLD_continueExecution() {
+        if (this.currentIteration >= this.maxNumActions) {
+            this.status = false
+            return
+        }
         switch (this.currentStage) {
             case 0:
                 this.nodeList = selectionPhase(this.root, EXPLORATION_FACTOR)
@@ -131,7 +151,7 @@ class Mcts {
                 this.currentStage = 3
                 return
             case 3:
-                backpropagationPhase(nodeList, gain)
+                backpropagationPhase(this.nodeList, this.gain)
                 this.currentStage = 0
                 this.currentIteration += 1
                 return

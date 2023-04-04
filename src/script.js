@@ -14,6 +14,7 @@ import randomJeeshAI from './modules/ai/random'
 import LineDisplay from './modules/display/line'
 import { mctsBot1Async } from './modules/ai/mcts'
 import { testAllAI } from './modules/ai/test'
+import Mcts from './modules/ai/mcts2'
 
 
 /**
@@ -284,63 +285,7 @@ canvas1.addEventListener('mousemove', (evt) => {
 
 })
 
-/**
- * 
- */
-import { jeeshSimulateGame, jeeshGetNextState, jeeshGetGain, jeeshGetPossibleActions } from './modules/ai/transfer'
-import { selectionPhasePromise, expansionPhasePromise, simulationPhasePromise,backpropagationPhasePromise, chooseActionPromise } from './modules/ai/mcts'
-import NodeMCTS from './modules/ai/node'
-
-function resolveAfter2Seconds() {
-    return new Promise(resolve => {
-        resolve(mctsBot1Async(gameState))
-    });
-}
-
-async function asyncCall() {
-    console.log('calling');
-
-    /**
-     * START
-     */
-    // Create Root node
-    const initialState = gameState
-    const numOfIterations = 1000
-    const getPossibleActionsFunc = jeeshGetPossibleActions
-    const getNextStateFunc = jeeshGetNextState
-    const simulateGameFunc = jeeshSimulateGame
-    const getGainFunc = jeeshGetGain
-    const maxNumActions = 5
-    const explorationFactor = 0.7
-
-
-
-    const root = new NodeMCTS(initialState)
-
-    // Iterate over algorithm for pre selected number of iterations
-    for (let iterNum = 0; iterNum < numOfIterations; iterNum++) {
-        let nodeList = await selectionPhasePromise(root, explorationFactor)
-        nodeList = await expansionPhasePromise(nodeList, getPossibleActionsFunc, getNextStateFunc, maxNumActions)
-        const gain = await simulationPhasePromise(nodeList, simulateGameFunc, getGainFunc)
-        await backpropagationPhasePromise(nodeList, gain)
-    }
-
-    // Select the child of the Root with the most number of Visits
-    const chosenState = await chooseActionPromise(root)
-    const [AISoldierNum, AIMove] = chosenState.getAction()
-    /**
-     * END
-     */
-    
-    aiMove.setSoldierNum(AISoldierNum)
-    aiMove.setStartingParameters(gameState.getSoldierCurrentPosition(1, AISoldierNum), AIMove)
-    aiLock = false
-    aiMove.setMotionLock()
-    console.log('finished');
-    // Expected output: "resolved"
-}
-
-let testLock = false
+const testMCTSClass = new Mcts(1000)
 
 const tick = () => {
     console.log('tick')
@@ -384,7 +329,8 @@ const tick = () => {
             armyDisplay2.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(1))
             console.log('Alive count ', gameState.armies[0].getAliveCount(), gameState.armies[1].getAliveCount())
             aiLock = true
-            asyncCall()
+            testMCTSClass.create(gameState)
+            // asyncCall()
         }
     }
 
@@ -392,14 +338,19 @@ const tick = () => {
      * Intermediate
      * Calculates move for Player 2 - AI
      */
-    // if (aiLock) {
-    //     const [AISoldierNum, AIMove] = randomJeeshAI(gameState)
-    //     aiMove.setSoldierNum(AISoldierNum)
-    //     aiMove.setStartingParameters(gameState.getSoldierCurrentPosition(1, AISoldierNum), AIMove)
+    if (aiLock && (testMCTSClass.getStatus())) {
+        testMCTSClass.continueExecution()
+    }
 
-    //     aiLock = false
-    //     aiMove.setMotionLock()
-    // }
+    if (aiLock && (!testMCTSClass.getStatus())) {
+        // const [AISoldierNum, AIMove] = randomJeeshAI(gameState)
+        const [AISoldierNum, AIMove] = testMCTSClass.getChoosenAction()
+        aiMove.setSoldierNum(AISoldierNum)
+        aiMove.setStartingParameters(gameState.getSoldierCurrentPosition(1, AISoldierNum), AIMove)
+
+        aiLock = false
+        aiMove.setMotionLock()
+    }
 
     /**
      * Player 2 - AI
