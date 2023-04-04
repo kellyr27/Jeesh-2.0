@@ -57,7 +57,6 @@ export default class GameState {
 
             // Check that the coordinate does not intersect with a Soldier
             while ((this.#isCoordinateInArray(newStarCoordinate, this.armies[0].getCoordinates(0))) || (this.#isCoordinateInArray(newStarCoordinate, this.armies[1].getCoordinates(0)))) {
-                console.log(newStarCoordinate)
                 newStarCoordinate = generateRandomCoordinate()
             }
 
@@ -70,7 +69,7 @@ export default class GameState {
     /**
      * Get a list of coordinates of the stars for display
      */
-    getStars() {
+    getStarCoordinates() {
         return this.starCoordinates
     }
 
