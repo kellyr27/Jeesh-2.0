@@ -18,6 +18,13 @@ export default class Move {
         this.finishRotation = [-1, -1, -1]
     }
 
+    getLineDisplay () {
+        return [
+            [this.startingPosition, this.startingRotation],
+            [this.finishPosition, this.finishRotation]
+        ]
+    }
+
     #setRotation() {
         const rotation = this.#findRotation()
 
@@ -212,6 +219,11 @@ export default class Move {
 
     getTimeInMotion(elapsedTime) {
         return elapsedTime - this.startTime
+    }
+
+    getPercentageInMotion (elapsedTime) {
+        console.log(elapsedTime, this.startTime)
+        return (elapsedTime - this.startTime) / MOVE_TIME_SECS
     }
 
     /**
