@@ -79,7 +79,6 @@ class LineDisplay {
 
     create(coords, max) {
 
-        console.log(coords, max)
         let points = getBezierPoints(adjustListToDisplayCoordinate(getSpecializedMidPoint(coords[0], coords[1])), max)
 
         this.geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -102,7 +101,6 @@ class LineDisplay {
     }
 
     dispose() {
-        console.log('here2')
         this.line.dispose()
         this.geometry.dispose()
         this.material.dispose()

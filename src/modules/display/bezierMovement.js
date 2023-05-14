@@ -43,3 +43,14 @@ export function BezierQuadraticThreeDim ([A, B, C], t) {
     const z = BezierQuadratic(A[2], B[2], C[2], t)
     return [x,y,z]
 }
+
+function BezierQuadraticDerivative (A, B, C, t) {
+    return 2* (1 - t) * (B - A) + 2 * t * (C - B)
+}
+
+export function BezierQuadraticDerivativeThreeDim([A, B, C], t) {
+    const x = BezierQuadraticDerivative(A[0], B[0], C[0], t)
+    const y = BezierQuadraticDerivative(A[1], B[1], C[1], t)
+    const z = BezierQuadraticDerivative(A[2], B[2], C[2], t)
+    return [x,y,z]
+}

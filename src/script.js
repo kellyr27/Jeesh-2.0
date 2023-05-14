@@ -302,9 +302,10 @@ const tick = () => {
         armyDisplay1.setSoldierPosition(userMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
         const rotationalAxis = userMove.getRotationalAxis()
         const rotationalAngle = userMove.getMovingRotation(elapsedTime)
-        armyDisplay1.setSoldierRotation(userMove.getSoldierNum(), rotationalAxis, rotationalAngle)
+        // armyDisplay1.setSoldierRotation(userMove.getSoldierNum(), rotationalAxis, rotationalAngle)
+        const lookAtCoord = userMove.getNEWMovingRotation(elapsedTime)
+        armyDisplay1.setNEWSoldierRotation(userMove.getSoldierNum(), lookAtCoord)
         lineArmyDisplay1.setMotionLine(userMove.getLineDisplay(), userMove.getPercentageInMotion(elapsedTime))
-
 
         // Checks if this is the End of the Motion
         if (userMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {

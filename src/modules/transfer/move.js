@@ -1,5 +1,5 @@
-import { MOVE_TIME_SECS, arrayEquals } from "../globals"
-import { getSpecializedMidPoint, BezierQuadraticThreeDim } from "../display/bezierMovement"
+import { MOVE_TIME_SECS, addArrays, arrayEquals } from "../globals"
+import { getSpecializedMidPoint, BezierQuadraticThreeDim, BezierQuadraticDerivativeThreeDim } from "../display/bezierMovement"
 /**
  * Change Rotation to Direction and figure out the math
  */
@@ -222,7 +222,6 @@ export default class Move {
     }
 
     getPercentageInMotion (elapsedTime) {
-        console.log(elapsedTime, this.startTime)
         return (elapsedTime - this.startTime) / MOVE_TIME_SECS
     }
 
@@ -249,6 +248,11 @@ export default class Move {
         else {
             return this.rotationAngle * (timeElapsedSinceLastRotation / MOVE_TIME_SECS)
         }
+    }
+
+    getNEWMovingRotation (elapsedTime) {
+        const gradient = BezierQuadraticDerivativeThreeDim(this.bezierQuadraticPoints, this.getPercentageInMotion(elapsedTime))
+        return addArrays(this.getMovingPosition(elapsedTime), gradient)
     }
 
     getMovingPosition(elapsedTime) {

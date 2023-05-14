@@ -154,6 +154,12 @@ export default class ArmyDisplay {
         }
     }
 
+    setNEWSoldierRotation(soldierNum, vector) {
+        const threeVector = new THREE.Vector3( vector[0], vector[1], vector[2] )
+        this.soldiers[soldierNum][0].lookAt(threeVector)
+        this.soldiers[soldierNum][1].lookAt(threeVector)
+    }
+
     setSelectedColor(soldierNum) {
         this.soldiers[soldierNum][0].material.color.set(this.colorPalette[this.armyNum]['selected'])
     }
