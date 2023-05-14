@@ -97,8 +97,8 @@ let arenaDisplay = new Arena(scene, gameState.getStarCoordinates())
 arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
-let lineArmyDisplay1 = new LineArmy(scene, gameState.getArmyCurrentPositions(0), 'white')
-let lineArmyDisplay2 = new LineArmy(scene, gameState.getArmyCurrentPositions(1), 'white')
+let lineArmyDisplay1 = new LineArmy(scene, gameState.getArmyCurrentPositions(0), 'red')
+let lineArmyDisplay2 = new LineArmy(scene, gameState.getArmyCurrentPositions(1), 'blue')
 let selectionPanel = new SelectionPanel(
     canvas2,
     gameState.getSoldierCurrentPosition(0, 0),
@@ -108,11 +108,6 @@ let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
 let aiLock = false
 const mctsAlgorithm = new Mcts(100)
-
-// [[5, 9, 9], [0, -1, 0]]
-const temp = adjustToDisplayCoordinate([5, 8, 9])
-console.log(temp)
-console.log(armyDisplay1.soldiers[3][0].lookAt(new THREE.Vector3(temp[0], temp[1], temp[2])))
 
 /**
  * Animations
@@ -125,7 +120,7 @@ const clock = new THREE.Clock()
 canvas2.addEventListener('mousemove', (evt) => {
     evt = evt || window.event
 
-    if (!userMove.getMotionLock() && !aiMove.getMotionLock()) {
+    if (!userMove.getMotionLock() && !aiMove.getMotionLock() && !aiLock) {
         selectionPanel.resetCurrentScrollSelected()
         selectionPanel.resetCurrentSelectionSelected()
 
@@ -158,7 +153,7 @@ canvas2.addEventListener('mousemove', (evt) => {
 canvas2.addEventListener('click', (evt) => {
     evt = evt || window.event
 
-    if (!userMove.getMotionLock() && !aiMove.getMotionLock()) {
+    if (!userMove.getMotionLock() && !aiMove.getMotionLock() && !aiLock) {
         // Update the Scroll tiles
         const scrollTiles = selectionPanel.getScrollTilePaths()
         for (let i = scrollTiles.length - 1; i >= 0; i--) {
@@ -204,80 +199,78 @@ canvas2.addEventListener('mouseleave', (evt) => {
  */
 canvas1.addEventListener('click', (evt) => {
 
-    // If we are currently hovering over a Soldier
-    if (userRaycaster.isHoveredSoldier()) {
+    if (!userMove.getMotionLock() && !aiMove.getMotionLock() && !aiLock) {
+        // If we are currently hovering over a Soldier
+        if (userRaycaster.isHoveredSoldier()) {
 
-        // And there is a previously selected Soldier, set that Soldier back to default
-        if (userRaycaster.isSelectedSoldier()) {
-            armyDisplay1.setDefaultColor(userRaycaster.getSelectedSoldier())
+            // And there is a previously selected Soldier, set that Soldier back to default
+            if (userRaycaster.isSelectedSoldier()) {
+                armyDisplay1.setDefaultColor(userRaycaster.getSelectedSoldier())
+            }
+
+            // Now set the newly Selected Soldier and color
+            userRaycaster.setSelectedSoldier(userRaycaster.getHoveredSoldier())
+            armyDisplay1.setSelectedColor(userRaycaster.getSelectedSoldier())
+            selectionPanel.setSoldier(
+                gameState.getSoldierCurrentPosition(0, userRaycaster.getSelectedSoldier()),
+                gameState.getSoldierCurrentPossibleMoves(0, userRaycaster.getSelectedSoldier())
+            )
         }
-
-        // Now set the newly Selected Soldier and color
-        userRaycaster.setSelectedSoldier(userRaycaster.getHoveredSoldier())
-        armyDisplay1.setSelectedColor(userRaycaster.getSelectedSoldier())
-        selectionPanel.setSoldier(
-            gameState.getSoldierCurrentPosition(0, userRaycaster.getSelectedSoldier()),
-            gameState.getSoldierCurrentPossibleMoves(0, userRaycaster.getSelectedSoldier())
-        )
     }
-
-    // Check if we are not currently hovering but there is a selected Soldier
-    // else if (userRaycaster.isSelectedSoldier()) {
-    //     armyDisplay1.setDefaultColor(userRaycaster.getSelectedSoldier())
-    //     userRaycaster.resetSelectedSoldier()
-    //     selectionPanel.setSoldier(gameState.getSoldierCurrentPosition(0, 0), gameState.getSoldierCurrentPossibleMoves(0,0))
-    // }
 })
 
 canvas1.addEventListener('contextmenu', (evt) => {
-
-    if (userRaycaster.isSelectedSoldier()) {
-        if (userRaycaster.getHoveredSoldier() === userRaycaster.getSelectedSoldier()) {
-            armyDisplay1.setHoveredColor(userRaycaster.getSelectedSoldier())
+    if (!userMove.getMotionLock() && !aiMove.getMotionLock() && !aiLock) {
+        if (userRaycaster.isSelectedSoldier()) {
+            if (userRaycaster.getHoveredSoldier() === userRaycaster.getSelectedSoldier()) {
+                armyDisplay1.setHoveredColor(userRaycaster.getSelectedSoldier())
+            }
+            else {
+                armyDisplay1.setDefaultColor(userRaycaster.getSelectedSoldier())
+            }
+    
+            userRaycaster.resetSelectedSoldier()
         }
-        else {
-            armyDisplay1.setDefaultColor(userRaycaster.getSelectedSoldier())
-        }
-
-        userRaycaster.resetSelectedSoldier()
+        selectionPanel.setSoldier(
+            gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]),
+            gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0])
+        )
     }
-    selectionPanel.setSoldier(
-        gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]),
-        gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0])
-    )
 })
 
 canvas1.addEventListener('mousemove', (evt) => {
 
-    // Cast a raycaster and check if it intersects any of the Soldiers from Army 1
-    let intersectedSoldier = raycaster.intersectObjects(armyDisplay1.getSoldiers())
-    const previousIntersectedSoldierIndex = userRaycaster.getHoveredSoldier()
+    if (!userMove.getMotionLock() && !aiMove.getMotionLock() && !aiLock) {
+        // Cast a raycaster and check if it intersects any of the Soldiers from Army 1
+        let intersectedSoldier = raycaster.intersectObjects(armyDisplay1.getSoldiers())
+        const previousIntersectedSoldierIndex = userRaycaster.getHoveredSoldier()
 
-    // If the cursor is currently hovering over an Soldier
-    if (intersectedSoldier.length !== 0) {
-        const currentIntersectedSoldierIndex = intersectedSoldier[0].object.index
+        // If the cursor is currently hovering over an Soldier
+        if (intersectedSoldier.length !== 0) {
+            const currentIntersectedSoldierIndex = intersectedSoldier[0].object.index
 
-        // If the Soldier is being hovered over for the first time
-        if (currentIntersectedSoldierIndex !== previousIntersectedSoldierIndex) {
+            // If the Soldier is being hovered over for the first time
+            if (currentIntersectedSoldierIndex !== previousIntersectedSoldierIndex) {
 
+                if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRaycaster.getSelectedSoldier())) {
+                    armyDisplay1.setDefaultColor(previousIntersectedSoldierIndex)
+                }
+
+                if (currentIntersectedSoldierIndex !== userRaycaster.getSelectedSoldier()) {
+                    armyDisplay1.setHoveredColor(currentIntersectedSoldierIndex)
+                }
+            }
+
+            userRaycaster.setHoveredSoldier(currentIntersectedSoldierIndex)
+        }
+
+        else {
             if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRaycaster.getSelectedSoldier())) {
                 armyDisplay1.setDefaultColor(previousIntersectedSoldierIndex)
             }
 
-            if (currentIntersectedSoldierIndex !== userRaycaster.getSelectedSoldier()) {
-                armyDisplay1.setHoveredColor(currentIntersectedSoldierIndex)
-            }
+            userRaycaster.resetHoveredSoldier()
         }
-
-        userRaycaster.setHoveredSoldier(currentIntersectedSoldierIndex)
-    }
-
-    else {
-        if ((previousIntersectedSoldierIndex !== -1) && (previousIntersectedSoldierIndex !== userRaycaster.getSelectedSoldier())) {
-            armyDisplay1.setDefaultColor(previousIntersectedSoldierIndex)
-        }
-
-        userRaycaster.resetHoveredSoldier()
     }
 
 })
@@ -304,9 +297,6 @@ const tick = () => {
         // This shows the Movement of the Soldier
         const [currentPositionX, currentPositionY, currentPositionZ] = userMove.getMovingPosition(elapsedTime)
         armyDisplay1.setSoldierPosition(userMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
-        const rotationalAxis = userMove.getRotationalAxis()
-        const rotationalAngle = userMove.getMovingRotation(elapsedTime)
-        // armyDisplay1.setSoldierRotation(userMove.getSoldierNum(), rotationalAxis, rotationalAngle)
         const lookAtCoord = userMove.getNEWMovingRotation(elapsedTime)
         armyDisplay1.setNEWSoldierRotation(userMove.getSoldierNum(), lookAtCoord)
         lineArmyDisplay1.setMotionLine(userMove.getLineDisplay(), userMove.getPercentageInMotion(elapsedTime))
