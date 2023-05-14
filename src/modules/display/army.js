@@ -155,7 +155,8 @@ export default class ArmyDisplay {
     }
 
     setNEWSoldierRotation(soldierNum, vector) {
-        const threeVector = new THREE.Vector3( vector[0], vector[1], vector[2] )
+        const adjustedVector = adjustToDisplayCoordinate(vector)
+        const threeVector = new THREE.Vector3( adjustedVector[0], adjustedVector[1], adjustedVector[2] )
         this.soldiers[soldierNum][0].lookAt(threeVector)
         this.soldiers[soldierNum][1].lookAt(threeVector)
     }

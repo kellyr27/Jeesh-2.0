@@ -252,6 +252,7 @@ export default class Move {
 
     getNEWMovingRotation (elapsedTime) {
         const gradient = BezierQuadraticDerivativeThreeDim(this.bezierQuadraticPoints, this.getPercentageInMotion(elapsedTime))
+        console.log(gradient)
         return addArrays(this.getMovingPosition(elapsedTime), gradient)
     }
 

@@ -7,7 +7,7 @@ import Arena from './modules/display/arena'
 import ArmyDisplay from './modules/display/army'
 import Move from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
-import { ARENA_SIZE, MOVE_TIME_SECS } from './modules/globals'
+import { ARENA_SIZE, MOVE_TIME_SECS, adjustListToDisplayCoordinate, adjustToDisplayCoordinate } from './modules/globals'
 import Mcts from './modules/ai/mcts2'
 import { STARTING_POSITIONS_ARMY_1, STARTING_POSITIONS_ARMY_2 } from './modules/globals/game/constants'
 import LineArmy from './modules/display/line'
@@ -109,6 +109,10 @@ let userRaycaster = new UserRaycaster()
 let aiLock = false
 const mctsAlgorithm = new Mcts(100)
 
+// [[5, 9, 9], [0, -1, 0]]
+const temp = adjustToDisplayCoordinate([5, 8, 9])
+console.log(temp)
+console.log(armyDisplay1.soldiers[3][0].lookAt(new THREE.Vector3(temp[0], temp[1], temp[2])))
 
 /**
  * Animations
