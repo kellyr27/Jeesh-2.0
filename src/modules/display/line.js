@@ -3,7 +3,6 @@ import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline'
 import { adjustListToDisplayCoordinate, subtractArrays, addArrays, arrayEquals } from '../globals';
 
 const bezier = require('bezier-curve')
-// const BEZIER_ACCURACY = 20
 
 /**
  * 
@@ -116,45 +115,10 @@ export default class LineDisplay {
 
     }
 
-    // test(coords) {
-    //     // for (let j = 0.1; j < 10; j += 0.1) {
-    //     //     points.push(new THREE.Vector3(j, j, j));
-    //     // }
-
-
-    //     var points = [
-    //         [-1.0, 0.0, 0.0],
-    //         [-0.5, 0.5, 0.0],
-    //         [0.5, -0.5, 0.0],
-    //         [1.0, 0.0, 0.0]
-    //     ];
-
-    //     // let points = getBezierPoints(adjustListToDisplayCoordinate(getLineMidPoints(coords)))
-
-    //     const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    //     const line = new MeshLine();
-    //     line.setGeometry(geometry);
-
-    //     const material = new MeshLineMaterial({
-    //         color: this.color,
-    //         opacity: 0.9,
-    //         lineWidth: 0.1
-    //     });
-    //     this.mesh = new THREE.Mesh(line, material);
-    //     this.scene.add(this.mesh);
-    // }
-
     test2(coords) {
         let points = getBezierPoints(adjustListToDisplayCoordinate(getSpecializedMidPoint(coords[0], coords[1])))
 
-        console.log(coords)
-
-        // var points = [
-        //     [-1.0, 0.0, 0.0],
-        //     [-0.5, 0.5, 0.0],
-        //     [0.5, -0.5, 0.0],
-        //     [1.0, 0.0, 0.0]
-        // ]
+        console.log(points)
 
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const line = new MeshLine();

@@ -91,7 +91,7 @@ function chooseAction(rootState) {
     return childNodes[highestNumVisitsIndex]
 }
 
-const ITERATIONS_PER_TICK = 2
+const ITERATIONS_PER_TICK = 1
 
 export default class Mcts {
     getPossibleActionsFunc = jeeshGetPossibleActions
@@ -99,7 +99,7 @@ export default class Mcts {
     simulateGameFunc = jeeshSimulateGame
     getGainFunc = jeeshGetGain
     
-    constructor (maxNumActions, initialState) {
+    constructor (maxNumActions) {
         this.maxNumActions = maxNumActions
     }
 
@@ -129,32 +129,6 @@ export default class Mcts {
             this.gain = simulationPhase(this.nodeList, this.simulateGameFunc, this.getGainFunc)
             backpropagationPhase(this.nodeList, this.gain)
             this.currentIteration += 1
-        }
-    }
-
-    OLD_continueExecution() {
-        if (this.currentIteration >= this.maxNumActions) {
-            this.status = false
-            return
-        }
-        switch (this.currentStage) {
-            case 0:
-                this.nodeList = selectionPhase(this.root, EXPLORATION_FACTOR)
-                this.currentStage = 1
-                return
-            case 1:
-                this.nodeList = expansionPhase(this.nodeList, this.getPossibleActionsFunc, this.getNextStateFunc, this.maxNumActions)
-                this.currentStage = 2
-                return
-            case 2:
-                this.gain = simulationPhase(this.nodeList, this.simulateGameFunc, this.getGainFunc)
-                this.currentStage = 3
-                return
-            case 3:
-                backpropagationPhase(this.nodeList, this.gain)
-                this.currentStage = 0
-                this.currentIteration += 1
-                return
         }
     }
 

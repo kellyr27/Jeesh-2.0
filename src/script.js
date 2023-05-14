@@ -4,18 +4,13 @@ import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls
 import GameState from './modules/game/gameState'
 import SelectionPanel from './modules/display/panel'
 import Arena from './modules/display/arena'
-import StarsDisplay from './modules/display/stars'
 import ArmyDisplay from './modules/display/army'
 import Move from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
-import { ARENA_SIZE, arrayEquals, MOVE_TIME_SECS } from './modules/globals'
-import { mctsBot1 } from './modules/ai/mcts'
-import randomJeeshAI from './modules/ai/random'
-import LineDisplay from './modules/display/line'
-import { mctsBot1Async } from './modules/ai/mcts'
-import { testAllAI } from './modules/ai/test'
+import { ARENA_SIZE, MOVE_TIME_SECS } from './modules/globals'
 import Mcts from './modules/ai/mcts2'
-
+import { STARTING_POSITIONS_ARMY_1, STARTING_POSITIONS_ARMY_2 } from './modules/globals/game/constants'
+import LineDisplay from './modules/display/line'
 
 /**
  * Canvas for Arena
@@ -97,12 +92,9 @@ renderer.render(scene, camera)
 /**
  * Game Variables
  */
-let gameState = new GameState(
-    [[[5, 5, 10], [0, 0, -1]], [[5, 4, 10], [0, 0, -1]], [[4, 5, 10], [0, 0, -1]], [[5, 9, 9], [-1, 0, 0]]],
-    [[[5, 5, 6], [0, 0, 1]], [[5, 4, 6], [0, 0, 1]], [[5, 4, 1], [0, 0, 1]]])
-// gameState.removeStars()
-let arena = new Arena(scene, gameState.getStarCoordinates())
-arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
+let gameState = new GameState(STARTING_POSITIONS_ARMY_1, STARTING_POSITIONS_ARMY_2, false)
+let arenaDisplay = new Arena(scene, gameState.getStarCoordinates())
+arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
 let selectionPanel = new SelectionPanel(
@@ -112,10 +104,15 @@ let selectionPanel = new SelectionPanel(
 let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
-
-
 let aiLock = false
+const mctsAlgorithm = new Mcts(1000)
 
+let lineTest1 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,1,1], [0,1,0]]])
+let lineTest2 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [0,-1,0]]])
+let lineTest3 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [1,0,0]]])
+let lineTest4 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [-1,0,0]]])
+let lineTest5 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [0,0,1]]])
+let lineTest6 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [0,0,-1]]])
 
 /**
  * Animations
@@ -123,7 +120,7 @@ let aiLock = false
 const clock = new THREE.Clock()
 
 /**
- *
+ * Checks for Movement over the Selection Panel
  */
 canvas2.addEventListener('mousemove', (evt) => {
     evt = evt || window.event
@@ -140,7 +137,7 @@ canvas2.addEventListener('mousemove', (evt) => {
                 selectionPanel.setCurrentScrollHovered(i)
                 selectionPanel.resetCurrentSelectionHovered()
                 selectionPanel.drawPanel()
-                arena.resetHovered()
+                arenaDisplay.resetHovered()
                 return
             }
         }
@@ -151,7 +148,7 @@ canvas2.addEventListener('mousemove', (evt) => {
                 selectionPanel.setCurrentSelectionHovered(i)
                 selectionPanel.resetCurrentScrollHovered()
                 selectionPanel.drawPanel()
-                arena.setHovered(selectionPanel.getHoveredPosition())
+                arenaDisplay.setHovered(selectionPanel.getHoveredPosition())
                 return
             }
         }
@@ -285,77 +282,67 @@ canvas1.addEventListener('mousemove', (evt) => {
 
 })
 
-const testMCTSClass = new Mcts(1000)
-
 const tick = () => {
-    console.log('tick')
+
     raycaster.setFromCamera(mouse, camera)
     const elapsedTime = clock.getElapsedTime()
 
-
-    // if ((elapsedTime > 1) && (!testLock)) {
-    //     asyncCall()
-    //     testLock = true
-    // }
-
     /**
-     * Player 1 - User
+     * When Player 1 selects a Move to Play, we transition Three Phases
+     * Phase 1 - Player 1 is currently in Motion
      */
     if (userMove.getMotionLock()) {
 
+        // checks if this is the Start of the Motion
         if (userMove.getStartingFlag()) {
-
-            console.log(gameState.getArmyAllCoordinates(0))
-            // console.log(gameState.getArmyAllCoordinates(1))
-
             selectionPanel.drawPanelBlocked()
             userMove.setStartTime(elapsedTime)
             userMove.setSoldierNum(userRaycaster.getSelectedSoldier())
             gameState.updateGameState(userMove.getSoldierNum(), userMove.getMove())
         }
+
+        // This shows the Movement of the Soldier
         const [currentPositionX, currentPositionY, currentPositionZ] = userMove.getMovingPosition(elapsedTime)
         armyDisplay1.setSoldierPosition(userMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
-
         const rotationalAxis = userMove.getRotationalAxis()
         const rotationalAngle = userMove.getMovingRotation(elapsedTime)
         armyDisplay1.setSoldierRotation(userMove.getSoldierNum(), rotationalAxis, rotationalAngle)
 
+        // Checks if this is the End of the Motion
         if (userMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
-            arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
+            arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             userMove.resetStartingFlag()
             userMove.resetMotionLock()
             armyDisplay1.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(0))
-            console.log('Dead soldiers from army 2 are ', gameState.getCurrentIndexDeadSoldiers(1))
             armyDisplay2.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(1))
-            console.log('Alive count ', gameState.armies[0].getAliveCount(), gameState.armies[1].getAliveCount())
             aiLock = true
-            testMCTSClass.create(gameState)
-            // asyncCall()
+            mctsAlgorithm.create(gameState)
         }
     }
 
     /**
-     * Intermediate
-     * Calculates move for Player 2 - AI
+     * Phase 2A - Calculates move for Player 2 (AI)
      */
-    if (aiLock && (testMCTSClass.getStatus())) {
-        testMCTSClass.continueExecution()
+    if (aiLock && (mctsAlgorithm.getStatus())) {
+        mctsAlgorithm.continueExecution()
     }
 
-    if (aiLock && (!testMCTSClass.getStatus())) {
-        // const [AISoldierNum, AIMove] = randomJeeshAI(gameState)
-        const [AISoldierNum, AIMove] = testMCTSClass.getChoosenAction()
+    /**
+     * Phase 2B - Once the AI has found a move, initialize the Move and prepare for Motion
+     */
+    if (aiLock && (!mctsAlgorithm.getStatus())) {
+        const [AISoldierNum, AIMove] = mctsAlgorithm.getChoosenAction()
         aiMove.setSoldierNum(AISoldierNum)
         aiMove.setStartingParameters(gameState.getSoldierCurrentPosition(1, AISoldierNum), AIMove)
-
         aiLock = false
         aiMove.setMotionLock()
     }
 
     /**
-     * Player 2 - AI
+     * Phase 3 - Player 2 is currently in Motion
      */
     if ((aiMove.getMotionLock()) && (elapsedTime - 10 > userMove.getStartTime())) {
+
         if (aiMove.getStartingFlag()) {
             aiMove.setStartTime(elapsedTime)
             gameState.updateGameState(aiMove.getSoldierNum(), aiMove.getMove())
@@ -363,13 +350,12 @@ const tick = () => {
 
         const [currentPositionX, currentPositionY, currentPositionZ] = aiMove.getMovingPosition(elapsedTime)
         armyDisplay2.setSoldierPosition(aiMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
-
         const rotationalAxis = aiMove.getRotationalAxis()
         const rotationalAngle = aiMove.getMovingRotation(elapsedTime)
         armyDisplay2.setSoldierRotation(aiMove.getSoldierNum(), rotationalAxis, rotationalAngle)
 
         if (aiMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
-            arena.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
+            arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             aiMove.resetStartingFlag()
             aiMove.resetMotionLock()
             armyDisplay1.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(0))
@@ -381,7 +367,6 @@ const tick = () => {
                 gameState.getSoldierCurrentPosition(0, gameState.getCurrentIndexAliveSoldiers(0)[0]),
                 gameState.getSoldierCurrentPossibleMoves(0, gameState.getCurrentIndexAliveSoldiers(0)[0])
             )
-            console.log('Alive count ', gameState.armies[0].getAliveCount(), gameState.armies[1].getAliveCount())
         }
     }
 

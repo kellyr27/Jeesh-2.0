@@ -19,13 +19,17 @@ function generateRandomCoordinate() {
 
 export default class GameState {
 
-    constructor(army1StartingPositions, army2StartingPositions) {
+    constructor(army1StartingPositions, army2StartingPositions, starsOn) {
         if (army2StartingPositions !== undefined) {
             this.armies = this.#createArmies(army1StartingPositions, army2StartingPositions)
             this.starCoordinates = this.#createStars()
             this.currentMoveNum = 1
             this.currentArmyNum = 0
             this.gameStatus = [-1, -1]
+
+            if (starsOn) {
+                this.removeStars()
+            }
         }
     }
 
