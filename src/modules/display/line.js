@@ -64,16 +64,16 @@ class LineDisplay {
      * 
      */
     createInitial(initialPosition) {
-        const geometry = new THREE.BufferGeometry().setFromPoints(getBezierPoints(adjustListToDisplayCoordinate(getStartingPoints(initialPosition)), 1));
-        const line = new MeshLine();
-        line.setGeometry(geometry);
+        this.geometry = new THREE.BufferGeometry().setFromPoints(getBezierPoints(adjustListToDisplayCoordinate(getStartingPoints(initialPosition)), 1));
+        this.line = new MeshLine();
+        this.line.setGeometry(this.geometry);
 
-        const material = new MeshLineMaterial({
+        this.material = new MeshLineMaterial({
             color: this.color,
             opacity: 0.9,
             lineWidth: 0.1
         })
-        this.mesh = new THREE.Mesh(line, material)
+        this.mesh = new THREE.Mesh(this.line, this.material)
         this.scene.add(this.mesh)
     }
 
@@ -82,29 +82,31 @@ class LineDisplay {
         console.log(coords, max)
         let points = getBezierPoints(adjustListToDisplayCoordinate(getSpecializedMidPoint(coords[0], coords[1])), max)
 
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const line = new MeshLine();
-        line.setGeometry(geometry);
+        this.geometry = new THREE.BufferGeometry().setFromPoints(points);
+        this.line = new MeshLine();
+        this.line.setGeometry(this.geometry);
 
-        const material = new MeshLineMaterial({
+        this.material = new MeshLineMaterial({
             color: this.color,
             opacity: 0.9,
             lineWidth: 0.1
         })
-        this.mesh = new THREE.Mesh(line, material)
+        this.mesh = new THREE.Mesh(this.line, this.material)
         this.scene.add(this.mesh)
     }
 
     setDead() {
         this.mesh.material.color.set('black')
-        this.mesh.material.opacity = 0.5
-        this.mesh.material.lineWidth = 0.5
+        this.mesh.material.opacity = 0.8
+        this.mesh.material.lineWidth = 0.1
     }
 
     dispose() {
+        console.log('here2')
+        this.line.dispose()
         this.geometry.dispose()
         this.material.dispose()
-        this.mesh.dispose()
+        this.scene.remove(this.mesh)
     }
 }
 
@@ -113,7 +115,7 @@ export default class LineArmy {
         this.scene = scene
         this.color = color
         this.initialize(startingPositions)
-        this.tempMotionLine = []
+        this.tempMotionLine = null
     }
 
     /**
@@ -129,17 +131,17 @@ export default class LineArmy {
     }
 
     setMotionLine (coords, percentage) {
-        // if (this.tempMotionLine.length !== 0) {
-        //     this.tempMotionLine[0].dispose()
-        // }
-        // this.tempMotionLine = new LineDisplay(this.scene, coords, this.color, false, percentage)
-        console.log(coords, percentage)
-
-        new LineDisplay(this.scene, coords, this.color, false, percentage)
+        if (this.tempMotionLine) {
+            this.tempMotionLine.dispose()
+        }
+        this.tempMotionLine = new LineDisplay(this.scene, coords, this.color, false, percentage)
     }
 
-    setFinalLine (soldierIndex, ) {
-
+    setFinalLine (soldierIndex, coords) {
+        if (this.tempMotionLine) {
+            this.tempMotionLine.dispose()
+        }
+        this.armyLines[soldierIndex].push(new LineDisplay(this.scene, coords, this.color, false, 1))
     }
 
     setDead(soldierNums) {

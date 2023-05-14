@@ -308,11 +308,13 @@ const tick = () => {
 
         // Checks if this is the End of the Motion
         if (userMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
+            lineArmyDisplay1.setFinalLine(userMove.getSoldierNum(), userMove.getLineDisplay())
             arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             userMove.resetStartingFlag()
             userMove.resetMotionLock()
             armyDisplay1.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(0))
             armyDisplay2.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(1))
+            lineArmyDisplay1.setDead(gameState.getCurrentIndexDeadSoldiers(0))
             aiLock = true
             mctsAlgorithm.create(gameState)
         }
