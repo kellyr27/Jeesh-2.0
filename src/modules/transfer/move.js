@@ -1,4 +1,5 @@
 import { MOVE_TIME_SECS, arrayEquals } from "../globals"
+import { getSpecializedMidPoint, BezierQuadraticThreeDim } from "../display/bezierMovement"
 /**
  * Change Rotation to Direction and figure out the math
  */
@@ -191,6 +192,7 @@ export default class Move {
         this.startingRotation = startingPosition[1]
         this.finishPosition = finishPosition[0]
         this.finishRotation = finishPosition[1]
+        this.bezierQuadraticPoints = getSpecializedMidPoint(startingPosition, finishPosition)
         this.#setRotation()
     }
 
@@ -244,10 +246,11 @@ export default class Move {
             console.error('Time in motion out of bounds!')
         }
 
-        return [
-            this.startingPosition[0] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[0] - this.startingPosition[0]),
-            this.startingPosition[1] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[1] - this.startingPosition[1]),
-            this.startingPosition[2] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[2] - this.startingPosition[2])
-        ]
+        // return [
+        //     this.startingPosition[0] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[0] - this.startingPosition[0]),
+        //     this.startingPosition[1] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[1] - this.startingPosition[1]),
+        //     this.startingPosition[2] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[2] - this.startingPosition[2])
+        // ]
+        return BezierQuadraticThreeDim(this.bezierQuadraticPoints, (timeInMotion / MOVE_TIME_SECS))
     }
 }

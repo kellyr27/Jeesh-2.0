@@ -105,14 +105,8 @@ let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
 let aiLock = false
-const mctsAlgorithm = new Mcts(1000)
+const mctsAlgorithm = new Mcts(100)
 
-let lineTest1 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,1,1], [0,1,0]]])
-let lineTest2 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [0,-1,0]]])
-let lineTest3 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [1,0,0]]])
-let lineTest4 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [-1,0,0]]])
-let lineTest5 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [0,0,1]]])
-let lineTest6 = new LineDisplay(scene, [[[0,0,0],[0,0,1]],[[0,0,1], [0,0,-1]]])
 
 /**
  * Animations
