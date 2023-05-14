@@ -158,7 +158,10 @@ export default class ArmyDisplay {
         const adjustedVector = adjustToDisplayCoordinate(vector)
         const threeVector = new THREE.Vector3( adjustedVector[0], adjustedVector[1], adjustedVector[2] )
         this.soldiers[soldierNum][0].lookAt(threeVector)
+        this.soldiers[soldierNum][0].rotateX(- Math.PI / 2)
         this.soldiers[soldierNum][1].lookAt(threeVector)
+        this.soldiers[soldierNum][1].rotateX(- Math.PI / 2)
+        // this.soldiers[soldierNum][1].rotation.setFromVector3(new THREE.Vector3(Math.PI / 2, 0, 0))
     }
 
     setSelectedColor(soldierNum) {

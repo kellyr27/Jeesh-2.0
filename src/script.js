@@ -92,7 +92,7 @@ renderer.render(scene, camera)
 /**
  * Game Variables
  */
-let gameState = new GameState(STARTING_POSITIONS_ARMY_1, STARTING_POSITIONS_ARMY_2, false)
+let gameState = new GameState(STARTING_POSITIONS_ARMY_1, STARTING_POSITIONS_ARMY_2, true)
 let arenaDisplay = new Arena(scene, gameState.getStarCoordinates())
 arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
