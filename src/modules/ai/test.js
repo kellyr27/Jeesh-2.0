@@ -68,13 +68,4 @@ function testMCTSvMCTS () {
 export function testAllAI () {
     const testAIvAIResult = testAIvAI()
     console.log(`RANDOM V RANDOM\t\t${testAIvAIResult[0]} P1 ${testAIvAIResult[2]} D ${testAIvAIResult[1]} P2`)
-
-    // const testMCTSvAIResult = testMCTSvAI()
-    // console.log(`MCTS V RANDOM\t\t${testMCTSvAIResult[0]} P1 ${testMCTSvAIResult[2]} D ${testMCTSvAIResult[1]} P2`)
-
-    // const testAIvMCTSResult = testAIvMCTS()
-    // console.log(`RANDOM V MCTS\t\t${testAIvMCTSResult[0]} P1 ${testAIvMCTSResult[2]} D ${testAIvMCTSResult[1]} P2`)
-
-    // const testMCTSvMCTSResult = testMCTSvMCTS()
-    // console.log(`MCTS V MCTS\t\t${testMCTSvMCTSResult[0]} P1 ${testMCTSvMCTSResult[2]} D ${testMCTSvMCTSResult[1]} P2`)
 }

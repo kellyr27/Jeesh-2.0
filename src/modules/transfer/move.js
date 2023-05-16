@@ -239,9 +239,6 @@ export default class Move {
         const timeElapsedSinceLastRotation = elapsedTime - this.previousTimeInMotion
         this.previousTimeInMotion = elapsedTime
 
-        // if ((timeInMotion < 0) || (timeInMotion > MOVE_TIME_SECS)) {
-        //     console.error('Time in motion out of bounds!')
-        // }
         if (timeElapsedSinceLastRotation === 0) {
             return 0
         }
@@ -257,16 +254,6 @@ export default class Move {
 
     getMovingPosition(elapsedTime) {
         const timeInMotion = elapsedTime - this.startTime
-
-        if ((timeInMotion < 0) || (timeInMotion > MOVE_TIME_SECS)) {
-            console.error('Time in motion out of bounds!')
-        }
-
-        // return [
-        //     this.startingPosition[0] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[0] - this.startingPosition[0]),
-        //     this.startingPosition[1] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[1] - this.startingPosition[1]),
-        //     this.startingPosition[2] + (timeInMotion / MOVE_TIME_SECS) * (this.finishPosition[2] - this.startingPosition[2])
-        // ]
         return BezierQuadraticThreeDim(this.bezierQuadraticPoints, (timeInMotion / MOVE_TIME_SECS))
     }
 }

@@ -177,9 +177,7 @@ canvas2.addEventListener('click', (evt) => {
                 if (selectionPanel.isValidPosition()) {
                     userMove.setMotionLock()
                     userMove.setStartingParameters(selectionPanel.getCurrentPosition(), selectionPanel.getHoveredMove())
-                    // console.log(selectionPanel.getHoveredMove(), selectionPanel.getCurrentPosition())
                 }
-                // userMove.setStartingParameters()
                 return
             }
         }
@@ -291,9 +289,7 @@ const tick = () => {
             selectionPanel.drawPanelBlocked()
             userMove.setStartTime(elapsedTime)
             userMove.setSoldierNum(userRaycaster.getSelectedSoldier())
-            console.log('1')
             gameState.updateGameState(userMove.getSoldierNum(), userMove.getMove())
-            console.log('2')
         }
 
         // This shows the Movement of the Soldier
@@ -347,16 +343,18 @@ const tick = () => {
 
         const [currentPositionX, currentPositionY, currentPositionZ] = aiMove.getMovingPosition(elapsedTime)
         armyDisplay2.setSoldierPosition(aiMove.getSoldierNum(), currentPositionX, currentPositionY, currentPositionZ)
-        const rotationalAxis = aiMove.getRotationalAxis()
-        const rotationalAngle = aiMove.getMovingRotation(elapsedTime)
-        armyDisplay2.setSoldierRotation(aiMove.getSoldierNum(), rotationalAxis, rotationalAngle)
+        const lookAtCoord = aiMove.getNEWMovingRotation(elapsedTime)
+        armyDisplay2.setNEWSoldierRotation(aiMove.getSoldierNum(), lookAtCoord)
+        lineArmyDisplay2.setMotionLine(aiMove.getLineDisplay(), aiMove.getPercentageInMotion(elapsedTime))
 
         if (aiMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
+            lineArmyDisplay2.setFinalLine(aiMove.getSoldierNum(), aiMove.getLineDisplay())
             arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             aiMove.resetStartingFlag()
             aiMove.resetMotionLock()
             armyDisplay1.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(0))
             armyDisplay2.setNoVisibility(gameState.getCurrentIndexDeadSoldiers(1))
+            lineArmyDisplay2.setDead(gameState.getCurrentIndexDeadSoldiers(1))
 
             selectionPanel.resetCurrentSelectionHovered()
             selectionPanel.resetCurrentSelectionSelected()
