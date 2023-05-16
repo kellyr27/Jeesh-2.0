@@ -103,11 +103,12 @@ let selectionPanel = new SelectionPanel(
     canvas2,
     gameState.getSoldierCurrentPosition(0, 0),
     gameState.getSoldierCurrentPossibleMoves(0, 0))
+selectionPanel.drawPanelBlocked()
 let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
 let aiLock = false
-const mctsAlgorithm = new Mcts(100)
+const mctsAlgorithm = new Mcts(10)
 
 /**
  * Animations
