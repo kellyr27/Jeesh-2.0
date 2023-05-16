@@ -108,7 +108,7 @@ let userMove = new Move()
 let aiMove = new Move()
 let userRaycaster = new UserRaycaster()
 let aiLock = false
-const mctsAlgorithm = new Mcts(10)
+const mctsAlgorithm = new Mcts(100)
 
 /**
  * Animations
