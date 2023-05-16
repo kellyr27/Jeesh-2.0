@@ -291,7 +291,9 @@ const tick = () => {
             selectionPanel.drawPanelBlocked()
             userMove.setStartTime(elapsedTime)
             userMove.setSoldierNum(userRaycaster.getSelectedSoldier())
+            console.log('1')
             gameState.updateGameState(userMove.getSoldierNum(), userMove.getMove())
+            console.log('2')
         }
 
         // This shows the Movement of the Soldier

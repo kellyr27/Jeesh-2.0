@@ -494,7 +494,7 @@ export default class GameState {
     updateArmies(moveNum, armyNum, soldierNum, position) {
 
         // Check whether the Soldier has moved into the opposing Armies attacked Zone
-        if (this.#isCoordinateInArray(position[0], this.getArmyAttackedCoordinates(moveNum, this.getOpposingArmyNum()))) {
+        if (this.#isCoordinateInArray(position[0], this.getArmyAttackedCoordinates(moveNum, this.getOpposingArmyNum(armyNum)))) {
             this.armies[armyNum].soldiers[soldierNum].setDead(moveNum)
         }
 
