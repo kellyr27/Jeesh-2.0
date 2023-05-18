@@ -1,15 +1,18 @@
 /**
- * Monte Carlo Tree Search Algorithm
+ * Objective is to Multithread the MCTS Algorithm
  */
 
 import {jeeshSimulateGame, jeeshGetNextState, jeeshGetGain, jeeshGetPossibleActions} from './transfer.js'
 import NodeMCTS from './node.js'
 
+
+const EXPLORATION_FACTOR = 0.7
+
 /**
  * Selection Phase
  * Returns an list of nodes that connect the Root node to the Selected Node
  */
-export function selectionPhase(root, explorationFactor) {
+function selectionPhase(root, explorationFactor) {
     const nodeList = [root]
     let currentNode = root
     while (!currentNode.isLeaf()) {
@@ -35,7 +38,7 @@ export function selectionPhase(root, explorationFactor) {
  * Expansion Phase
  * Returns an list of nodes that connect the Root node to the new Selected Node (expanded)
  */
-export function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions) {
+function expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions) {
     let selectedNode = nodeList[nodeList.length - 1]
 
     // Check if the game is not in a decisive state
@@ -52,7 +55,7 @@ export function expansionPhase(nodeList, getPossibleActions, getNextState, maxNu
  * Simulation Phase
  * Returns the gain from an Simulated (random) game
  */
-export function simulationPhase(nodeList, simulateGame, getGain) {
+function simulationPhase(nodeList, simulateGame, getGain) {
     const simulatedGameState = simulateGame(nodeList[nodeList.length - 1].state)
     return getGain(simulatedGameState, nodeList[0].state)
 }
@@ -61,7 +64,7 @@ export function simulationPhase(nodeList, simulateGame, getGain) {
  * Backpropagation Phase
  * Updates the node values from the Root to the Selected Node with the gain from the Simulation Phase
  */
-export function backpropagationPhase(nodeList, gain) {
+function backpropagationPhase(nodeList, gain) {
     for (const node of nodeList) {
         node.updateValues(gain)
     }
@@ -88,10 +91,57 @@ function chooseAction(rootState) {
     return childNodes[highestNumVisitsIndex]
 }
 
+const ITERATIONS_PER_TICK = 1
+
+export default class Mcts {
+    getPossibleActionsFunc = jeeshGetPossibleActions
+    getNextStateFunc = jeeshGetNextState
+    simulateGameFunc = jeeshSimulateGame
+    getGainFunc = jeeshGetGain
+    
+    constructor (maxNumActions) {
+        this.maxNumActions = maxNumActions
+    }
+
+    create(initialState) {
+        this.status = true
+        this.currentIteration = 0
+        this.currentStage = 0
+
+        this.root = new NodeMCTS(initialState)
+        this.nodeList = null
+        this.gain = null
+    }
+
+    getStatus() {
+        return this.status
+    }
+
+    continueExecution() {
+        if (this.currentIteration >= this.maxNumActions) {
+            this.status = false
+            return
+        }
+        
+        for (let i = 0; i < ITERATIONS_PER_TICK; i++) {
+            this.nodeList = selectionPhase(this.root, EXPLORATION_FACTOR)
+            this.nodeList = expansionPhase(this.nodeList, this.getPossibleActionsFunc, this.getNextStateFunc, this.maxNumActions)
+            this.gain = simulationPhase(this.nodeList, this.simulateGameFunc, this.getGainFunc)
+            backpropagationPhase(this.nodeList, this.gain)
+            this.currentIteration += 1
+        }
+    }
+
+    getChoosenAction () {
+        const chosenState = chooseAction(this.root)
+        return chosenState.getAction()
+    }
+}
+
 /**
  * Monte Carlo Tree Search Algorithm
  */
-export function mcts(numOfIterations, initialState, getPossibleActionsFunc, getNextStateFunc, simulateGameFunc, getGainFunc, maxNumActions, explorationFactor) {
+export function mctsNode(numOfIterations, initialState, getPossibleActionsFunc, getNextStateFunc, simulateGameFunc, getGainFunc, maxNumActions, explorationFactor) {
 
     // Create Root node
     const root = new NodeMCTS(initialState)
@@ -116,69 +166,5 @@ export function mcts(numOfIterations, initialState, getPossibleActionsFunc, getN
  * - Exploration factor of 0.7
  */
 export function mctsBot1(initialState) {
-    return mcts(1000, initialState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 5, 0.7)
-}
-
-/**
- * Async
- */
-export function selectionPhasePromise (root, explorationFactor) {
-    return new Promise((resolve, reject) => {
-        resolve(selectionPhase(root, explorationFactor))
-    })
-}
-
-export function expansionPhasePromise (nodeList, getPossibleActions, getNextState, maxNumActions) {
-    return new Promise((resolve, reject) => {
-        resolve(expansionPhase(nodeList, getPossibleActions, getNextState, maxNumActions))
-    })
-}
-
-export function simulationPhasePromise (nodeList, simulateGame, getGain) {
-    return new Promise((resolve, reject) => {
-        resolve(simulationPhase(nodeList, simulateGame, getGain))
-    })
-}
-
-export function backpropagationPhasePromise (nodeList, gain) {
-    return new Promise((resolve, reject) => {
-        resolve(backpropagationPhase(nodeList, gain))
-    })
-}
-
-export function chooseActionPromise(rootState) {
-    return new Promise((resolve, reject) => {
-        resolve(chooseAction(rootState))
-    })
-}
-
-/**
- * Monte Carlo Tree Search Algorithm Async
- */
-export async function mctsAsync(numOfIterations, initialState, getPossibleActionsFunc, getNextStateFunc, simulateGameFunc, getGainFunc, maxNumActions, explorationFactor) {
-
-    // Create Root node
-    const root = new NodeMCTS(initialState)
-
-    // Iterate over algorithm for pre selected number of iterations
-    for (let iterNum = 0; iterNum < numOfIterations; iterNum++) {
-        let nodeList = await selectionPhasePromise(root, explorationFactor)
-        nodeList = await expansionPhasePromise(nodeList, getPossibleActionsFunc, getNextStateFunc, maxNumActions)
-        const gain = await simulationPhasePromise(nodeList, simulateGameFunc, getGainFunc)
-        await backpropagationPhasePromise(nodeList, gain)
-    }
-
-    // Select the child of the Root with the most number of Visits
-    const chosenState = await chooseActionPromise(root)
-    return chosenState.getAction()
-}
-
-/**
- * MCTS Bot 1
- * - 1000 Iterations / move
- * - Maximum of 5 moves per state
- * - Exploration factor of 0.7
- */
-export async function mctsBot1Async(initialState) {
-    return mctsAsync(1000, initialState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 5, 0.7)
+    return mctsNode(1000, initialState, jeeshGetPossibleActions, jeeshGetNextState, jeeshSimulateGame, jeeshGetGain, 5, 0.7)
 }
