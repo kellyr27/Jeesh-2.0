@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { arrayEquals } from '../globals/array.js'
 import { adjustToDisplayCoordinate } from '../globals/game/coordinates.js'
+import { ARMY_DISPLAY_COLOR_PALETTE } from '../globals/game/colors.js'
 
 /**
  * Army Display (Soldiers)
@@ -10,18 +11,7 @@ export default class ArmyDisplay {
     /**
      * Color palette for the Soldiers depending on the Army choosen
      */
-    colorPalette = {
-        0: {
-            default: 'red',
-            hovered: 'blue',
-            selected: 'green'
-        },
-        1: {
-            default: 'purple',
-            hovered: 'blue',
-            selected: 'green'
-        }
-    }
+    colorPalette = ARMY_DISPLAY_COLOR_PALETTE
 
     constructor(scene, armyNum, startingPositions) {
         this.scene = scene

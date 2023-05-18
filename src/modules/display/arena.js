@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { CUBE_SIZE, ARENA_SIZE, DOOR_COORDINATES } from '../globals/game/constants.js'
 import { adjustToDisplayCoordinate } from '../globals/game/coordinates.js'
 import { arrayInArray,arrayEquals } from '../globals/array.js'
+import { ARENA_COLOR_PALETTE } from '../globals/game/colors.js'
 import StarsDisplay from './stars.js'
 
 /**
@@ -13,6 +14,8 @@ export default class Arena {
     cubeGeometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)
     cubeEdgesGeometry = new THREE.EdgesGeometry(this.cubeGeometry)
     cubeLineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
+
+    colorPalette = ARENA_COLOR_PALETTE
 
     constructor(scene, starCoordinates) {
         this.scene = scene
@@ -50,7 +53,7 @@ export default class Arena {
         let cubeMesh = new THREE.Mesh(
             this.cubeGeometry,
             new THREE.MeshBasicMaterial({
-                color: 0xffff00,
+                color: this.colorPalette['default'],                                                            // -----
                 transparent: true,
                 opacity: 0.03
             })
@@ -84,35 +87,35 @@ export default class Arena {
      * Sets the Material of a Cube to be transparent
      */
     #setCubeMaterialDefault(coord) {
-        this.#setCubeMaterial(coord, 0xffff00, 0.03)
+        this.#setCubeMaterial(coord, this.colorPalette['default'], 0.03)
     }
 
     /**
      * Sets the Material of a Cube to be in the Attacked Zone of Army 1
      */
     #setCubeMaterialArmy1AttackedZone(coord) {
-        this.#setCubeMaterial(coord, 0x00ff00, 0.5)
+        this.#setCubeMaterial(coord, this.colorPalette['army1Attacked'], 0.5)
     }
 
     /**
      * Sets the Material of a Cube to be in the Attacked Zone of Army 2
      */
     #setCubeMaterialArmy2AttackedZone(coord) {
-        this.#setCubeMaterial(coord, 0xff0000, 0.5)
+        this.#setCubeMaterial(coord, this.colorPalette['army2Attacked'], 0.5)
     }
 
     /**
      * Sets the Material of a Cube to be the in the Attacked Zone of both Armies
      */
     #setCubeMaterialDuelAttackedZone(coord) {
-        this.#setCubeMaterial(coord, 0xff00ff, 0.2)
+        this.#setCubeMaterial(coord, this.colorPalette['bothAttacked'], 0.2)
     }
 
     /**
      * Sets the Material of a Cube to be a possible move (from the Selection Panel)
      */
     #setCubeMaterialPossibleMove(coord) {
-        this.#setCubeMaterial(coord, 0xa000c8, 0.3)
+        this.#setCubeMaterial(coord, this.colorPalette['panelHovered'], 0.3)
     }
 
     resetHovered() {
@@ -172,7 +175,7 @@ export default class Arena {
      * Sets the Material of a Cube to show the Door for both Armies
      */
     #setCubeMaterialDoor(coord) {
-        this.#setCubeMaterial(coord, 0xffff00, 0.5)
+        this.#setCubeMaterial(coord, this.colorPalette['doors'], 0.5)
     }
 
     /**
