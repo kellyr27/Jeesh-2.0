@@ -19,3 +19,9 @@ export const ARENA_COLOR_PALETTE = {
     panelHovered: 0xa000c8,
     doors: 0xffff00
 }
+
+export const LINE_COLOR_PALETTE = {
+    0: 'red',
+    1: 'purple',
+    dead: 'black'
+}

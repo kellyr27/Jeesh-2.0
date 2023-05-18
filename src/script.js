@@ -97,8 +97,8 @@ let arenaDisplay = new Arena(scene, gameState.getStarCoordinates())
 arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))
-let lineArmyDisplay1 = new LineArmy(scene, gameState.getArmyCurrentPositions(0), 'red')
-let lineArmyDisplay2 = new LineArmy(scene, gameState.getArmyCurrentPositions(1), 'blue')
+let lineArmyDisplay1 = new LineArmy(scene, gameState.getArmyCurrentPositions(0), 0)
+let lineArmyDisplay2 = new LineArmy(scene, gameState.getArmyCurrentPositions(1), 1)
 let selectionPanel = new SelectionPanel(
     canvas2,
     gameState.getSoldierCurrentPosition(0, 0),

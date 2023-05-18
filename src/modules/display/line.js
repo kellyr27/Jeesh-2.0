@@ -3,7 +3,7 @@ import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline'
 import { adjustListToDisplayCoordinate } from '../globals/game/coordinates';
 import { addArrays } from '../globals/array';
 import { getSpecializedMidPoint } from './bezierMovement';
-
+import { LINE_COLOR_PALETTE } from '../globals/game/colors';
 const bezier = require('bezier-curve')
 
 /**
@@ -48,9 +48,11 @@ function getStartingPoints (startingPosition) {
 
 class LineDisplay {
 
-    constructor(scene, armyCoords, color, isInitial, max) {
+    colorPalette = LINE_COLOR_PALETTE
+
+    constructor(scene, armyCoords, armyNum, isInitial, max) {
         this.scene = scene
-        this.color = color
+        this.armyNum = armyNum
         this.currentFacingDirection = [0, 0, 1]
 
         if (isInitial) {
@@ -70,7 +72,7 @@ class LineDisplay {
         this.line.setGeometry(this.geometry);
 
         this.material = new MeshLineMaterial({
-            color: this.color,
+            color: this.colorPalette[this.armyNum],
             opacity: 0.9,
             lineWidth: 0.1
         })
@@ -87,7 +89,7 @@ class LineDisplay {
         this.line.setGeometry(this.geometry);
 
         this.material = new MeshLineMaterial({
-            color: this.color,
+            color: this.colorPalette[this.armyNum],
             opacity: 0.9,
             lineWidth: 0.1
         })
@@ -96,7 +98,7 @@ class LineDisplay {
     }
 
     setDead() {
-        this.mesh.material.color.set('black')
+        this.mesh.material.color.set(this.colorPalette['dead'])
         this.mesh.material.opacity = 0.8
         this.mesh.material.lineWidth = 0.1
     }
@@ -110,9 +112,10 @@ class LineDisplay {
 }
 
 export default class LineArmy {
-    constructor (scene, startingPositions, color) {
+
+    constructor (scene, startingPositions, armyNum) {
         this.scene = scene
-        this.color = color
+        this.armyNum = armyNum
         this.initialize(startingPositions)
         this.tempMotionLine = null
     }
@@ -124,7 +127,7 @@ export default class LineArmy {
         this.armyLines = []
 
         for (const startingPosition of startingPositions) {
-            const soldierLines = [new LineDisplay(this.scene, startingPosition, this.color, true)]
+            const soldierLines = [new LineDisplay(this.scene, startingPosition, this.armyNum, true)]
             this.armyLines.push(soldierLines)
         }
     }
@@ -133,14 +136,14 @@ export default class LineArmy {
         if (this.tempMotionLine) {
             this.tempMotionLine.dispose()
         }
-        this.tempMotionLine = new LineDisplay(this.scene, coords, this.color, false, percentage)
+        this.tempMotionLine = new LineDisplay(this.scene, coords, this.armyNum, false, percentage)
     }
 
     setFinalLine (soldierIndex, coords) {
         if (this.tempMotionLine) {
             this.tempMotionLine.dispose()
         }
-        this.armyLines[soldierIndex].push(new LineDisplay(this.scene, coords, this.color, false, 1))
+        this.armyLines[soldierIndex].push(new LineDisplay(this.scene, coords, this.armyNum, false, 1))
     }
 
     setDead(soldierNums) {
