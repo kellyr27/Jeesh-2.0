@@ -7,12 +7,12 @@ import { LINE_COLOR_PALETTE } from '../globals/game/colors';
 const bezier = require('bezier-curve')
 
 /**
- * 
+ * Returns a list of a lot of points along a Bezier Curve up to a percentage (tMax) along the Curve
  */
-function getBezierPoints(points, max) {
+function getBezierPoints(points, tMax) {
     const newPoints = []
 
-    for (var t = 0; t < max; t += 0.01) {
+    for (var t = 0; t < tMax; t += 0.01) {
         var point = bezier(t, points);
         newPoints.push(new THREE.Vector3(point[0], point[1], point[2]))
     }
@@ -20,6 +20,9 @@ function getBezierPoints(points, max) {
     return newPoints
 }
 
+/**
+ * Returns two points to form a small Line at the starting Position
+ */
 function getStartingPoints (startingPosition) {
     const startingCoordinate = startingPosition[0]
     const startingRotation = startingPosition[1]

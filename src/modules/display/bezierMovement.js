@@ -1,19 +1,8 @@
-const bezier = require('bezier-curve')
 import { subtractArrays, addArrays } from '../globals/array';
-import * as THREE from 'three';
 
-function getBezierPoints(points) {
-    const newPoints = []
-
-    for (var t = 0; t < 1; t += 0.01) {
-        var point = bezier(t, points);
-        newPoints.push(new THREE.Vector3(point[0], point[1], point[2]))
-    }
-
-    return newPoints
-}
-
-
+/**
+ * Returns three points to form an Quadratic Bezier Curve from depending on the Current and Future Position
+ */
 export function getSpecializedMidPoint(p1, p2) {
     return [
         p1[0],
@@ -23,9 +12,10 @@ export function getSpecializedMidPoint(p1, p2) {
 }
 
 /**
- * Using De Casteljaus Algorithm
+ * Using De Casteljaus Algorithm to calculate the Quadratic Bezier Curve.
+ * Returns the value at point t where t is a value [0, 1] that represents the percentage along the curve 
  */
-function mix (a, b, t) {
+function mix(a, b, t) {
     return a * (1 - t) + b*t;
 }
  
@@ -44,6 +34,9 @@ export function BezierQuadraticThreeDim ([A, B, C], t) {
     return [x,y,z]
 }
 
+/**
+ * Returns the Gradient at point t along the Bezier Curve
+ */
 function BezierQuadraticDerivative (A, B, C, t) {
     return 2* (1 - t) * (B - A) + 2 * t * (C - B)
 }

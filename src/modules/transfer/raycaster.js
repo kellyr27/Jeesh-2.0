@@ -1,5 +1,7 @@
 
-
+/**
+ * Class used to track which Soldier the mouse is hovering over or has selected.
+ */
 export default class UserRaycaster {
     constructor () {
         this.hoveredSoldier = -1
