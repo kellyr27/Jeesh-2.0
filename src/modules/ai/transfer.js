@@ -9,7 +9,7 @@
  */
 
 import GameState from "../game/gameState.js"
-import {generateRandomInt} from '../globals.js'
+import { generateRandomInt } from "../globals/number.js"
 
 /**
  * Gets a list of possible actions from a given Game State

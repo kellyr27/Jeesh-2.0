@@ -1,4 +1,5 @@
-import { MOVE_TIME_SECS, addArrays, arrayEquals } from "../globals"
+import { MOVE_TIME_SECS } from "../globals/game/constants"
+import { addArrays, arrayEquals } from "../globals/array"
 import { getSpecializedMidPoint, BezierQuadraticThreeDim, BezierQuadraticDerivativeThreeDim } from "../display/bezierMovement"
 /**
  * Change Rotation to Direction and figure out the math

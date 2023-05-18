@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import {adjustToDisplayCoordinate} from '../globals.js'
+import { adjustToDisplayCoordinate } from '../globals/game/coordinates.js'
 
 /**
  * Stars Display

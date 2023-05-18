@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline'
-import { adjustListToDisplayCoordinate, subtractArrays, addArrays, arrayEquals } from '../globals';
+import { adjustListToDisplayCoordinate } from '../globals/game/coordinates';
+import { addArrays } from '../globals/array';
 import { getSpecializedMidPoint } from './bezierMovement';
 
 const bezier = require('bezier-curve')

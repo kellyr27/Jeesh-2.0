@@ -7,7 +7,7 @@
  * - SCROLL TILE - Used to move between directions for displaying coordinates
  */
 
-import { arrayEquals, arrayInArray } from "../globals.js"
+import { arrayEquals, arrayInArray } from "../globals/array.js"
 
 /**
  * Adds coordinates together and returns the sum

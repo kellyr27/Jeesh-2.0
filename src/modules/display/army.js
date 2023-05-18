@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { arrayEquals } from '../globals/array.js'
-import { adjustToDisplayCoordinate } from '../globals.js'
+import { adjustToDisplayCoordinate } from '../globals/game/coordinates.js'
 
 /**
  * Army Display (Soldiers)
