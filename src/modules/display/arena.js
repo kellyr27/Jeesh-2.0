@@ -9,7 +9,7 @@ import StarsDisplay from './stars.js'
 /**
  * Arena Threejs Display (or Battle Room)
  */
-export default class Arena {
+class Arena {
 
     cubeGeometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)
     cubeEdgesGeometry = new THREE.EdgesGeometry(this.cubeGeometry)
@@ -17,7 +17,10 @@ export default class Arena {
 
     colorPalette = ARENA_COLOR_PALETTE
 
-    constructor(scene, starCoordinates) {
+    constructor() {
+    }
+
+    create(scene, starCoordinates) {
         this.scene = scene
         this.cubes = this.#createArena()
         this.currentHoveredCoordinate = [-1, -1, -1]
@@ -53,7 +56,7 @@ export default class Arena {
         let cubeMesh = new THREE.Mesh(
             this.cubeGeometry,
             new THREE.MeshBasicMaterial({
-                color: this.colorPalette['default'],                                                            // -----
+                color: this.colorPalette['default'],
                 transparent: true,
                 opacity: 0.03
             })
@@ -187,3 +190,5 @@ export default class Arena {
         }
     }
 }
+
+export const arenaDisplay = new Arena()

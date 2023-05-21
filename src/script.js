@@ -3,7 +3,8 @@ import * as THREE from 'three'
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js'
 import GameState from './modules/game/gameState'
 import SelectionPanel from './modules/display/panel'
-import Arena from './modules/display/arena'
+import {arenaDisplay} from './modules/display/arena'
+// import arenaDisplay from './modules/display/arena'
 import ArmyDisplay from './modules/display/army'
 import Move from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
@@ -95,7 +96,7 @@ renderer.render(scene, camera)
  * Game Variables
  */
 let gameState = new GameState(STARTING_POSITIONS_ARMY_1, STARTING_POSITIONS_ARMY_2, true)
-let arenaDisplay = new Arena(scene, gameState.getStarCoordinates())
+arenaDisplay.create(scene, gameState.getStarCoordinates())
 arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
 let armyDisplay1 = new ArmyDisplay(scene, 0, gameState.getArmyCurrentPositions(0))
 let armyDisplay2 = new ArmyDisplay(scene, 1, gameState.getArmyCurrentPositions(1))

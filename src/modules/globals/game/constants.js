@@ -22,6 +22,13 @@ export const GLOBALS = {
 /**
  * Debug GUI
  */
+import { ARMY_DISPLAY_COLOR_PALETTE } from './colors'
 import * as dat from 'lil-gui'
 const gui = new dat.GUI()
-gui.add(GLOBALS, 'MOVE_TIME_SECS').min(0.1).max(5).step(0.1)
+gui.add(GLOBALS, 'MOVE_TIME_SECS').min(0.1).max(5).step(0.1).name('Move Time (secs)')
+gui
+    .addColor(ARMY_DISPLAY_COLOR_PALETTE['0'],'default')
+    .onChange(() => {
+        //TO DO
+        // SET COLOR
+    })
