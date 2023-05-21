@@ -14,3 +14,14 @@ export const STARTING_POSITIONS_ARMY_2 = [
     [[5, 5, 0], [0, 0, 1]], 
     [[5, 6, 0], [0, 0, 1]],
 ]
+
+export const GLOBALS = {
+    MOVE_TIME_SECS: 3,
+}
+
+/**
+ * Debug GUI
+ */
+import * as dat from 'lil-gui'
+const gui = new dat.GUI()
+gui.add(GLOBALS, 'MOVE_TIME_SECS').min(0.1).max(5).step(0.1)

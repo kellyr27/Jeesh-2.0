@@ -7,10 +7,12 @@ import Arena from './modules/display/arena'
 import ArmyDisplay from './modules/display/army'
 import Move from './modules/transfer/move'
 import UserRaycaster from './modules/transfer/raycaster'
-import { ARENA_SIZE, MOVE_TIME_SECS } from './modules/globals/game/constants'
+import { ARENA_SIZE, MOVE_TIME_SECS, GLOBALS } from './modules/globals/game/constants'
 import Mcts from './modules/ai/mcts'
 import { STARTING_POSITIONS_ARMY_1, STARTING_POSITIONS_ARMY_2 } from './modules/globals/game/constants'
 import LineArmy from './modules/display/line'
+import { gui } from './modules/globals/game/constants'
+
 
 /**
  * Canvas for Arena
@@ -274,6 +276,7 @@ canvas1.addEventListener('mousemove', (evt) => {
 
 })
 
+
 const tick = () => {
 
     raycaster.setFromCamera(mouse, camera)
@@ -301,7 +304,7 @@ const tick = () => {
         lineArmyDisplay1.setMotionLine(userMove.getLineDisplay(), userMove.getPercentageInMotion(elapsedTime))
 
         // Checks if this is the End of the Motion
-        if (userMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
+        if (userMove.getTimeInMotion(elapsedTime) > GLOBALS.MOVE_TIME_SECS) {
             lineArmyDisplay1.setFinalLine(userMove.getSoldierNum(), userMove.getLineDisplay())
             arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             userMove.resetStartingFlag()
@@ -348,7 +351,7 @@ const tick = () => {
         armyDisplay2.setNEWSoldierRotation(aiMove.getSoldierNum(), lookAtCoord)
         lineArmyDisplay2.setMotionLine(aiMove.getLineDisplay(), aiMove.getPercentageInMotion(elapsedTime))
 
-        if (aiMove.getTimeInMotion(elapsedTime) > MOVE_TIME_SECS) {
+        if (aiMove.getTimeInMotion(elapsedTime) > GLOBALS.MOVE_TIME_SECS) {
             lineArmyDisplay2.setFinalLine(aiMove.getSoldierNum(), aiMove.getLineDisplay())
             arenaDisplay.setArena(gameState.getArmyCurrentAttackedCoordinates(0), gameState.getArmyCurrentAttackedCoordinates(1))
             aiMove.resetStartingFlag()

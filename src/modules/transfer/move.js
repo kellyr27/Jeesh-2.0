@@ -1,4 +1,4 @@
-import { MOVE_TIME_SECS } from "../globals/game/constants"
+import { MOVE_TIME_SECS, GLOBALS } from "../globals/game/constants"
 import { addArrays, arrayEquals } from "../globals/array"
 import { getSpecializedMidPoint, BezierQuadraticThreeDim, BezierQuadraticDerivativeThreeDim } from "../display/bezierMovement"
 /**
@@ -223,7 +223,7 @@ export default class Move {
     }
 
     getPercentageInMotion (elapsedTime) {
-        return (elapsedTime - this.startTime) / MOVE_TIME_SECS
+        return (elapsedTime - this.startTime) / GLOBALS.MOVE_TIME_SECS
     }
 
     /**
@@ -244,7 +244,7 @@ export default class Move {
             return 0
         }
         else {
-            return this.rotationAngle * (timeElapsedSinceLastRotation / MOVE_TIME_SECS)
+            return this.rotationAngle * (timeElapsedSinceLastRotation / GLOBALS.MOVE_TIME_SECS)
         }
     }
 
@@ -255,6 +255,6 @@ export default class Move {
 
     getMovingPosition(elapsedTime) {
         const timeInMotion = elapsedTime - this.startTime
-        return BezierQuadraticThreeDim(this.bezierQuadraticPoints, (timeInMotion / MOVE_TIME_SECS))
+        return BezierQuadraticThreeDim(this.bezierQuadraticPoints, (timeInMotion / GLOBALS.MOVE_TIME_SECS))
     }
 }
